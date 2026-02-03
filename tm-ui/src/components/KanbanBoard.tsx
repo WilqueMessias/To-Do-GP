@@ -21,9 +21,10 @@ import { TaskCard } from './TaskCard';
 
 interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
+    onTasksChange?: (tasks: Task[]) => void;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange }) => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [activeTask, setActiveTask] = useState<Task | null>(null);
 
@@ -36,6 +37,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
         try {
             const { data } = await taskService.getAll();
             setTasks(data);
+            if (onTasksChange) {
+                onTasksChange(data);
+            }
         } catch (error) {
             console.error('Failed to load tasks', error);
         }
@@ -44,6 +48,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask }) => {
     useEffect(() => {
         loadTasks();
     }, []);
+
+    useEffect(() => {
+        if (onTasksChange) {
+            onTasksChange(tasks);
+        }
+    }, [tasks, onTasksChange]);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;

@@ -26,7 +26,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
             </div>
             <div
                 ref={setNodeRef}
-                className="kanban-column"
+                className="bg-slate-100 rounded-lg p-4 min-h-[500px] flex flex-col gap-4"
             >
                 <SortableContext
                     id={id}

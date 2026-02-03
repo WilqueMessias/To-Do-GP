@@ -38,7 +38,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             {...attributes}
             {...listeners}
             onClick={() => onClick(task)}
-            className="task-card group relative"
+            className="bg-white rounded-md shadow-sm p-4 border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group relative"
         >
             <div className="flex justify-between items-start mb-2">
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${priorityColors[task.priority]}`}>
