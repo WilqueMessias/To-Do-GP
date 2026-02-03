@@ -118,6 +118,28 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        if (reminderEnabled) {
+            if (!reminderTime) {
+                onError("Por favor, defina o horário do alerta.");
+                setLoading(false);
+                return;
+            }
+            const rTime = new Date(reminderTime).getTime();
+            const dTime = new Date(dueDate).getTime();
+            const now = new Date().getTime();
+
+            if (rTime <= now) {
+                onError("O alerta não pode ser definido para o passado.");
+                setLoading(false);
+                return;
+            }
+            if (dueDate && rTime >= dTime) {
+                onError("O alerta deve ser anterior ao prazo de entrega.");
+                setLoading(false);
+                return;
+            }
+        }
+
         try {
             const payload = {
                 title,
@@ -347,10 +369,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prazo de Entrega</label>
                                     <input
-                                        required
                                         type="datetime-local"
                                         value={dueDate}
-                                        onChange={(e) => setDueDate(e.target.value)}
+                                        onChange={(e) => {
+                                            setDueDate(e.target.value);
+                                            // Disable reminder if due date is cleared
+                                            if (!e.target.value) {
+                                                setReminderEnabled(false);
+                                                setReminderTime('');
+                                            }
+                                        }}
                                         className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
                                     />
                                 </div>
@@ -359,17 +387,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aviso Sonoro / Alerta</label>
                                         <button
                                             type="button"
+                                            disabled={!dueDate}
                                             onClick={() => {
                                                 const newState = !reminderEnabled;
                                                 setReminderEnabled(newState);
                                                 if (newState && dueDate) {
-                                                    // Default to 15m before if enabled
                                                     const date = new Date(dueDate);
                                                     date.setMinutes(date.getMinutes() - 15);
-                                                    setReminderTime(date.toISOString().substring(0, 16));
+
+                                                    // Only set if in the future
+                                                    if (date.getTime() > new Date().getTime()) {
+                                                        setReminderTime(date.toISOString().substring(0, 16));
+                                                    } else {
+                                                        setReminderTime(new Date().toISOString().substring(0, 16));
+                                                    }
                                                 }
                                             }}
-                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${!dueDate ? 'opacity-20 cursor-not-allowed bg-slate-100 text-slate-400' : reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                         >
                                             {reminderEnabled ? 'ON' : 'OFF'}
                                         </button>
@@ -384,11 +418,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                     onClick={() => {
                                                         const date = new Date(dueDate);
                                                         date.setMinutes(date.getMinutes() - mins);
+
+                                                        const now = new Date().getTime();
+                                                        if (date.getTime() <= now) {
+                                                            onError(`O tempo "${mins < 60 ? `${mins}m` : `${mins / 60}h`} antes" já passou!`);
+                                                            return;
+                                                        }
+
                                                         setReminderTime(date.toISOString().substring(0, 16));
                                                     }}
                                                     className={`py-1 text-[9px] font-black rounded-lg transition-all border ${reminderEnabled && reminderTime && Math.abs((new Date(dueDate).getTime() - new Date(reminderTime).getTime()) / 60000 - mins) < 1
-                                                            ? 'bg-blue-600 border-blue-600 text-white'
-                                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-400 hover:text-blue-500'
+                                                        ? 'bg-blue-600 border-blue-600 text-white'
+                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-400 hover:text-blue-500'
                                                         } disabled:opacity-20`}
                                                 >
                                                     {mins < 60 ? `${mins}m` : `${mins / 60}h`}
