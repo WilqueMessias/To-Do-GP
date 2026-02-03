@@ -27,6 +27,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [newSubtask, setNewSubtask] = useState('');
     const [loading, setLoading] = useState(false);
     const [suggestion, setSuggestion] = useState<{ date: string, label: string } | null>(null);
+    const modalRef = React.useRef<HTMLDivElement>(null);
 
     // Sync state when taskToEdit changes
     useEffect(() => {
@@ -105,6 +106,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         }
     }, [title, dueDate, taskToEdit]);
 
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        // Only close if clicking exactly the backdrop, not bubbles from content
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+            onClose();
+        }
+    };
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -170,20 +178,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         setSubtasks(updated);
     };
 
-    const modalRef = React.useRef<HTMLDivElement>(null);
-
-    const handleBackdropClick = (e: React.MouseEvent) => {
-        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-            onClose();
-        }
-    };
 
     return (
         <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all"
             onClick={handleBackdropClick}
         >
-            <div ref={modalRef} className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
+            <div ref={modalRef} className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/50">
                     <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
                         {taskToEdit ? 'Editar Tarefa' : 'Nova Demanda'}
@@ -197,6 +198,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             <Star size={20} fill={important ? "currentColor" : "none"} />
                         </button>
                         <button
+                            type="button"
                             onClick={onClose}
                             className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
                         >

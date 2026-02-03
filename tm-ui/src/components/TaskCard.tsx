@@ -6,6 +6,7 @@ import {
     Clock,
     CheckSquare,
     Star,
+    GripVertical,
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -58,6 +59,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) =
     const progressPercent = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
     const handlePriorityToggle = (e: React.MouseEvent) => {
+        e.preventDefault();
         e.stopPropagation();
         if (!onUpdate) return;
 
@@ -68,6 +70,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) =
     };
 
     const handleStarToggle = (e: React.MouseEvent) => {
+        e.preventDefault();
         e.stopPropagation();
         if (onUpdate) {
             onUpdate(task.id, { important: !task.important });
@@ -75,47 +78,59 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) =
     };
 
     if (isDragging) {
-        return <div ref={setNodeRef} style={style} className="w-full h-32 rounded-2xl border-2 border-dashed border-blue-200" />;
+        return <div ref={setNodeRef} style={style} className="w-full h-32 rounded-2xl border-2 border-dashed border-blue-200 dark:border-blue-900/30 opacity-50" />;
     }
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
             onClick={() => onClick(task)}
             className={`
-                glass-card group p-5 cursor-pointer 
+                glass-card group p-5 cursor-pointer relative
                 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] 
                 active:scale-[0.98] transition-all duration-300
-                ${overdue ? 'ring-2 ring-rose-400/50' : ''}
-                ${task.important ? 'border-amber-400/30 bg-amber-50/10' : ''}
+                ${overdue ? 'ring-2 ring-rose-400/50 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}
+                ${task.important ? 'border-amber-400/30 bg-amber-50/10 dark:bg-amber-900/5' : ''}
             `}
         >
+            {/* Drag Handle - Isolated from card click */}
+            <div
+                {...attributes}
+                {...listeners}
+                className="absolute top-2 right-2 p-1.5 opacity-0 group-hover:opacity-100 text-slate-300 dark:text-slate-600 hover:text-blue-500 cursor-grab active:cursor-grabbing transition-all hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+                title="Arraste para mover"
+            >
+                <GripVertical size={16} />
+            </div>
+
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                     <button
+                        type="button"
                         onClick={handleStarToggle}
                         className={`p-1 rounded-full transition-all active:scale-90 ${task.important ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-slate-400'}`}
+                        title={task.important ? "Remover importância" : "Marcar como importante"}
                     >
                         <Star size={16} fill={task.important ? 'currentColor' : 'none'} />
                     </button>
-                    <div
+                    <button
+                        type="button"
                         onClick={handlePriorityToggle}
-                        title="Alternar prioridade"
+                        title="Clique para alternar prioridade"
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase border transition-all hover:scale-105 active:scale-95 ${priorityColors[task.priority]}`}
                     >
-                        {task.priority === 'LOW' ? 'Baixa' : task.priority === 'MEDIUM' ? 'Média' : 'Alta'}
-                    </div>
+                        {task.priority === 'LOW' ? 'Baixa' : task.priority === 'MEDIUM' ? 'MÉDIA' : 'ALTA'}
+                    </button>
                 </div>
-                <div className="flex flex-col items-end gap-1">
+                <div className="flex flex-col items-end gap-1 mr-6"> {/* Added margin for drag handle */}
                     <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
                         <Clock size={10} />
                         <span>{getTimeAgo(task.createdAt)}</span>
                     </div>
                     {overdue && (
-                        <div className="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
+                        <div className="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 dark:bg-rose-900/20 px-1.5 py-0.5 rounded">
                             <AlertCircle size={10} />
                             <span>VENCIDA</span>
                         </div>
@@ -123,14 +138,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) =
                 </div>
             </div>
 
-            <h3 className="text-[var(--text-main)] font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="text-[var(--text-main)] font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-4">
                 {task.title}
             </h3>
             <p className="text-[var(--text-muted)] text-xs leading-relaxed line-clamp-2 mb-4">
                 {task.description}
             </p>
-
-
 
             {totalSubtasks > 0 && (
                 <div className="mb-4">
