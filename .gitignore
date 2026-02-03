@@ -1,0 +1,26 @@
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw
+mvnw.cmd
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+dist/
+.env
+*.log
+
+# Databases
+data/
+*.db
+
+# Logs
+backend_final.log
+requests.log

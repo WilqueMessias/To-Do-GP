@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #3b82f6;
+  --secondary: #64748b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.kanban-column {
+  @apply bg-slate-100 rounded-lg p-4 w-80 min-h-[500px] flex flex-col gap-4;
+}
+
+.task-card {
+  @apply bg-white rounded-md shadow-sm p-4 border border-slate-200 hover:shadow-md transition-shadow cursor-pointer;
+}

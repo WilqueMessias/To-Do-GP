@@ -1,0 +1,20 @@
+services:
+  tm-api:
+    build: ./tm-api
+    ports:
+      - "8080:8080"
+    networks:
+      - tm-network
+
+  tm-ui:
+    build: ./tm-ui
+    ports:
+      - "80:80"
+    depends_on:
+      - tm-api
+    networks:
+      - tm-network
+
+networks:
+  tm-network:
+    driver: bridge
