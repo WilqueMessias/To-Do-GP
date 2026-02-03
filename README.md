@@ -7,15 +7,23 @@ A modern Task Management system with a Kanban board.
 - **Backend**: Java 17, Spring Boot, Spring Data JPA, H2, Lombok, Swagger.
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide React, dnd-kit.
 
-## Getting Started
+## Como Rodar a Aplicação
 
-### Prerequisites
+A forma mais fácil de rodar o projeto é usando o script automatizado que criei:
 
-- JDK 17+
-- Maven 3+
-- Node.js 18+
+1. Localize o arquivo `start.bat` na raiz do projeto.
+2. Dê um clique duplo nele.
+3. Escolha entre rodar via **Docker** (opção 1) ou **Modo Desenvolvimento** (opção 2).
 
-### Running the Backend
+### Pré-requisitos
+- Se usar **Docker**: Docker Desktop instalado.
+- Se usar **Modo Desenvolvimento**: JDK 17, Maven e Node.js 18+ instalados.
+
+---
+
+### Execução Manual (Se preferir)
+
+#### Rodando o Backend (Java)
 
 1. Navigate to `tm-api`.
 2. Run `mvn spring-boot:run`.
