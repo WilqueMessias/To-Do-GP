@@ -58,5 +58,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                     {isOverdue && <span className="text-[9px] uppercase ml-1 border border-red-200 bg-red-50 text-red-600 px-1 rounded">Atrasado</span>}
                 </div>
             </div>
-            );
+        </div>
+    );
 };

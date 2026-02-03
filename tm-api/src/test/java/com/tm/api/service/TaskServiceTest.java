@@ -71,6 +71,15 @@ class TaskServiceTest {
     }
 
     @Test
+    void findAll_ShouldReturnList() {
+        Page<Task> taskPage = new PageImpl<>(List.of(task));
+        when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
+        Page<TaskDTO> result = taskService.findAll(null, Pageable.unpaged());
+        assertFalse(result.isEmpty());
+        // assertEquals(1, result.getTotalElements()); 
+    }
+
+    @Test
     void create_ShouldReturnSavedTask() {
         when(taskRepository.save(any(Task.class))).thenReturn(task);
         TaskDTO result = taskService.create(taskDTO);
