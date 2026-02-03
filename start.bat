@@ -39,8 +39,8 @@ set "JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
 set "MAVEN_HOME=%~dp0maven\apache-maven-3.9.6"
 set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
 
-echo [3/5] Iniciando Backend (Porta 8080)...
-start "TM Backend" cmd /k "cd tm-api && mvn spring-boot:run"
+echo [3/5] Iniciando Backend (Limpando e Compilando)...
+start "TM Backend" cmd /k "cd tm-api && mvn clean spring-boot:run"
 
 echo [4/5] Aguardando API (pode levar ate 40s)...
 powershell -ExecutionPolicy Bypass -File "%~dp0verify_api.ps1"

@@ -29,7 +29,15 @@ if (-not $portOpen) {
     exit 1
 }
 
-Write-Host "`n[PASSO 2] Testando requisicao HTTP em $url..." -ForegroundColor White
+Write-Host "`n[PASSO 2] Testando Saúde do Sistema (/health)..." -ForegroundColor White
+try {
+    $hRes = Invoke-WebRequest -Uri "http://localhost:8080/health" -Method Get -TimeoutSec 5 -Proxy $null
+    Write-Host " [SUCESSO] Sistema respondeu /health!" -ForegroundColor Green
+} catch {
+    Write-Host " [AVISO] /health falhou. Mas vamos tentar a API..." -ForegroundColor Yellow
+}
+
+Write-Host "`n[PASSO 3] Testando requisicao HTTP em $url..." -ForegroundColor White
 
 try {
     # Usando Proxy $null para evitar interferencia de proxies corporativos
@@ -43,6 +51,16 @@ try {
     if ($_.Exception.Response) {
         $status = [int]$_.Exception.Response.StatusCode
         Write-Host " [ERRO HTTP $status] O servidor respondeu, mas deu erro." -ForegroundColor Red
+        
+        if ($status -eq 404) {
+             Write-Host " [DIAGNOSTICO] Testando Swagger (http://localhost:8080/swagger-ui/index.html)..." -ForegroundColor Cyan
+             try {
+                 $swag = Invoke-WebRequest -Uri "http://localhost:8080/swagger-ui/index.html" -Method Get -TimeoutSec 5 -Proxy $null
+                 Write-Host " [ALERTA] Swagger está ALIVE! O problema é apenas no roteamento do /api." -ForegroundColor Yellow
+             } catch {
+                 Write-Host " [ERRO] Swagger também deu 404. O app não mapeou nada." -ForegroundColor Red
+             }
+        }
         Write-Host " DICA: Isso pode ser erro no Banco de Dados ou na logica Java." -ForegroundColor White
     } else {
         Write-Host " [ERRO DE REDE] Nao consegui completar a chamada HTTP." -ForegroundColor Red
