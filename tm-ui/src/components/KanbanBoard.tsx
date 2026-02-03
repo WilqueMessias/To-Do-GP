@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import {
     DndContext,
     DragOverlay,
-    rectIntersection,
+    pointerWithin,
     KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
+    defaultDropAnimationSideEffects,
+    MeasuringStrategy,
+    TouchSensor,
+    MouseSensor,
 } from '@dnd-kit/core';
 import type {
     DragStartEvent,
@@ -14,17 +18,13 @@ import type {
     DragEndEvent,
     DropAnimation,
 } from '@dnd-kit/core';
-import {
-    defaultDropAnimationSideEffects,
-    MeasuringStrategy,
-    TouchSensor,
-    MouseSensor,
-} from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import type { Task } from '../services/api';
 import { taskService } from '../services/api';
 import { TaskCardContent } from './TaskCard';
+import { Trash2, History } from 'lucide-react';
+import { HistoryModal } from './HistoryModal';
 
 interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
@@ -49,6 +49,72 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
     const [activeTask, setActiveTask] = useState<Task | null>(null);
     const [internalTasks, setInternalTasks] = useState<Task[]>(tasks);
     const isDraggingRef = React.useRef(false);
+
+    // History & Modal State
+    const [history, setHistory] = useState<Task[]>([]);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
+    // Load history from local storage on mount
+    React.useEffect(() => {
+        const savedHistory = localStorage.getItem('task_cleanup_history');
+        if (savedHistory) {
+            try {
+                setHistory(JSON.parse(savedHistory));
+            } catch (e) {
+                console.error("Failed to load history", e);
+            }
+        }
+    }, []);
+
+    // Save history when it changes
+    React.useEffect(() => {
+        localStorage.setItem('task_cleanup_history', JSON.stringify(history));
+    }, [history]);
+
+    const handleClearCompleted = async () => {
+        const completedTasks = internalTasks.filter(t => t.status === 'DONE');
+        if (completedTasks.length === 0) return;
+
+        // Optimistic update
+        const remainingTasks = internalTasks.filter(t => t.status !== 'DONE');
+        setInternalTasks(remainingTasks);
+        // Sync with parent
+        if (onTasksChange) onTasksChange(remainingTasks);
+
+        // API Delete & History Update
+        const newHistory = [...history];
+        for (const task of completedTasks) {
+            try {
+                await taskService.delete(task.id);
+                // Add to history with current timestamp as "deleted at" roughly
+                newHistory.unshift({ ...task, completedAt: new Date().toISOString() });
+            } catch (error) {
+                console.error(`Failed to delete task ${task.id}`, error);
+            }
+        }
+        setHistory(newHistory);
+    };
+
+    const handleRestoreFromHistory = async (taskToRestore: Task) => {
+        try {
+            const restored = await taskService.restore(taskToRestore.id);
+            // Remove from history
+            setHistory(prev => prev.filter(t => t.id !== taskToRestore.id));
+
+            // Add back to board
+            const newTasks = [...internalTasks, restored];
+            setInternalTasks(newTasks);
+            if (onTasksChange) onTasksChange(newTasks);
+        } catch (error) {
+            console.error("Failed to restore task", error);
+        }
+    };
+
+    const handleClearHistory = () => {
+        if (confirm('Tem certeza? Isso removerá o histórico local permanentemente.')) {
+            setHistory([]);
+        }
+    };
 
     // Sync only when NOT dragging to avoid jitter, but listen to external updates
     React.useEffect(() => {
@@ -156,7 +222,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
         <div className="flex gap-8 p-8 justify-center overflow-x-auto min-h-[calc(100vh-80px)]">
             <DndContext
                 sensors={sensors}
-                collisionDetection={rectIntersection}
+                collisionDetection={pointerWithin}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
@@ -187,6 +253,24 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
                         tasks={internalTasks.filter((t) => t.status === col.id)}
                         onTaskClick={onEditTask}
                         onUpdateTask={onUpdateTask}
+                        headerAction={col.id === 'DONE' ? (
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setIsHistoryModalOpen(true)}
+                                    className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                    title="Histórico de Limpeza"
+                                >
+                                    <History size={16} />
+                                </button>
+                                <button
+                                    onClick={handleClearCompleted}
+                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    title="Limpar Concluídos"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        ) : undefined}
                     />
                 ))}
 
@@ -202,6 +286,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
                     ) : null}
                 </DragOverlay>
             </DndContext>
+
+            <HistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                history={history}
+                onRestore={handleRestoreFromHistory}
+                onClearHistory={handleClearHistory}
+            />
         </div>
     );
 };

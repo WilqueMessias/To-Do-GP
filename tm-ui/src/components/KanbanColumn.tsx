@@ -10,10 +10,13 @@ interface KanbanColumnProps {
     tasks: Task[];
     onTaskClick: (task: Task) => void;
     onUpdateTask?: (id: string, updates: Partial<Task>) => void;
+    headerAction?: React.ReactNode;
 }
 
-export const KanbanColumn = React.memo<KanbanColumnProps>(({ id, title, tasks, onTaskClick, onUpdateTask }) => {
-    const { setNodeRef } = useDroppable({ id });
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask, headerAction }) => {
+    const { setNodeRef } = useDroppable({
+        id: id,
+    });
 
     // Use a stable wrapper for the click handler to prevent breaking memoization
     const handleCardClick = React.useCallback((task: Task) => {
@@ -34,22 +37,18 @@ export const KanbanColumn = React.memo<KanbanColumnProps>(({ id, title, tasks, o
                         {tasks.length}
                     </span>
                 </div>
+                {headerAction}
             </div>
 
             <div className="glass-panel rounded-2xl p-3 min-h-[150px] transition-colors duration-300 flex flex-col gap-3">
                 <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-                    {tasks.map((task, index) => (
-                        <div
+                    {tasks.map((task) => (
+                        <TaskCard
                             key={task.id}
-                            style={{ animationDelay: `${index * 50}ms` }}
-                            className="animate-enter"
-                        >
-                            <TaskCard
-                                task={task}
-                                onClick={handleCardClick}
-                                onUpdate={onUpdateTask}
-                            />
-                        </div>
+                            task={task}
+                            onClick={handleCardClick}
+                            onUpdate={onUpdateTask}
+                        />
                     ))}
                 </SortableContext>
 
@@ -61,4 +60,4 @@ export const KanbanColumn = React.memo<KanbanColumnProps>(({ id, title, tasks, o
             </div>
         </div>
     );
-});
+};

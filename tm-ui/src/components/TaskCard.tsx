@@ -97,7 +97,7 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
             className={`
                 glass-card group p-5 cursor-pointer relative
                 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] 
-                active:scale-[0.98] transition-all duration-300 transform-gpu touch-none will-change-transform
+                active:scale-[0.98] transition-colors transition-shadow duration-300 touch-none will-change-transform
                 select-none
                 ${overdue ? 'ring-2 ring-rose-400/50 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}
                 ${task.important ? 'border-amber-400/30 bg-amber-50/10 dark:bg-amber-900/5' : ''}
