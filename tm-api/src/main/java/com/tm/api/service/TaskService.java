@@ -19,13 +19,21 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     public List<TaskDTO> findAll(TaskStatus status) {
-        List<Task> tasks;
-        if (status != null) {
-            tasks = taskRepository.findByStatus(status);
-        } else {
-            tasks = taskRepository.findAll();
+        try {
+            System.out.println(">>> [QA NEURAL FIXER] ENTERING TaskService.findAll()");
+            List<Task> tasks;
+            if (status != null) {
+                tasks = taskRepository.findByStatus(status);
+            } else {
+                tasks = taskRepository.findAll();
+            }
+            System.out.println(">>> [QA NEURAL FIXER] Found " + tasks.size() + " tasks. Mapping to DTO...");
+            return tasks.stream().map(this::toDTO).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("!!! [QA NEURAL FIXER] EXCEPTION in TaskService.findAll: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("DB_FAILURE: " + e.getMessage(), e);
         }
-        return tasks.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public TaskDTO findById(UUID id) {

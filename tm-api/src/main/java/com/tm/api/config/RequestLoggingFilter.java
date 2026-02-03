@@ -22,7 +22,10 @@ public class RequestLoggingFilter implements Filter {
         } catch (Exception e) {
             // Ignorar erros de escrita
         }
-        System.out.println(">>> [QA DIAGNOSTIC] URI: " + req.getRequestURI());
+        System.out.println("\n#########################################");
+        System.out.println(">>> [QA NEURAL FIXER] DETECTED URI: " + req.getRequestURI());
+        System.out.println(">>> METHOD: " + req.getMethod());
+        System.out.println("#########################################\n");
         chain.doFilter(request, response);
     }
 }

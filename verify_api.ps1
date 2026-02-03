@@ -37,7 +37,11 @@ try {
 } catch {
     if ($_.Exception.Response) {
         $st = [int]$_.Exception.Response.StatusCode
+        $errBody = $_.Exception.Response.GetResponseStream()
+        $reader = New-Object System.IO.StreamReader($errBody)
+        $text = $reader.ReadToEnd()
         Write-Host " [ERRO $st]" -ForegroundColor Red
+        Write-Host " DETALHE DO ERRO: $text" -ForegroundColor Yellow
         
         Write-Host " [DIAGNOSTICO] Verificando se o servidor recebeu o sinal (requests.log)..." -ForegroundColor Cyan
         if (Test-Path "d:\GP\requests.log") {
