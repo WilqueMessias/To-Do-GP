@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     DndContext,
     DragOverlay,
@@ -23,7 +23,6 @@ interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
     onTasksChange?: (tasks: Task[]) => void;
     tasks?: Task[];
-    refreshTrigger?: number;
 }
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange, tasks = [] }) => {

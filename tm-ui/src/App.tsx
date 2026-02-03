@@ -149,7 +149,6 @@ function App() {
           onEditTask={handleOpenModal}
           onTasksChange={setTasks}
           tasks={filteredTasks}
-          refreshTrigger={refreshTrigger}
         />
       </main>
 
