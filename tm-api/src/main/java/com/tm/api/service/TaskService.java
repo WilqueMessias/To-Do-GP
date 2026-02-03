@@ -77,6 +77,19 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
+    @Transactional
+    public TaskDTO restore(UUID id) {
+        log.info("Restoring task id: {}", id);
+        int updated = taskRepository.restoreByIdNative(id);
+        if (updated == 0) {
+            throw new TaskNotFoundException("Could not restore task with id: " + id);
+        }
+        // Use native find to bypass @Where clause in case of cache issues
+        return taskRepository.findByIdIncludeDeleted(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new TaskNotFoundException("Task restored but not found: " + id));
+    }
+
     private TaskDTO toDTO(Task task) {
         return TaskDTO.builder()
                 .id(task.getId())

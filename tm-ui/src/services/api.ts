@@ -29,4 +29,5 @@ export const taskService = {
     create: (task: Omit<Task, 'id' | 'createdAt'>) => api.post<Task>('/tasks', task),
     update: (id: string, task: Partial<Task>) => api.put<Task>(`/tasks/${id}`, task),
     delete: (id: string) => api.delete(`/tasks/${id}`),
+    restore: (id: string) => api.post<Task>(`/tasks/${id}/restore`),
 };

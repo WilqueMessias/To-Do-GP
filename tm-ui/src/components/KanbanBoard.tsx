@@ -23,44 +23,16 @@ interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
     onTasksChange?: (tasks: Task[]) => void;
     tasks?: Task[];
+    refreshTrigger?: number;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange, tasks: externalTasks }) => {
-    const [internalTasks, setInternalTasks] = useState<Task[]>([]);
-
-    // Use external tasks if provided (for filtering), otherwise user internal state
-    const tasks = externalTasks || internalTasks;
-
-    // Helper to update tasks regardless of source
-    const updateTasks = (newTasks: Task[]) => {
-        setInternalTasks(newTasks);
-        if (onTasksChange) onTasksChange(newTasks);
-    };
-    const [activeTask, setActiveTask] = useState<Task | null>(null);
-
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange, tasks = [] }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    const loadTasks = async () => {
-        try {
-            const { data } = await taskService.getAll();
-            updateTasks(data.content);
-        } catch (error) {
-            console.error('Failed to load tasks', error);
-        }
-    };
-
-    useEffect(() => {
-        loadTasks();
-    }, []);
-
-    useEffect(() => {
-        if (onTasksChange) {
-            onTasksChange(tasks);
-        }
-    }, [tasks, onTasksChange]);
+    const [activeTask, setActiveTask] = useState<Task | null>(null);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
@@ -78,41 +50,36 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
         if (activeId === overId) return;
 
         const isOverAColumn = ['TODO', 'DOING', 'DONE'].includes(overId as string);
-        // Logic for drag over remains similar but operates on local clone first
-        // Note: For simplicity in this hybrid mode, we just update state. 
-        // Ideally dnd-kit would drive this more cleanly.
+        const activeIndex = tasks.findIndex((t) => t.id === activeId);
+        if (activeIndex === -1) return;
 
-        // ... (We need to refactor the functional update to use the helper)
-        setInternalTasks((prev) => {
-            const activeIndex = prev.findIndex((t) => t.id === activeId);
-            const activeTask = prev[activeIndex];
+        const activeTask = tasks[activeIndex];
 
-            if (isOverAColumn) {
-                const newStatus = overId as Task['status'];
-                if (activeTask.status !== newStatus) {
-                    const newTasks = [...prev];
-                    newTasks[activeIndex] = { ...activeTask, status: newStatus };
-                    if (onTasksChange) onTasksChange(newTasks);
-                    return newTasks;
-                }
-                return prev;
+        if (isOverAColumn) {
+            const newStatus = overId as Task['status'];
+            if (activeTask.status !== newStatus) {
+                const newTasks = [...tasks];
+                newTasks[activeIndex] = { ...activeTask, status: newStatus };
+                if (onTasksChange) onTasksChange(newTasks);
             }
+            return;
+        }
 
-            const overIndex = prev.findIndex((t) => t.id === overId);
-            const overTask = prev[overIndex];
+        const overIndex = tasks.findIndex((t) => t.id === overId);
+        if (overIndex === -1) return;
 
-            if (activeTask.status !== overTask.status) {
-                const newTasks = [...prev];
-                newTasks[activeIndex] = { ...activeTask, status: overTask.status };
-                const reordered = arrayMove(newTasks, activeIndex, overIndex);
-                if (onTasksChange) onTasksChange(reordered);
-                return reordered;
-            }
+        const overTask = tasks[overIndex];
 
-            const reordered = arrayMove(prev, activeIndex, overIndex);
+        if (activeTask.status !== overTask.status) {
+            const newTasks = [...tasks];
+            newTasks[activeIndex] = { ...activeTask, status: overTask.status };
+            const reordered = arrayMove(newTasks, activeIndex, overIndex);
             if (onTasksChange) onTasksChange(reordered);
-            return reordered;
-        });
+            return;
+        }
+
+        const reordered = arrayMove(tasks, activeIndex, overIndex);
+        if (onTasksChange) onTasksChange(reordered);
     };
 
     const handleDragEnd = async (event: DragEndEvent) => {
@@ -124,12 +91,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
         const task = tasks.find((t) => t.id === active.id);
         if (!task) return;
 
-        // Persist status change if different from original
         try {
             await taskService.update(task.id, { status: task.status });
         } catch (error) {
-            console.error('Failed to update task status', error);
-            loadTasks(); // Rollback
+            console.error('Failed to persist task movement:', error);
+            // Parent App.tsx will handle refresh if needed, 
+            // but we avoid window.location.reload here.
         }
     };
 

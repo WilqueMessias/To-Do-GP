@@ -7,6 +7,10 @@ export interface ToastMessage {
     id: string;
     type: ToastType;
     message: string;
+    action?: {
+        label: string;
+        onClick: () => void;
+    };
 }
 
 interface ToastContainerProps {
@@ -38,8 +42,21 @@ const Toast: React.FC<{ toast: ToastMessage; onRemove: () => void }> = ({ toast,
             ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}
         `}>
             {toast.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
-            <span className="flex-1 font-medium text-sm">{toast.message}</span>
-            <button onClick={onRemove} className="opacity-80 hover:opacity-100">
+            <div className="flex-1 flex items-center justify-between gap-4">
+                <span className="font-medium text-sm">{toast.message}</span>
+                {toast.action && (
+                    <button
+                        onClick={() => {
+                            toast.action?.onClick();
+                            onRemove();
+                        }}
+                        className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-xs font-bold uppercase transition-colors"
+                    >
+                        {toast.action.label}
+                    </button>
+                )}
+            </div>
+            <button onClick={onRemove} className="opacity-80 hover:opacity-100 pl-2">
                 <X size={16} />
             </button>
         </div>

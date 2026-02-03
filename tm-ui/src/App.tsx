@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
 import type { ToastMessage } from './components/Toast';
 import { Plus, Layout, Search } from 'lucide-react';
 import type { Task } from './services/api';
+import { taskService } from './services/api';
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -12,15 +13,29 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const loadTasks = async () => {
+    try {
+      const { data } = await taskService.getAll();
+      setTasks(data.content);
+    } catch (error) {
+      addToast('error', 'Falha ao carregar tarefas');
+    }
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, [refreshTrigger]);
 
   const filteredTasks = tasks.filter(t =>
     t.title.toLowerCase().includes(search.toLowerCase()) ||
     t.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  const addToast = (type: 'success' | 'error', message: string) => {
+  const addToast = (type: 'success' | 'error', message: string, action?: ToastMessage['action']) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, message }]);
+    setToasts((prev) => [...prev, { id, type, message, action }]);
   };
 
   const removeToast = (id: string) => {
@@ -37,15 +52,30 @@ function App() {
     setTaskToEdit(undefined);
   };
 
-  const handleSuccess = (action: 'create' | 'update' | 'delete') => {
+  const handleSuccess = (action: 'create' | 'update' | 'delete', taskId?: string) => {
     const messages = {
       create: 'Tarefa criada com sucesso!',
       update: 'Tarefa atualizada com sucesso!',
       delete: 'Tarefa removida com sucesso!'
     };
-    addToast('success', messages[action]);
-    // Refresh will happen via the state update from KanbanBoard or we can force reload
-    setTimeout(() => window.location.reload(), 800);
+
+    if (action === 'delete' && taskId) {
+      addToast('success', messages[action], {
+        label: 'Desfazer',
+        onClick: async () => {
+          try {
+            await taskService.restore(taskId);
+            addToast('success', 'Tarefa restaurada!');
+            setRefreshTrigger(prev => prev + 1);
+          } catch (e) {
+            addToast('error', 'Falha ao restaurar tarefa');
+          }
+        }
+      });
+    } else {
+      addToast('success', messages[action]);
+    }
+    setRefreshTrigger(prev => prev + 1);
   };
 
   // Calcular estatísticas
@@ -119,6 +149,7 @@ function App() {
           onEditTask={handleOpenModal}
           onTasksChange={setTasks}
           tasks={filteredTasks}
+          refreshTrigger={refreshTrigger}
         />
       </main>
 
@@ -126,7 +157,7 @@ function App() {
       <TaskForm
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSuccess={handleSuccess}
+        onSuccess={(action, id) => handleSuccess(action, id)}
         onError={(msg) => addToast('error', msg)}
         taskToEdit={taskToEdit}
       />

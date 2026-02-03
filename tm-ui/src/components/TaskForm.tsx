@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 interface TaskFormProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: (action: 'create' | 'update' | 'delete') => void;
+    onSuccess: (action: 'create' | 'update' | 'delete', id?: string) => void;
     onError: (message: string) => void;
     taskToEdit?: Task;
 }
@@ -15,7 +15,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
-    const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.split('T')[0] : '');
+    const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
     const [status] = useState<Task['status']>(taskToEdit?.status || 'TODO');
     const [loading, setLoading] = useState(false);
 
@@ -96,10 +96,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Data Limite *</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Prazo Final *</label>
                             <input
                                 required
-                                type="date"
+                                type="datetime-local"
                                 value={dueDate}
                                 onChange={(e) => setDueDate(e.target.value)}
                                 className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
@@ -133,7 +133,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         setLoading(true);
                                         try {
                                             await taskService.delete(taskToEdit.id);
-                                            onSuccess('delete');
+                                            onSuccess('delete', taskToEdit.id);
                                             onClose();
                                         } catch (e) {
                                             onError('Falha ao excluir tarefa');

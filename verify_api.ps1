@@ -1,38 +1,38 @@
 $ErrorActionPreference = "Continue"
 
 Write-Host "==============================" -ForegroundColor Cyan
-Write-Host "   VERIFICACAO DO SISTEMA     " -ForegroundColor Cyan
+Write-Host "     SERVICE HEALTH CHECK     " -ForegroundColor Cyan
 Write-Host "=============================="
 
 $baseUrl = "http://127.0.0.1:8080" # Usando IP diretamente para evitar DNS flakiness
 $maxRetries = 15
 $retryDelay = 2
 
-Write-Host "[1/3] Aguardando Porta 8080..." -NoNewline
+Write-Host "[1/3] Probing Port 8080..." -NoNewline
 for ($i = 1; $i -le $maxRetries; $i++) {
     $check = Test-NetConnection -ComputerName 127.0.0.1 -Port 8080 -WarningAction SilentlyContinue
     if ($check.TcpTestSucceeded) {
-        Write-Host " [OK]" -ForegroundColor Green
+        Write-Host " [REACHABLE]" -ForegroundColor Green
         break
     }
     Write-Host "." -NoNewline -ForegroundColor Yellow
     Start-Sleep -Seconds $retryDelay
-    if ($i -eq $maxRetries) { Write-Host " [FALHA]" -ForegroundColor Red; exit 1 }
+    if ($i -eq $maxRetries) { Write-Host " [FAILED]" -ForegroundColor Red; exit 1 }
 }
 
-Write-Host "[2/3] Testando /health..." -NoNewline
+Write-Host "[2/3] Validating /health endpoint..." -NoNewline
 try {
     $h = Invoke-WebRequest -Uri "$baseUrl/health" -Method Get -TimeoutSec 5 -Proxy $null -UseBasicParsing
-    Write-Host " [OK]" -ForegroundColor Green
+    Write-Host " [ACTIVE]" -ForegroundColor Green
 } catch {
-    Write-Host " [!] Sem resposta no health." -ForegroundColor Yellow
+    Write-Host " [!] No response from health endpoint." -ForegroundColor Yellow
 }
 
 try {
     # Usando Proxy $null para evitar interferencia de proxies corporativos
     $response = Invoke-WebRequest -Uri "$baseUrl/tasks" -Method Get -TimeoutSec 10 -UseBasicParsing -Proxy $null
-    Write-Host " [SUCESSO]" -ForegroundColor Green
-    Write-Host ">>> O SISTEMA ESTA VIVO!" -ForegroundColor Green
+    Write-Host " [VERIFIED]" -ForegroundColor Green
+    Write-Host ">>> SYSTEM INTEGRITY VERIFIED: All services operational." -ForegroundColor Green
     exit 0
 } catch {
     if ($_.Exception.Response) {

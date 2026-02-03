@@ -64,12 +64,20 @@ public class TaskController {
         return ResponseEntity.ok(taskService.update(id, dto));
     }
 
-    @Operation(summary = "Delete a task")
-    @ApiResponse(responseCode = "204", description = "Task deleted successfully")
+    @Operation(summary = "Delete a task", description = "Performs a soft delete on the specified task")
+    @ApiResponse(responseCode = "204", description = "Task deleted")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        log.info("Request to delete task id: {}", id);
+    public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
+        log.info("Request to delete task: {}", id);
         taskService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Restore a task", description = "Brings back a previously soft-deleted task")
+    @ApiResponse(responseCode = "200", description = "Task restored")
+    @PostMapping("/{id}/restore")
+    public TaskDTO restoreTask(@PathVariable UUID id) {
+        log.info("Request to restore task: {}", id);
+        return taskService.restore(id);
     }
 }
