@@ -2,6 +2,12 @@
 
 A modern Task Management system with a Kanban board.
 
+---
+
+### 📖 [Documentação Técnica do Sistema](./DOCUMENTAÇÃO_TÉCNICA.md)
+
+---
+
 ## Tech Stack
 
 - **Backend**: Java 17, Spring Boot, Spring Data JPA, H2, Lombok, Swagger.
