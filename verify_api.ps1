@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Continue"
 
 Write-Host "==============================" -ForegroundColor Cyan
-Write-Host "   DIAGNOSTICO DEFINITIVO     " -ForegroundColor Cyan
+Write-Host "   VERIFICACAO DO SISTEMA     " -ForegroundColor Cyan
 Write-Host "=============================="
 
 $baseUrl = "http://127.0.0.1:8080" # Usando IP diretamente para evitar DNS flakiness
@@ -43,14 +43,14 @@ try {
         Write-Host " [ERRO $st]" -ForegroundColor Red
         Write-Host " DETALHE DO ERRO: $text" -ForegroundColor Yellow
         
-        Write-Host " [DIAGNOSTICO] Verificando se o servidor recebeu o sinal (requests.log)..." -ForegroundColor Cyan
+        Write-Host " [LOG] Verificando integridade da conexao..." -ForegroundColor Cyan
         if (Test-Path "d:\GP\requests.log") {
              $lastLog = Get-Content "d:\GP\requests.log" -Tail 1
              Write-Host " ULTIMA REQUISICAO RECEBIDA: $lastLog" -ForegroundColor White
         } else {
-             Write-Host " [AVISO] O servidor nem sequer criou o log. O sinal nao chegou no Java." -ForegroundColor Yellow
+             Write-Host " [!] O servidor nao registrou a requisicao. Falha na camada de rede." -ForegroundColor Yellow
         }
-        Write-Host " DICA: Olhe a janela 'TM Backend' para ver a lista 'REGISTERED ENDPOINTS'." -ForegroundColor Cyan
+        Write-Host " Verifique os logs do console do Spring Boot para mais detalhes." -ForegroundColor Cyan
     } else {
         Write-Host " [ERRO DE REDE]" -ForegroundColor Red
     }

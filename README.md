@@ -15,10 +15,10 @@ A modern Task Management system with a Kanban board.
 
 ## Como Rodar a Aplicação
 
-A forma mais fácil de rodar o projeto é usando o script automatizado que criei:
+A forma mais fácil de rodar o projeto é usando o script automatizado contido na raiz:
 
-1. Localize o arquivo `start.bat` na raiz do projeto.
-2. Dê um clique duplo nele.
+1. Localize o arquivo `start.bat`.
+2. Dê um clique duplo para executar.
 3. Escolha entre rodar via **Docker** (opção 1) ou **Modo Desenvolvimento** (opção 2).
 
 ### Pré-requisitos

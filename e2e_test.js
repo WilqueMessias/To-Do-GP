@@ -4,14 +4,14 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8080/tasks';
 const TEST_TASK = {
     title: "E2E Automated Test Task",
-    description: "This task was created by the Specialist QA Agent script.",
+    description: "Teste automatizado gerado para validacao de integridade.",
     status: "TODO",
     priority: "HIGH",
     dueDate: new Date(Date.now() + 86400000).toISOString() // Tomorrow
 };
 
 async function runTest() {
-    console.log("🟦 [QA SPECIALIST] Starting Rigorous End-to-End Test Protocol...");
+    console.log("🟦 Iniciando Protocolo de Testes End-to-End...");
     console.log(`🎯 Target API: ${API_URL}`);
     console.log("---------------------------------------------------");
 
@@ -72,7 +72,7 @@ async function runTest() {
     }
 
     console.log("---------------------------------------------------");
-    console.log("🏆 [QA SPECIALIST] PROTOCOL PASSED. BACKEND IS PERFECT.");
+    console.log("🏆 TESTES FINALIZADOS COM SUCESSO.");
     console.log("   If the UI fails, it is purely a Browser/CORS configuration issue.");
 }
 

@@ -20,8 +20,8 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public List<TaskDTO> getAllTasks() {
-        return taskService.findAll(null);
+    public List<TaskDTO> getAllTasks(@RequestParam(required = false) TaskStatus status) {
+        return taskService.findAll(status);
     }
 
     @GetMapping("/{id}")
