@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import type { Task, Subtask } from '../services/api';
 import { taskService } from '../services/api';
-import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles } from 'lucide-react';
+import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles, Star } from 'lucide-react';
+
+
 
 interface TaskFormProps {
     isOpen: boolean;
@@ -16,7 +18,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
     const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
+    const [important, setImportant] = useState(taskToEdit?.important || false);
+    const [reminderEnabled, setReminderEnabled] = useState(taskToEdit?.reminderEnabled || false);
+    const [reminderTime, setReminderTime] = useState(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
     const [status, setStatus] = useState<Task['status']>(taskToEdit?.status || 'TODO');
+
     const [subtasks, setSubtasks] = useState<Subtask[]>(taskToEdit?.subtasks || []);
     const [newSubtask, setNewSubtask] = useState('');
     const [loading, setLoading] = useState(false);
@@ -95,8 +101,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                 priority,
                 status,
                 dueDate: new Date(dueDate).toISOString(),
+                important,
+                reminderEnabled,
+                reminderTime: reminderEnabled ? new Date(reminderTime).toISOString() : undefined,
                 subtasks
             };
+
+
 
             if (taskToEdit) {
                 await taskService.update(taskToEdit.id, payload);
@@ -150,9 +161,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                         {taskToEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-full transition-colors">
-                        <X size={20} className="text-slate-500 dark:text-slate-400" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setImportant(!important)}
+                            className={`p-2 rounded-full transition-all ${important ? 'text-amber-500 bg-amber-50' : 'text-slate-300 hover:text-slate-400'}`}
+                            title={important ? "Marcar como normal" : "Marcar como importante"}
+                        >
+                            <Star size={20} fill={important ? "currentColor" : "none"} />
+                        </button>
+                        <button onClick={onClose} className="p-2 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-full transition-colors">
+                            <X size={20} className="text-slate-500 dark:text-slate-400" />
+                        </button>
+                    </div>
+
                 </div>
 
                 <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[80vh] custom-scrollbar">
@@ -222,16 +244,40 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <option value="DONE">Concluído</option>
                                 </select>
                             </div>
-                            <div className="col-span-2">
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prazo de Entrega</label>
-                                <input
-                                    required
-                                    type="datetime-local"
-                                    value={dueDate}
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
-                                />
+                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prazo de Entrega</label>
+                                    <input
+                                        required
+                                        type="datetime-local"
+                                        value={dueDate}
+                                        onChange={(e) => setDueDate(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
+                                    />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Notificação</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setReminderEnabled(!reminderEnabled)}
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${reminderEnabled ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}
+                                        >
+                                            {reminderEnabled ? 'Ativo' : 'Inativo'}
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="datetime-local"
+                                            disabled={!reminderEnabled}
+                                            value={reminderTime}
+                                            onChange={(e) => setReminderTime(e.target.value)}
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30"
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
                         </section>
 
                         {/* Checklist Section */}

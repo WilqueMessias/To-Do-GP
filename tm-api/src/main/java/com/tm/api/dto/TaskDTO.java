@@ -41,6 +41,15 @@ public class TaskDTO {
     @NotNull(message = "Due date is required")
     private LocalDateTime dueDate;
 
+    @Schema(description = "Whether the task is marked as important", example = "true")
+    private boolean important;
+
+    @Schema(description = "Whether a reminder is enabled for this task", example = "true")
+    private boolean reminderEnabled;
+
+    @Schema(description = "Timestamp for the task reminder")
+    private LocalDateTime reminderTime;
+
     @Schema(description = "Auto-generated creation timestamp", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 

@@ -46,6 +46,17 @@ public class Task {
     @Column(nullable = false)
     private LocalDateTime dueDate;
 
+    @Column
+    @Builder.Default
+    private boolean important = false;
+
+    @Column
+    @Builder.Default
+    private boolean reminderEnabled = false;
+
+    @Column
+    private LocalDateTime reminderTime;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

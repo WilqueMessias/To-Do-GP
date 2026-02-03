@@ -23,7 +23,14 @@ export interface Task {
     status: 'TODO' | 'DOING' | 'DONE';
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     dueDate: string;
+    important: boolean;
+    reminderEnabled: boolean;
+    reminderTime?: string;
+    overdue?: boolean;
     createdAt?: string;
+
+
+
     completedAt?: string;
     subtasks?: Subtask[];
     activities?: Activity[];

@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, BarChart3, Search, Moon, Sun } from 'lucide-react';
+import { Plus, BarChart3, Search, Moon, Sun, LayoutGrid, List } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
+import { TaskListView } from './components/TaskListView';
+
 
 import { useKanbanTasks } from './hooks/useKanbanTasks';
 import { useTheme } from './hooks/useTheme';
@@ -25,6 +28,40 @@ function App() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+
+  // Monitor for reminders
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      tasks.forEach(task => {
+        if (task.reminderEnabled && task.reminderTime && task.status !== 'DONE') {
+          const reminderTime = new Date(task.reminderTime);
+          const diff = now.getTime() - reminderTime.getTime();
+
+          // If reminder was set for within the last 60 seconds and not notified yet in this session
+          // We'll use a session storage to avoid repeating notifications
+          const notifiedKey = `notified_${task.id}_${reminderTime.getTime()}`;
+          if (diff >= 0 && diff < 60000 && !sessionStorage.getItem(notifiedKey)) {
+            addToast('success', `Lembrete: ${task.title}`);
+            sessionStorage.setItem(notifiedKey, 'true');
+            if (Notification.permission === 'granted') {
+              new Notification('Lembrete de Tarefa', { body: task.title });
+            }
+          }
+        }
+      });
+    }, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, [tasks, addToast]);
+
+  // Request notification permission
+  useEffect(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
 
   const handleOpenModal = (task?: Task) => {
     setTaskToEdit(task);
@@ -76,6 +113,23 @@ function App() {
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
 
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-white/5">
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                <LayoutGrid size={16} />
+                <span>Kanban</span>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                <List size={16} />
+                <span>Lista</span>
+              </button>
+            </div>
+
             <button
               onClick={() => handleOpenModal()}
               className="group flex items-center gap-2 bg-slate-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-slate-200 dark:shadow-blue-900/20 active:scale-95 text-sm"
@@ -83,6 +137,7 @@ function App() {
               <Plus size={18} className="group-hover:rotate-90 transition-transform" />
               <span>Nova Demanda</span>
             </button>
+
           </div>
         </div>
       </header>
@@ -91,12 +146,20 @@ function App() {
 
       {/* Main Board */}
       <main className="flex-1">
-        <KanbanBoard
-          onEditTask={handleOpenModal}
-          onTasksChange={updateTaskStateLocal}
-          tasks={tasks}
-        />
+        {viewMode === 'kanban' ? (
+          <KanbanBoard
+            onEditTask={handleOpenModal}
+            onTasksChange={updateTaskStateLocal}
+            tasks={tasks}
+          />
+        ) : (
+          <TaskListView
+            tasks={tasks}
+            onEditTask={handleOpenModal}
+          />
+        )}
       </main>
+
 
       {/* Modal */}
       <TaskForm

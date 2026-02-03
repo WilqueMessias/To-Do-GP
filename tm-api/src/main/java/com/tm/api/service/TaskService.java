@@ -54,12 +54,15 @@ public class TaskService {
                 .status(dto.getStatus())
                 .priority(dto.getPriority())
                 .dueDate(dto.getDueDate())
+                .important(dto.isImportant())
+                .reminderEnabled(dto.isReminderEnabled())
+                .reminderTime(dto.getReminderTime())
                 .build();
-        
+
         if (dto.getStatus() == TaskStatus.DONE) {
             task.setCompletedAt(LocalDateTime.now());
         }
-        
+
         if (dto.getSubtasks() != null) {
             List<Subtask> subtasks = dto.getSubtasks().stream()
                     .map(s -> Subtask.builder()
@@ -75,7 +78,7 @@ public class TaskService {
                 .message("Tarefa criada com o status " + task.getStatus())
                 .task(task)
                 .build());
-        
+
         return toDTO(taskRepository.save(task));
     }
 
@@ -84,7 +87,7 @@ public class TaskService {
         log.info("Updating task id: {}", id);
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
-        
+
         TaskStatus oldStatus = task.getStatus();
         if (!task.getTitle().equals(dto.getTitle())) {
             task.getActivities().add(Activity.builder()
@@ -101,7 +104,7 @@ public class TaskService {
                     .build());
             task.setDescription(dto.getDescription());
         } else if (task.getDescription() == null && dto.getDescription() != null) {
-             task.setDescription(dto.getDescription());
+            task.setDescription(dto.getDescription());
         }
 
         if (task.getPriority() != dto.getPriority()) {
@@ -122,6 +125,28 @@ public class TaskService {
             task.setDueDate(dto.getDueDate());
         }
 
+        if (task.isImportant() != dto.isImportant()) {
+            task.getActivities().add(Activity.builder()
+                    .message("Importância alterada: " + (dto.isImportant() ? "Alta/Estrela" : "Normal"))
+                    .task(task)
+                    .build());
+            task.setImportant(dto.isImportant());
+        }
+
+        if (task.isReminderEnabled() != dto.isReminderEnabled()) {
+            task.getActivities().add(Activity.builder()
+                    .message(dto.isReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
+                            : "Lembrete desativado.")
+                    .task(task)
+                    .build());
+            task.setReminderEnabled(dto.isReminderEnabled());
+        }
+
+        if (dto.isReminderEnabled() && dto.getReminderTime() != null
+                && !dto.getReminderTime().equals(task.getReminderTime())) {
+            task.setReminderTime(dto.getReminderTime());
+        }
+
         task.setStatus(dto.getStatus());
 
         if (task.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
@@ -136,19 +161,20 @@ public class TaskService {
                     .task(task)
                     .build());
         }
-        
+
         if (dto.getSubtasks() != null) {
             // Log subtask completion changes
             dto.getSubtasks().forEach(sdto -> {
                 task.getSubtasks().stream()
-                    .filter(s -> s.getTitle().equals(sdto.getTitle()) && s.isCompleted() != sdto.isCompleted())
-                    .findFirst()
-                    .ifPresent(s -> {
-                        task.getActivities().add(Activity.builder()
-                                .message("Checklist item: '" + s.getTitle() + "' marcado como " + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"))
-                                .task(task)
-                                .build());
-                    });
+                        .filter(s -> s.getTitle().equals(sdto.getTitle()) && s.isCompleted() != sdto.isCompleted())
+                        .findFirst()
+                        .ifPresent(s -> {
+                            task.getActivities().add(Activity.builder()
+                                    .message("Checklist item: '" + s.getTitle() + "' marcado como "
+                                            + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"))
+                                    .task(task)
+                                    .build());
+                        });
             });
 
             task.getSubtasks().clear();
@@ -161,7 +187,7 @@ public class TaskService {
                     .collect(Collectors.toList());
             task.getSubtasks().addAll(subtasks);
         }
-        
+
         return toDTO(taskRepository.save(task));
     }
 
@@ -200,7 +226,11 @@ public class TaskService {
                 .completedAt(task.getCompletedAt())
                 .overdue(task.isOverdue())
                 .progress(task.getProgress())
+                .important(task.isImportant())
+                .reminderEnabled(task.isReminderEnabled())
+                .reminderTime(task.getReminderTime())
                 .subtasks(task.getSubtasks().stream()
+
                         .map(s -> SubtaskDTO.builder()
                                 .id(s.getId())
                                 .title(s.getTitle())
