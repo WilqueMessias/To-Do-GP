@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, BarChart3, Search, Moon, Sun, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
 
@@ -82,12 +82,23 @@ function App() {
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-8 py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
 
         <div className="max-w-[1600px] mx-auto flex justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-blue-700 to-indigo-500 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-200 ring-4 ring-blue-50">
-              <BarChart3 size={22} className="group-hover:rotate-12 transition-transform" />
+          <div
+            className="flex items-center gap-4 cursor-pointer group"
+            onClick={() => {
+              setSearch('');
+              setViewMode('kanban');
+              // Optional: window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            title="Ir para o Início / Atualizar"
+          >
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+              <div className="relative bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 transition-transform group-hover:scale-105 duration-300">
+                <img src="/logo.png" alt="To Do GP Logo" className="w-10 h-10 object-contain rounded-xl" />
+              </div>
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none mb-1">TM <span className="text-blue-600 dark:text-blue-400">ANALYTICS</span></h1>
+              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none mb-1">To Do <span className="text-blue-600 dark:text-blue-400">GP</span></h1>
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Enterprise Command</p>
             </div>
 
@@ -122,7 +133,7 @@ function App() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
               >
                 <LayoutGrid size={16} />
-                <span>Kanban</span>
+                <span>Quadro</span>
               </button>
               <button
                 onClick={() => setViewMode('list')}

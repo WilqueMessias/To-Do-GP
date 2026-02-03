@@ -100,9 +100,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
     };
 
     const columns: { id: Task['status']; title: string }[] = [
-        { id: 'TODO', title: 'A Fazer (To Do)' },
-        { id: 'DOING', title: 'Em Progresso (Doing)' },
-        { id: 'DONE', title: 'Concluído (Done)' },
+        { id: 'TODO', title: 'A Fazer' },
+        { id: 'DOING', title: 'Em Progresso' },
+        { id: 'DONE', title: 'Concluído' },
     ];
 
     return (
