@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
-import { ToastContainer, ToastMessage } from './components/Toast';
+import { ToastContainer } from './components/Toast';
+import type { ToastMessage } from './components/Toast';
 import { Plus, Layout, Search } from 'lucide-react';
 import type { Task } from './services/api';
 
