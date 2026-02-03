@@ -150,7 +150,12 @@ function App() {
       <main className="flex-1">
         <KanbanBoard
           onEditTask={handleOpenModal}
-          onTasksChange={setTasks}
+          onTasksChange={(updatedFilteredTasks) => {
+            setTasks(prev => prev.map(t => {
+              const updated = updatedFilteredTasks.find(ut => ut.id === t.id);
+              return updated || t;
+            }));
+          }}
           tasks={filteredTasks}
         />
       </main>

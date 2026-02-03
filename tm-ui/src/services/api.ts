@@ -4,6 +4,18 @@ const api = axios.create({
     baseURL: 'http://localhost:8080',
 });
 
+export interface Activity {
+    id: string;
+    message: string;
+    timestamp: string;
+}
+
+export interface Subtask {
+    id?: string;
+    title: string;
+    completed: boolean;
+}
+
 export interface Task {
     id: string;
     title: string;
@@ -12,6 +24,8 @@ export interface Task {
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     dueDate: string;
     createdAt?: string;
+    subtasks?: Subtask[];
+    activities?: Activity[];
 }
 
 export interface PaginatedResponse<T> {

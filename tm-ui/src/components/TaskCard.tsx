@@ -4,6 +4,7 @@ import {
     Calendar,
     AlertCircle,
     Clock,
+    CheckSquare,
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -50,6 +51,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     };
 
     const overdue = isOverdue(task.dueDate, task.status);
+    const completedSubtasks = task.subtasks?.filter(st => st.completed).length || 0;
+    const totalSubtasks = task.subtasks?.length || 0;
+    const progressPercent = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
     if (isDragging) {
         return <div ref={setNodeRef} style={style} className="w-full h-32 rounded-2xl border-2 border-dashed border-blue-200" />;
@@ -93,6 +97,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             <p className="text-slate-500 text-xs leading-relaxed line-clamp-2 mb-4">
                 {task.description}
             </p>
+
+            {totalSubtasks > 0 && (
+                <div className="mb-4">
+                    <div className="flex justify-between items-center mb-1.5">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                            <CheckSquare size={10} className={completedSubtasks === totalSubtasks ? 'text-emerald-500' : 'text-blue-500'} />
+                            <span>{completedSubtasks}/{totalSubtasks} PASSO{totalSubtasks > 1 ? 'S' : ''}</span>
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400">{Math.round(progressPercent)}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-white/50">
+                        <div
+                            className={`h-full transition-all duration-500 ${completedSubtasks === totalSubtasks ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                            style={{ width: `${progressPercent}%` }}
+                        />
+                    </div>
+                </div>
+            )}
 
             <div className="flex items-center gap-2 pt-3 border-t border-white/30 text-slate-400">
                 <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />

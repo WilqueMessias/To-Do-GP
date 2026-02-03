@@ -46,4 +46,12 @@ public class TaskDTO {
 
     @Schema(description = "Last update timestamp", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    @Schema(description = "List of subtasks (Checklist)")
+    @Builder.Default
+    private java.util.List<SubtaskDTO> subtasks = new java.util.ArrayList<>();
+
+    @Schema(description = "Activity history (Audit Log)", accessMode = Schema.AccessMode.READ_ONLY)
+    @Builder.Default
+    private java.util.List<ActivityDTO> activities = new java.util.ArrayList<>();
 }

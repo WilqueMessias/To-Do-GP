@@ -1,7 +1,11 @@
 package com.tm.api.service;
 
+import com.tm.api.dto.ActivityDTO;
+import com.tm.api.dto.SubtaskDTO;
 import com.tm.api.dto.TaskDTO;
 import com.tm.api.exception.TaskNotFoundException;
+import com.tm.api.model.Activity;
+import com.tm.api.model.Subtask;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
 import com.tm.api.repository.TaskRepository;
@@ -50,6 +54,23 @@ public class TaskService {
                 .priority(dto.getPriority())
                 .dueDate(dto.getDueDate())
                 .build();
+        
+        if (dto.getSubtasks() != null) {
+            List<Subtask> subtasks = dto.getSubtasks().stream()
+                    .map(s -> Subtask.builder()
+                            .title(s.getTitle())
+                            .completed(s.isCompleted())
+                            .task(task)
+                            .build())
+                    .collect(Collectors.toList());
+            task.setSubtasks(subtasks);
+        }
+
+        task.getActivities().add(Activity.builder()
+                .message("Tarefa criada com o status " + task.getStatus())
+                .task(task)
+                .build());
+        
         return toDTO(taskRepository.save(task));
     }
 
@@ -59,11 +80,33 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
         
+        TaskStatus oldStatus = task.getStatus();
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setStatus(dto.getStatus());
         task.setPriority(dto.getPriority());
         task.setDueDate(dto.getDueDate());
+
+        if (oldStatus != task.getStatus()) {
+            task.getActivities().add(Activity.builder()
+                    .message("Status alterado de " + oldStatus + " para " + task.getStatus())
+                    .task(task)
+                    .build());
+        }
+        
+        if (dto.getSubtasks() != null) {
+            // Update subtasks: simple approach - clear and replace for now
+            // In a production app, we might want more granular diffing
+            task.getSubtasks().clear();
+            List<Subtask> subtasks = dto.getSubtasks().stream()
+                    .map(s -> Subtask.builder()
+                            .title(s.getTitle())
+                            .completed(s.isCompleted())
+                            .task(task)
+                            .build())
+                    .collect(Collectors.toList());
+            task.getSubtasks().addAll(subtasks);
+        }
         
         return toDTO(taskRepository.save(task));
     }
@@ -100,6 +143,20 @@ public class TaskService {
                 .dueDate(task.getDueDate())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
+                .subtasks(task.getSubtasks().stream()
+                        .map(s -> SubtaskDTO.builder()
+                                .id(s.getId())
+                                .title(s.getTitle())
+                                .completed(s.isCompleted())
+                                .build())
+                        .collect(Collectors.toList()))
+                .activities(task.getActivities().stream()
+                        .map(a -> ActivityDTO.builder()
+                                .id(a.getId())
+                                .message(a.getMessage())
+                                .timestamp(a.getTimestamp())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

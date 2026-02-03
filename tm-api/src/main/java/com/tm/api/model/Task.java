@@ -55,4 +55,13 @@ public class Task {
 
     @Builder.Default
     private boolean deleted = Boolean.FALSE;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<Subtask> subtasks = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @OrderBy("timestamp DESC")
+    private java.util.List<Activity> activities = new java.util.ArrayList<>();
 }
