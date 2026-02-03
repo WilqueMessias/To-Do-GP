@@ -78,8 +78,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
         if (activeId === overId) return;
 
         const isOverAColumn = ['TODO', 'DOING', 'DONE'].includes(overId as string);
-
-        const newTasks = [...(externalTasks || internalTasks)];
         // Logic for drag over remains similar but operates on local clone first
         // Note: For simplicity in this hybrid mode, we just update state. 
         // Ideally dnd-kit would drive this more cleanly.

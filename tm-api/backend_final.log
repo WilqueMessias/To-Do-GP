@@ -1,0 +1,169 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< com.tm:tm-api >----------------------------
+[INFO] Building tm-api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.2:run (default-cli) > test-compile @ tm-api >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ tm-api ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ tm-api ---
+[INFO] Changes detected - recompiling the module! :input tree
+[INFO] Compiling 12 source files with javac [debug release 17] to target\classes
+[INFO] /d:/GP/tm-api/src/main/java/com/tm/api/model/Task.java: d:\GP\tm-api\src\main\java\com\tm\api\model\Task.java uses or overrides a deprecated API.
+[INFO] /d:/GP/tm-api/src/main/java/com/tm/api/model/Task.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ tm-api ---
+[INFO] skip non existing resourceDirectory d:\GP\tm-api\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ tm-api ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 1 source file with javac [debug release 17] to target\test-classes
+[INFO] 
+[INFO] <<< spring-boot:3.2.2:run (default-cli) < test-compile @ tm-api <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.2:run (default-cli) @ tm-api ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.2)
+
+2026-02-03T12:32:23.207-03:00  INFO 12604 --- [tm-api] [           main] com.tm.api.TaskManagerApplication        : Starting TaskManagerApplication using Java 17.0.18 with PID 12604 (D:\GP\tm-api\target\classes started by wilqu in d:\GP\tm-api)
+2026-02-03T12:32:23.215-03:00  INFO 12604 --- [tm-api] [           main] com.tm.api.TaskManagerApplication        : No active profile set, falling back to 1 default profile: "default"
+2026-02-03T12:32:24.709-03:00  INFO 12604 --- [tm-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-03T12:32:24.789-03:00  INFO 12604 --- [tm-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 69 ms. Found 1 JPA repository interface.
+2026-02-03T12:32:25.824-03:00  INFO 12604 --- [tm-api] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-02-03T12:32:25.861-03:00  INFO 12604 --- [tm-api] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-03T12:32:25.862-03:00  INFO 12604 --- [tm-api] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.18]
+2026-02-03T12:32:26.056-03:00  INFO 12604 --- [tm-api] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-03T12:32:26.060-03:00  INFO 12604 --- [tm-api] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2727 ms
+2026-02-03T12:32:26.135-03:00  INFO 12604 --- [tm-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-03T12:32:26.726-03:00  INFO 12604 --- [tm-api] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:tmdb user=SA
+2026-02-03T12:32:26.737-03:00  INFO 12604 --- [tm-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-03T12:32:26.786-03:00  INFO 12604 --- [tm-api] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:tmdb'
+2026-02-03T12:32:27.145-03:00  INFO 12604 --- [tm-api] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-03T12:32:27.307-03:00  INFO 12604 --- [tm-api] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-02-03T12:32:27.399-03:00  INFO 12604 --- [tm-api] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-03T12:32:28.057-03:00  INFO 12604 --- [tm-api] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-03T12:32:30.756-03:00  INFO 12604 --- [tm-api] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table tasks (
+        id uuid not null,
+        created_at timestamp(6),
+        deleted boolean not null,
+        description TEXT,
+        due_date timestamp(6) not null,
+        priority varchar(255) not null check (priority in ('LOW','MEDIUM','HIGH')),
+        status varchar(255) not null check (status in ('TODO','DOING','DONE')),
+        title varchar(255) not null,
+        updated_at timestamp(6),
+        primary key (id)
+    )
+2026-02-03T12:32:30.968-03:00  INFO 12604 --- [tm-api] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-03T12:32:32.493-03:00  WARN 12604 --- [tm-api] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-03T12:32:34.224-03:00  INFO 12604 --- [tm-api] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-02-03T12:32:34.307-03:00  INFO 12604 --- [tm-api] [           main] com.tm.api.TaskManagerApplication        : Started TaskManagerApplication in 11.889 seconds (process running for 12.519)
+2026-02-03T12:33:52.532-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-03T12:33:52.532-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-02-03T12:33:52.537-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-02-03T12:33:52.748-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-3] com.tm.api.controller.TaskController     : Request to get paginated tasks with status: null
+2026-02-03T12:33:52.749-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-3] com.tm.api.service.TaskService           : Fetching paginated tasks with status: ALL
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted,
+        t1_0.description,
+        t1_0.due_date,
+        t1_0.priority,
+        t1_0.status,
+        t1_0.title,
+        t1_0.updated_at 
+    from
+        tasks t1_0 
+    where
+        (
+            t1_0.deleted = false
+        ) 
+    offset
+        ? rows 
+    fetch
+        first ? rows only
+2026-02-03T12:34:01.690-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-5] com.tm.api.controller.TaskController     : Request to create task: E2E Automated Test Task
+Hibernate: 
+    insert 
+    into
+        tasks
+        (created_at, deleted, description, due_date, priority, status, title, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-03T12:34:01.811-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-6] com.tm.api.controller.TaskController     : Request to get paginated tasks with status: null
+2026-02-03T12:34:01.811-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-6] com.tm.api.service.TaskService           : Fetching paginated tasks with status: ALL
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted,
+        t1_0.description,
+        t1_0.due_date,
+        t1_0.priority,
+        t1_0.status,
+        t1_0.title,
+        t1_0.updated_at 
+    from
+        tasks t1_0 
+    where
+        (
+            t1_0.deleted = false
+        ) 
+    offset
+        ? rows 
+    fetch
+        first ? rows only
+2026-02-03T12:34:01.835-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-7] com.tm.api.controller.TaskController     : Request to delete task id: 962c0f70-eb14-46b2-ae09-2497de1faae8
+2026-02-03T12:34:01.835-03:00  INFO 12604 --- [tm-api] [0.0-8080-exec-7] com.tm.api.service.TaskService           : Deleting task id: 962c0f70-eb14-46b2-ae09-2497de1faae8
+Hibernate: 
+    select
+        count(*) 
+    from
+        tasks t1_0 
+    where
+        (
+            t1_0.deleted = false
+        ) 
+        and t1_0.id=?
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.created_at,
+        t1_0.deleted,
+        t1_0.description,
+        t1_0.due_date,
+        t1_0.priority,
+        t1_0.status,
+        t1_0.title,
+        t1_0.updated_at 
+    from
+        tasks t1_0 
+    where
+        t1_0.id=? 
+        and (
+            t1_0.deleted = false
+        )
+Hibernate: 
+    UPDATE
+        tasks 
+    SET
+        deleted = true 
+    WHERE
+        id=?
