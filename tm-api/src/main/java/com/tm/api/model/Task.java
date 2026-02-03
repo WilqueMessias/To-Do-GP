@@ -6,10 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,7 +22,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tasks SET deleted = true WHERE id=?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
+
 public class Task {
 
     @Id
@@ -48,11 +49,11 @@ public class Task {
 
     @Column
     @Builder.Default
-    private boolean important = false;
+    private Boolean important = false;
 
     @Column
     @Builder.Default
-    private boolean reminderEnabled = false;
+    private Boolean reminderEnabled = false;
 
     @Column
     private LocalDateTime reminderTime;
@@ -68,7 +69,7 @@ public class Task {
     private LocalDateTime completedAt;
 
     @Builder.Default
-    private boolean deleted = Boolean.FALSE;
+    private Boolean deleted = false;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -89,5 +90,17 @@ public class Task {
         }
         long completedCount = subtasks.stream().filter(Subtask::isCompleted).count();
         return (double) completedCount / subtasks.size() * 100.0;
+    }
+
+    public boolean isImportant() {
+        return Boolean.TRUE.equals(important);
+    }
+
+    public boolean isReminderEnabled() {
+        return Boolean.TRUE.equals(reminderEnabled);
+    }
+
+    public boolean isDeleted() {
+        return Boolean.TRUE.equals(deleted);
     }
 }

@@ -46,21 +46,24 @@
   }
 
   .glass-card:hover {
-    background: rgba(30, 41, 59, 0.6) !important;
+    background: var(--glass-bg);
     transform: translateY(-4px);
     box-shadow:
-      0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      0 20px 25px -5px rgba(0, 0, 0, 0.2);
     border-color: var(--accent-blue);
   }
 }
 
 .dark .glass-card {
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(30, 41, 59, 0.4);
 }
 
 .dark .glass-card:hover {
-  background: rgba(30, 41, 59, 0.8) !important;
+  background: rgba(45, 55, 75, 0.6) !important;
+  border-color: #60a5fa;
+  /* Brighter blue for border on dark hover */
 }
+
 
 
 @layer utilities {

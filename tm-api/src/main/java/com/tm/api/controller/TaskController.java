@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -31,10 +30,8 @@ public class TaskController {
     @Operation(summary = "List all tasks (Paginated)", description = "Returns a page of tasks, optionally filtered by status")
     @GetMapping
     public Page<TaskDTO> getAllTasks(
-            @Parameter(description = "Filter by status (TODO, DOING, DONE)") 
-            @RequestParam(required = false) TaskStatus status,
-            @Parameter(description = "Pagination parameters (page, size, sort)")
-            Pageable pageable) {
+            @Parameter(description = "Filter by status (TODO, DOING, DONE)") @RequestParam(required = false) TaskStatus status,
+            @Parameter(description = "Pagination parameters (page, size, sort)") Pageable pageable) {
         log.info("Request to get paginated tasks with status: {}", status);
         return taskService.findAll(status, pageable);
     }

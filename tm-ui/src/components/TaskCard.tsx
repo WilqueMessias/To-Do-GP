@@ -91,12 +91,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                 </div>
             </div>
 
-            <h3 className="text-slate-800 dark:text-white font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+            <h3 className="text-[var(--text-main)] font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {task.title}
             </h3>
-            <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4">
+            <p className="text-[var(--text-muted)] text-xs leading-relaxed line-clamp-2 mb-4">
                 {task.description}
             </p>
+
 
 
             {totalSubtasks > 0 && (

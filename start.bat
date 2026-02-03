@@ -39,7 +39,8 @@ set "JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
 set "MAVEN_HOME=%~dp0maven\apache-maven-3.9.6"
 set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
 
-echo [PHASE 3/5] Lifecycle: Backend Compilation & Runtime Boot...
+echo [PHASE 3/5] Lifecycle: Backend Compilation ^& Runtime Boot...
+
 start "TM Backend" cmd /k "cd tm-api && mvn clean spring-boot:run"
 
 echo [PHASE 4/5] Propagation: Service Health Verification...
@@ -52,7 +53,8 @@ if %errorlevel% neq 0 (
     timeout /t 3
 )
 
-echo [PHASE 5/5] User Access: UI Asset Serve & Browser Launcher...
+echo [PHASE 5/5] User Access: UI Asset Serve ^& Browser Launcher...
+
 start "TM Frontend" cmd /k "cd tm-ui && npm run dev"
 timeout /t 5 /nobreak >nul
 start http://localhost:5173
