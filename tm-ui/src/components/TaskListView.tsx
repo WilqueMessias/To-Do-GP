@@ -14,16 +14,15 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask })
         return date.toLocaleDateString('pt-BR');
     };
 
-    /* 
-    const getPriorityColor = (priority: Task['priority']) => {
+    const getPriorityDetails = (priority: Task['priority']) => {
         switch (priority) {
-            case 'HIGH': return 'text-rose-500 bg-rose-50 border-rose-100';
-            case 'MEDIUM': return 'text-amber-500 bg-amber-50 border-amber-100';
-            case 'LOW': return 'text-emerald-500 bg-emerald-50 border-emerald-100';
-            default: return 'text-slate-500 bg-slate-50 border-slate-100';
+            case 'HIGH': return { label: 'ALTA', color: 'text-rose-500 bg-rose-50 border-rose-100 dark:bg-rose-900/20 dark:border-rose-900/30' };
+            case 'MEDIUM': return { label: 'MÉDIA', color: 'text-amber-500 bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-900/30' };
+            case 'LOW': return { label: 'BAIXA', color: 'text-emerald-500 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-900/30' };
+            default: return { label: 'MÉDIA', color: 'text-slate-500 bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-white/5' };
         }
     };
-    */
+
 
 
     return (
@@ -83,15 +82,19 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask })
 
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex justify-center">
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center justify-center gap-3">
                                             <Star
-                                                size={18}
+                                                size={16}
                                                 className={task.important ? 'text-amber-500' : 'text-slate-200 dark:text-slate-700'}
                                                 fill={task.important ? 'currentColor' : 'none'}
                                             />
+                                            <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black border tracking-wider shadow-sm ${getPriorityDetails(task.priority).color}`}>
+                                                {getPriorityDetails(task.priority).label}
+                                            </div>
                                         </div>
                                     </td>
+
                                 </tr>
                             ))
                         )}

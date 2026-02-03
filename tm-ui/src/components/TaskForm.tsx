@@ -28,8 +28,24 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [loading, setLoading] = useState(false);
     const [suggestion, setSuggestion] = useState<{ date: string, label: string } | null>(null);
 
+    // Sync state when taskToEdit changes
+    useEffect(() => {
+        if (isOpen) {
+            setTitle(taskToEdit?.title || '');
+            setDescription(taskToEdit?.description || '');
+            setPriority(taskToEdit?.priority || 'MEDIUM');
+            setDueDate(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
+            setImportant(taskToEdit?.important || false);
+            setReminderEnabled(taskToEdit?.reminderEnabled || false);
+            setReminderTime(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
+            setStatus(taskToEdit?.status || 'TODO');
+            setSubtasks(taskToEdit?.subtasks || []);
+        }
+    }, [isOpen, taskToEdit]);
+
     // Smart NL Parsing Engine
     useEffect(() => {
+
         if (!title || taskToEdit) return;
 
         const text = title.toLowerCase();
@@ -184,66 +200,133 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
                                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Título da Tarefa</label>
-                                    {suggestion && (
+                                    <div className="flex gap-2">
+                                        {title && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setTitle('')}
+                                                className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                            >
+                                                Limpar
+                                            </button>
+                                        )}
+                                        {suggestion && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setDueDate(suggestion.date);
+                                                    setSuggestion(null);
+                                                }}
+                                                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 border border-blue-100 animate-pulse hover:animate-none transition-all"
+                                            >
+                                                <Sparkles size={10} />
+                                                <span>Sugerir {suggestion.label}?</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="relative group/input">
+                                    <input
+                                        required
+                                        autoFocus
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm"
+                                        placeholder="Ex: Refatorar API amanhã"
+                                    />
+                                    {title && (
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                setDueDate(suggestion.date);
-                                                setSuggestion(null);
-                                            }}
-                                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 border border-blue-100 animate-pulse hover:animate-none transition-all"
+                                            onClick={() => setTitle('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-300 hover:text-rose-500 opacity-0 group-hover/input:opacity-100 transition-all rounded-full hover:bg-rose-50"
+                                            title="Limpar título"
                                         >
-                                            <Sparkles size={10} />
-                                            <span>Sugerir {suggestion.label}?</span>
+                                            <X size={14} />
                                         </button>
                                     )}
                                 </div>
-                                <input
-                                    required
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                                    placeholder="Ex: Refatorar API amanhã"
-                                />
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Descrição Técnica</label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none"
-                                    placeholder="Descreva os detalhes da implementação..."
-                                />
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descrição Técnica</label>
+                                    {description && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setDescription('')}
+                                            className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                        >
+                                            Limpar
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="relative group/textarea">
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none"
+                                        placeholder="Descreva os detalhes da implementação..."
+                                    />
+                                    {description && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setDescription('')}
+                                            className="absolute right-3 top-3 p-1.5 text-slate-300 hover:text-rose-500 opacity-0 group-hover/textarea:opacity-100 transition-all rounded-full hover:bg-rose-50"
+                                            title="Limpar descrição"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
+
                         </section>
 
                         {/* Metadata Grid */}
                         <section className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prioridade</label>
-                                <select
-                                    value={priority}
-                                    onChange={(e) => setPriority(e.target.value as any)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
-                                >
-                                    <option value="LOW">Baixa</option>
-                                    <option value="MEDIUM">Média</option>
-                                    <option value="HIGH">Alta</option>
-                                </select>
+                                <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+                                    {(['LOW', 'MEDIUM', 'HIGH'] as const).map((p) => (
+                                        <button
+                                            key={p}
+                                            type="button"
+                                            onClick={() => setPriority(p)}
+                                            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-black transition-all whitespace-nowrap ${priority === p
+                                                ? 'bg-slate-900 border-slate-900 text-white shadow-md dark:bg-blue-600 dark:border-blue-600'
+                                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                                                }`}
+
+                                        >
+                                            <div className={`w-1.5 h-1.5 rounded-full ${p === 'HIGH' ? 'bg-rose-500' : p === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
+                                                }`} />
+                                            {p === 'LOW' ? 'BAIXA' : p === 'MEDIUM' ? 'MÉDIA' : 'ALTA'}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Atual</label>
-                                <select
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value as any)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
-                                >
-                                    <option value="TODO">A Fazer</option>
-                                    <option value="DOING">Em Progresso</option>
-                                    <option value="DONE">Concluído</option>
-                                </select>
+                                <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+                                    {(['TODO', 'DOING', 'DONE'] as const).map((s) => (
+                                        <button
+                                            key={s}
+                                            type="button"
+                                            onClick={() => setStatus(s)}
+                                            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-black transition-all whitespace-nowrap ${status === s
+                                                ? 'bg-slate-900 border-slate-900 text-white shadow-md dark:bg-blue-600 dark:border-blue-600'
+                                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                                                }`}
+
+                                        >
+                                            <div className={`w-1.5 h-1.5 rounded-full ${s === 'DONE' ? 'bg-emerald-500' : s === 'DOING' ? 'bg-blue-500' : 'bg-slate-300'
+                                                }`} />
+                                            {s === 'TODO' ? 'FAZER' : s === 'DOING' ? 'EM CURSO' : 'FEITO'}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
+
                             <div className="col-span-2 grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prazo de Entrega</label>

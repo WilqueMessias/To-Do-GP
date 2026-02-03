@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg-main: #f0f4f8;
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --text-main: #1e293b;
+  --bg-main: #f8fafc;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --text-main: #0f172a;
   --text-muted: #64748b;
   --accent-blue: #2563eb;
-  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-bg: rgba(255, 255, 255, 0.9);
 }
+
 
 .dark {
   --bg-main: #0b0f1a;
