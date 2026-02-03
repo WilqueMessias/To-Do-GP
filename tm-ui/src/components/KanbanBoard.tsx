@@ -97,8 +97,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
 
     const handleRestoreFromHistory = async (taskToRestore: Task) => {
         try {
+            // 1. Restore the task (Undelete)
             const response = await taskService.restore(taskToRestore.id);
-            const restored = response.data;
+            let restored = response.data;
+
+            // 2. Force move to TODO so it's visible and active
+            const updateResponse = await taskService.update(restored.id, { status: 'TODO' });
+            restored = updateResponse.data;
+
             // Remove from history
             setHistory(prev => prev.filter(t => t.id !== taskToRestore.id));
 
@@ -106,8 +112,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             const newTasks = [...internalTasks, restored];
             setInternalTasks(newTasks);
             if (onTasksChange) onTasksChange(newTasks);
+
+            // Temporary feedback since we don't have access to addToast here yet
+            // alert(`Tarefa "${restored.title}" restaurada para A Fazer!`);
         } catch (error) {
             console.error("Failed to restore task", error);
+            alert("Erro ao restaurar tarefa. Verifique o console.");
         }
     };
 
