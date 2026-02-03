@@ -284,7 +284,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         autoFocus
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm caret-blue-600 dark:caret-blue-400"
                                         placeholder="Ex: Refatorar API amanhã"
                                     />
                                     {title && (
@@ -317,7 +317,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none shadow-sm"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none shadow-sm caret-blue-600 dark:caret-blue-400"
                                         placeholder="Descreva os detalhes da implementação..."
                                     />
                                     {description && (
@@ -416,7 +416,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                 setReminderTime('');
                                             }
                                         }}
-                                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
+                                        onClick={(e) => e.currentTarget.showPicker()}
+                                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400 cursor-pointer"
                                     />
                                 </div>
                                 <div>
@@ -483,7 +484,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                             disabled={!reminderEnabled}
                                             value={reminderTime}
                                             onChange={(e) => setReminderTime(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30"
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30 caret-blue-600 dark:caret-blue-400"
                                         />
                                     </div>
                                 </div>
@@ -526,7 +527,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     onChange={(e) => setNewSubtask(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
                                     placeholder="Adicionar novo passo..."
-                                    className="flex-1 px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100"
+                                    className="flex-1 px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 caret-blue-600 dark:caret-blue-400"
                                 />
                                 <button
                                     type="button"
