@@ -7,25 +7,31 @@ Write-Host ""
 
 $url = "http://localhost:8080/api/tasks"
 
-try {
-    Write-Host "[TESTE] Conectando ao Backend ($url)..." -NoNewline
-    $response = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 5 -UseBasicParsing
-    
-    if ($response.StatusCode -eq 200) {
-        Write-Host " [SUCESSO]" -ForegroundColor Green
-        Write-Host "Codigo HTTP: 200 OK" -ForegroundColor Green
-        Write-Host "Resposta (Resumo): $($response.Content.Substring(0, [math]::Min(50, $response.Content.Length))...)" -ForegroundColor Gray
-        exit 0
-    } else {
-        Write-Host " [FALHA]" -ForegroundColor Red
-        Write-Host "Codigo HTTP: $($response.StatusCode)" -ForegroundColor Red
-        exit 1
+$maxRetries = 20
+$retryDelay = 2
+
+Write-Host "[TESTE] Conectando ao Backend ($url)..." -NoNewline
+
+for ($i = 1; $i -le $maxRetries; $i++) {
+    try {
+        $response = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+        
+        if ($response.StatusCode -eq 200) {
+            Write-Host " [SUCESSO]" -ForegroundColor Green
+            Write-Host "Codigo HTTP: 200 OK" -ForegroundColor Green
+            $contentPreview = $response.Content
+            if ($contentPreview.Length -gt 50) { $contentPreview = $contentPreview.Substring(0, 50) + "..." }
+            Write-Host "Resposta: $contentPreview" -ForegroundColor Gray
+            exit 0
+        }
+    } catch {
+        # Only print a dot to indicate waiting
+        Write-Host "." -NoNewline -ForegroundColor Yellow
+        Start-Sleep -Seconds $retryDelay
     }
-} catch {
-    Write-Host " [ERRO FATAL]" -ForegroundColor Red
-    Write-Host "O Backend nao esta respondendo." -ForegroundColor White
-    Write-Host "Detalhe: $($_.Exception.Message)" -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "FIX: Rode a Opcao 2 do start.bat e aguarde a janela preta inicializar." -ForegroundColor Yellow
-    exit 1
 }
+
+Write-Host " [FALHA]" -ForegroundColor Red
+Write-Host "O Backend nao respondeu apos $($maxRetries * $retryDelay) segundos." -ForegroundColor Red
+Write-Host "FIX: Verifique se a janela do backend apresentou algum erro." -ForegroundColor Output
+exit 1

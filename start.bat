@@ -30,20 +30,39 @@ GOTO MENU
 
 :DEV
 echo.
-echo [OK] Configurando Ambiente (Java + Maven Portatil)...
+echo [1/5] Limpando portas (5173, 8080)...
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":8080" ^| find "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":5173" ^| find "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
+
+echo [2/5] Configurando Ambiente...
 set "JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
 set "MAVEN_HOME=%~dp0maven\apache-maven-3.9.6"
 set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
 
-echo [OK] Iniciando Backend (Porta 8080)...
+echo [3/5] Iniciando Backend (Porta 8080)...
 start "TM Backend" cmd /k "cd tm-api && mvn spring-boot:run"
 
-echo [OK] Iniciando Frontend (Porta 5173)...
+echo [4/5] Aguardando API (pode levar ate 40s)...
+powershell -ExecutionPolicy Bypass -File "%~dp0verify_api.ps1"
+
+if %errorlevel% neq 0 (
+    echo [ALERTA] O Backend nao respondeu no tempo limite.
+    echo          Verifique a janela "TM Backend" para erros.
+    echo          Tentando abrir o frontend mesmo assim...
+    timeout /t 3
+)
+
+echo [5/5] Iniciando Frontend e Abrindo Navegador...
 start "TM Frontend" cmd /k "cd tm-ui && npm run dev"
+timeout /t 5 /nobreak >nul
+start http://localhost:5173
+
 echo.
-echo Aplicacao sendo iniciada!
-echo Backend: http://localhost:8080
-echo Frontend: http://localhost:5173
+echo ===================================================
+echo   SISTEMA INICIADO!
+echo   Frontend: http://localhost:5173
+echo   Backend:  http://localhost:8080
+echo ===================================================
 echo.
 pause
 EXIT
