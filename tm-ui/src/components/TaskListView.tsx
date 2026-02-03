@@ -52,14 +52,15 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask })
                                     className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all cursor-pointer"
                                 >
                                     <td className="px-6 py-4">
-                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-block border ${task.status === 'DONE' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' :
-                                            task.status === 'DOING' ? 'text-blue-500 bg-blue-50 border-blue-100' :
-                                                'text-slate-400 bg-slate-50 border-slate-100'
+                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-block border ${task.status === 'DONE' ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30' :
+                                            task.status === 'DOING' ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30' :
+                                                'text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-white/5'
                                             }`}>
                                             {task.status === 'DONE' ? 'CONCLUÍDO' :
                                                 task.status === 'DOING' ? 'EM CURSO' : 'PENDENTE'}
                                         </div>
                                     </td>
+
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
                                             <span className={`text-sm font-bold ${task.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>

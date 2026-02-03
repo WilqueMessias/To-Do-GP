@@ -23,15 +23,16 @@ export const SystemClock: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center px-4 py-1.5 rounded-xl bg-slate-100/50 backdrop-blur-sm border border-slate-200/50 select-none hover:bg-slate-100 transition-colors">
+        <div className="flex items-center px-4 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-white/10 select-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-slate-600 tabular-nums">
+                <span className="text-sm font-bold text-slate-600 dark:text-slate-200 tabular-nums">
                     {formatTime(time)}
                 </span>
-                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider border-l border-slate-300 pl-3">
+                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider border-l border-slate-300 dark:border-slate-700 pl-3">
                     {formatDate(time)}
                 </span>
             </div>
         </div>
+
     );
 };

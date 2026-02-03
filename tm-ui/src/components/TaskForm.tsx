@@ -173,24 +173,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
-                <div className="flex justify-between items-center p-6 border-b border-white/20 dark:border-white/5">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                        {taskToEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
+                <div className="flex justify-between items-center p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/50">
+                    <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+                        {taskToEdit ? 'Editar Tarefa' : 'Nova Demanda'}
                     </h2>
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
                             onClick={() => setImportant(!important)}
-                            className={`p-2 rounded-full transition-all ${important ? 'text-amber-500 bg-amber-50' : 'text-slate-300 hover:text-slate-400'}`}
-                            title={important ? "Marcar como normal" : "Marcar como importante"}
+                            className={`p-2 rounded-xl transition-all ${important ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'text-slate-300 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <Star size={20} fill={important ? "currentColor" : "none"} />
                         </button>
-                        <button onClick={onClose} className="p-2 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-full transition-colors">
-                            <X size={20} className="text-slate-500 dark:text-slate-400" />
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                        >
+                            <X size={20} />
                         </button>
                     </div>
-
                 </div>
 
                 <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[80vh] custom-scrollbar">
@@ -199,13 +200,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                         <section className="space-y-4">
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Título da Tarefa</label>
+                                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Título da Tarefa</label>
                                     <div className="flex gap-2">
                                         {title && (
                                             <button
                                                 type="button"
                                                 onClick={() => setTitle('')}
-                                                className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                                className="text-[10px] font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
                                             >
                                                 Limpar
                                             </button>
@@ -217,7 +218,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                     setDueDate(suggestion.date);
                                                     setSuggestion(null);
                                                 }}
-                                                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 border border-blue-100 animate-pulse hover:animate-none transition-all"
+                                                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30 animate-pulse hover:animate-none transition-all"
                                             >
                                                 <Sparkles size={10} />
                                                 <span>Sugerir {suggestion.label}?</span>
@@ -231,14 +232,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         autoFocus
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm"
                                         placeholder="Ex: Refatorar API amanhã"
                                     />
                                     {title && (
                                         <button
                                             type="button"
                                             onClick={() => setTitle('')}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-300 hover:text-rose-500 opacity-0 group-hover/input:opacity-100 transition-all rounded-full hover:bg-rose-50"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover/input:opacity-100 transition-all rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                             title="Limpar título"
                                         >
                                             <X size={14} />
@@ -249,12 +250,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
 
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descrição Técnica</label>
+                                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Descrição Técnica</label>
                                     {description && (
                                         <button
                                             type="button"
                                             onClick={() => setDescription('')}
-                                            className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                            className="text-[10px] font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
                                         >
                                             Limpar
                                         </button>
@@ -264,14 +265,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none shadow-sm"
                                         placeholder="Descreva os detalhes da implementação..."
                                     />
                                     {description && (
                                         <button
                                             type="button"
                                             onClick={() => setDescription('')}
-                                            className="absolute right-3 top-3 p-1.5 text-slate-300 hover:text-rose-500 opacity-0 group-hover/textarea:opacity-100 transition-all rounded-full hover:bg-rose-50"
+                                            className="absolute right-3 top-3 p-1.5 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover/textarea:opacity-100 transition-all rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                             title="Limpar descrição"
                                         >
                                             <X size={14} />
@@ -279,6 +280,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     )}
                                 </div>
                             </div>
+
 
                         </section>
 
@@ -301,6 +303,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                             <div className={`w-1.5 h-1.5 rounded-full ${p === 'HIGH' ? 'bg-rose-500' : p === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
                                                 }`} />
                                             {p === 'LOW' ? 'BAIXA' : p === 'MEDIUM' ? 'MÉDIA' : 'ALTA'}
+
                                         </button>
                                     ))}
                                 </div>
@@ -418,19 +421,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Logs de Atividade</span>
                                 </div>
                                 <div className="space-y-4 max-h-[160px] overflow-y-auto pr-3 custom-scrollbar">
-                                    {taskToEdit.activities?.map((activity: any) => (
-                                        <div key={activity.id} className="relative pl-6 pb-4 last:pb-0">
-                                            <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 outline outline-1 outline-slate-100 dark:outline-white/5" />
-                                            <div className="absolute left-[3px] top-3 bottom-0 w-0.5 bg-slate-100 dark:bg-slate-800 last:hidden" />
-                                            <p className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold leading-tight mb-1">{activity.message}</p>
-                                            <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">
-                                                {new Date(activity.timestamp).toLocaleString('pt-BR', {
-                                                    day: '2-digit', month: 'short',
-                                                    hour: '2-digit', minute: '2-digit'
-                                                })}
-                                            </p>
-                                        </div>
-                                    ))}
+                                    <div className="flex flex-col gap-4">
+                                        {taskToEdit.activities?.slice().reverse().map((activity: any) => (
+                                            <div key={activity.id} className="relative pl-6 pb-2 border-l-2 border-slate-100 dark:border-white/5 last:border-0 group/log">
+                                                <div className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-white/20 shadow-sm group-hover/log:scale-125 transition-transform" />
+                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-200 leading-relaxed">
+                                                    {activity.message}
+                                                </p>
+                                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-0.5 block tracking-widest">
+                                                    {new Date(activity.timestamp).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                 </div>
                             </section>
                         )}

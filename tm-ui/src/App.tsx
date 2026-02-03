@@ -79,16 +79,18 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-8 py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-8 py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
+
         <div className="max-w-[1600px] mx-auto flex justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-tr from-blue-700 to-indigo-500 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-200 ring-4 ring-blue-50">
               <BarChart3 size={22} className="group-hover:rotate-12 transition-transform" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-1">TM <span className="text-blue-600">ANALYTICS</span></h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Enterprise Command</p>
+              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none mb-1">TM <span className="text-blue-600 dark:text-blue-400">ANALYTICS</span></h1>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Enterprise Command</p>
             </div>
+
           </div>
 
           {/* Search Bar Professionalized */}
@@ -98,8 +100,9 @@ function App() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pesquisar inteligência de tarefas..."
-              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium"
+              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium text-slate-700 dark:text-slate-200"
             />
+
           </div>
 
           <div className="flex items-center gap-6">
