@@ -11,10 +11,18 @@ import {
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-interface TaskCardProps {
+export interface TaskCardProps {
     task: Task;
     onClick: (task: Task) => void;
     onUpdate?: (id: string, updates: Partial<Task>) => void;
+}
+
+interface TaskCardContentProps extends TaskCardProps {
+    setNodeRef?: (node: HTMLElement | null) => void;
+    style?: React.CSSProperties;
+    attributes?: any;
+    listeners?: any;
+    isDragging?: boolean;
 }
 
 const getTimeAgo = (dateStr?: string) => {
@@ -37,16 +45,16 @@ const isOverdue = (dateStr: string, status: string) => {
     return new Date(dateStr).getTime() < new Date().getTime();
 };
 
-const TaskCardComponent: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: task.id,
-    });
-
-    const style = {
-        transform: CSS.Translate.toString(transform),
-        transition,
-    };
-
+export const TaskCardContent: React.FC<TaskCardContentProps> = ({
+    task,
+    onClick,
+    onUpdate,
+    setNodeRef,
+    style,
+    attributes,
+    listeners,
+    isDragging
+}) => {
     const priorityColors = {
         LOW: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200/50',
         MEDIUM: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200/50',
@@ -89,7 +97,7 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({ task, onClick, onUpdate })
             className={`
                 glass-card group p-5 cursor-pointer relative
                 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] 
-                active:scale-[0.98] transition-all duration-300
+                active:scale-[0.98] transition-all duration-300 transform-gpu
                 ${overdue ? 'ring-2 ring-rose-400/50 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}
                 ${task.important ? 'border-amber-400/30 bg-amber-50/10 dark:bg-amber-900/5' : ''}
             `}
@@ -174,6 +182,28 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({ task, onClick, onUpdate })
                 </span>
             </div>
         </div>
+    );
+};
+
+const TaskCardComponent: React.FC<TaskCardProps> = (props) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: props.task.id,
+    });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+    };
+
+    return (
+        <TaskCardContent
+            {...props}
+            setNodeRef={setNodeRef}
+            style={style}
+            attributes={attributes}
+            listeners={listeners}
+            isDragging={isDragging}
+        />
     );
 };
 

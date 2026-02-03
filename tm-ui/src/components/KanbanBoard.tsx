@@ -12,12 +12,14 @@ import type {
     DragStartEvent,
     DragOverEvent,
     DragEndEvent,
+    DropAnimation,
 } from '@dnd-kit/core';
+import { defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import type { Task } from '../services/api';
 import { taskService } from '../services/api';
-import { TaskCard } from './TaskCard';
+import { TaskCardContent } from './TaskCard';
 
 interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
@@ -106,6 +108,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
         { id: 'DONE', title: 'Concluído' },
     ];
 
+    const dropAnimation: DropAnimation = {
+        sideEffects: defaultDropAnimationSideEffects({
+            styles: {
+                active: {
+                    opacity: '0.5',
+                },
+            },
+        }),
+    };
+
     return (
         <div className="flex gap-8 p-8 justify-center overflow-x-auto min-h-[calc(100vh-80px)]">
             <DndContext
@@ -126,10 +138,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
                     />
                 ))}
 
-                <DragOverlay>
+                <DragOverlay dropAnimation={dropAnimation}>
                     {activeTask ? (
-                        <div className="rotate-3 shadow-2xl">
-                            <TaskCard task={activeTask} onClick={() => { }} />
+                        <div className="rotate-2 scale-105 cursor-grabbing shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                            <TaskCardContent
+                                task={activeTask}
+                                onClick={() => { }}
+                                style={{ transform: 'none' }} // Ensure no double transform
+                            />
                         </div>
                     ) : null}
                 </DragOverlay>
