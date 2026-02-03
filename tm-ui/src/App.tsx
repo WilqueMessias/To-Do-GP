@@ -4,7 +4,7 @@ import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
 import { Plus, BarChart3, Search, Moon, Sun } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
-import { AnalyticsPanel } from './components/AnalyticsPanel';
+
 import { useKanbanTasks } from './hooks/useKanbanTasks';
 import { useTheme } from './hooks/useTheme';
 import type { Task } from './services/api';
@@ -87,10 +87,7 @@ function App() {
         </div>
       </header>
 
-      {/* Analytics Dashboard */}
-      <div className="max-w-[1600px] mx-auto w-full px-8 mt-8">
-        <AnalyticsPanel tasks={tasks} />
-      </div>
+
 
       {/* Main Board */}
       <main className="flex-1">

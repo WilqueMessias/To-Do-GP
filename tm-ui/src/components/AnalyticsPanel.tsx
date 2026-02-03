@@ -84,44 +84,7 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ tasks }) => {
                 ))}
             </div>
 
-            {/* Priority Heatmap / Breakdown */}
-            <div className="glass-panel p-6 rounded-[2rem] border border-white/40 shadow-sm overflow-hidden relative">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">Alocação por Criticidade</h3>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Operational Density Heatmap</p>
-                    </div>
-                    <div className="flex gap-4">
-                        {['HIGH', 'MEDIUM', 'LOW'].map((p) => {
-                            const count = tasks.filter(t => t.priority === p).length;
-                            const pct = tasks.length > 0 ? (count / tasks.length) * 100 : 0;
-                            const colors = p === 'HIGH' ? 'bg-rose-500' : p === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500';
-                            return (
-                                <div key={p} className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${colors}`} />
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">{p}: {Math.round(pct)}%</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
 
-                <div className="h-3 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden flex shadow-inner border border-white/10 dark:border-black/20">
-                    {['HIGH', 'MEDIUM', 'LOW'].map((p) => {
-                        const count = tasks.filter(t => t.priority === p).length;
-                        const pct = tasks.length > 0 ? (count / tasks.length) * 100 : 0;
-                        const colors = p === 'HIGH' ? 'bg-gradient-to-r from-rose-500 to-rose-400' : p === 'MEDIUM' ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400';
-                        if (pct === 0) return null;
-                        return (
-                            <div
-                                key={p}
-                                style={{ width: `${pct}%` }}
-                                className={`${colors} h-full transition-all duration-1000 ease-out border-r border-white/20 dark:border-black/10 last:border-0`}
-                            />
-                        );
-                    })}
-                </div>
-            </div>
         </div>
     );
 };
