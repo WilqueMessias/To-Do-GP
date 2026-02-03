@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Task } from '../services/api';
-import { Calendar, MoreVertical } from 'lucide-react';
+import { Calendar, MoreVertical, AlertCircle } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -24,6 +24,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         transition,
         isDragging
     } = useSortable({ id: task.id });
+
+    const isOverdue = new Date(task.dueDate) < new Date() && task.status !== 'DONE';
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -50,9 +52,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             </div>
             <h4 className="font-semibold text-slate-800 mb-1 line-clamp-2">{task.title}</h4>
             <p className="text-slate-500 text-sm line-clamp-2 mb-3">{task.description}</p>
-            <div className="flex items-center text-slate-400 text-[11px] gap-1">
-                <Calendar size={12} />
+            <div className={`flex items-center text-[11px] gap-1 ${isOverdue ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                {isOverdue ? <AlertCircle size={12} /> : <Calendar size={12} />}
                 <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                {isOverdue && <span className="text-[9px] uppercase ml-1 border border-red-200 bg-red-50 text-red-600 px-1 rounded">Atrasado</span>}
             </div>
         </div>
     );

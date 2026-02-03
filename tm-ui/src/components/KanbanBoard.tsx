@@ -22,10 +22,20 @@ import { TaskCard } from './TaskCard';
 interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
     onTasksChange?: (tasks: Task[]) => void;
+    tasks?: Task[];
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange }) => {
-    const [tasks, setTasks] = useState<Task[]>([]);
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange, tasks: externalTasks }) => {
+    const [internalTasks, setInternalTasks] = useState<Task[]>([]);
+
+    // Use external tasks if provided (for filtering), otherwise user internal state
+    const tasks = externalTasks || internalTasks;
+
+    // Helper to update tasks regardless of source
+    const updateTasks = (newTasks: Task[]) => {
+        setInternalTasks(newTasks);
+        if (onTasksChange) onTasksChange(newTasks);
+    };
     const [activeTask, setActiveTask] = useState<Task | null>(null);
 
     const sensors = useSensors(
@@ -36,10 +46,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
     const loadTasks = async () => {
         try {
             const { data } = await taskService.getAll();
-            setTasks(data);
-            if (onTasksChange) {
-                onTasksChange(data);
-            }
+            updateTasks(data);
         } catch (error) {
             console.error('Failed to load tasks', error);
         }
@@ -72,7 +79,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
 
         const isOverAColumn = ['TODO', 'DOING', 'DONE'].includes(overId as string);
 
-        setTasks((prev) => {
+        const newTasks = [...(externalTasks || internalTasks)];
+        // Logic for drag over remains similar but operates on local clone first
+        // Note: For simplicity in this hybrid mode, we just update state. 
+        // Ideally dnd-kit would drive this more cleanly.
+
+        // ... (We need to refactor the functional update to use the helper)
+        setInternalTasks((prev) => {
             const activeIndex = prev.findIndex((t) => t.id === activeId);
             const activeTask = prev[activeIndex];
 
@@ -81,6 +94,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
                 if (activeTask.status !== newStatus) {
                     const newTasks = [...prev];
                     newTasks[activeIndex] = { ...activeTask, status: newStatus };
+                    if (onTasksChange) onTasksChange(newTasks);
                     return newTasks;
                 }
                 return prev;
@@ -92,10 +106,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
             if (activeTask.status !== overTask.status) {
                 const newTasks = [...prev];
                 newTasks[activeIndex] = { ...activeTask, status: overTask.status };
-                return arrayMove(newTasks, activeIndex, overIndex);
+                const reordered = arrayMove(newTasks, activeIndex, overIndex);
+                if (onTasksChange) onTasksChange(reordered);
+                return reordered;
             }
 
-            return arrayMove(prev, activeIndex, overIndex);
+            const reordered = arrayMove(prev, activeIndex, overIndex);
+            if (onTasksChange) onTasksChange(reordered);
+            return reordered;
         });
     };
 

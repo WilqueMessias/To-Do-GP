@@ -6,11 +6,12 @@ import { X } from 'lucide-react';
 interface TaskFormProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (action: 'create' | 'update' | 'delete') => void;
+    onError: (message: string) => void;
     taskToEdit?: Task;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, taskToEdit }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, onError, taskToEdit }) => {
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
@@ -34,13 +35,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
 
             if (taskToEdit) {
                 await taskService.update(taskToEdit.id, payload);
+                onSuccess('update');
             } else {
                 await taskService.create(payload);
+                onSuccess('create');
             }
-            onSuccess();
             onClose();
         } catch (error) {
-            alert('Falha ao salvar tarefa');
+            onError('Falha ao salvar tarefa. Verifique a conexão com o servidor.');
         } finally {
             setLoading(false);
         }
@@ -131,10 +133,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         setLoading(true);
                                         try {
                                             await taskService.delete(taskToEdit.id);
-                                            onSuccess();
+                                            onSuccess('delete');
                                             onClose();
                                         } catch (e) {
-                                            alert('Falha ao excluir tarefa');
+                                            onError('Falha ao excluir tarefa');
                                         } finally {
                                             setLoading(false);
                                         }
