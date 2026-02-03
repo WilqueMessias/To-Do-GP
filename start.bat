@@ -30,10 +30,16 @@ GOTO MENU
 
 :DEV
 echo.
-echo [OK] Iniciando Backend em uma nova janela...
-start cmd /k "cd tm-api && mvn spring-boot:run"
-echo [OK] Iniciando Frontend em uma nova janela...
-start cmd /k "cd tm-ui && npm run dev"
+echo [OK] Configurando Ambiente (Java + Maven Portatil)...
+set "JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
+set "MAVEN_HOME=%~dp0maven\apache-maven-3.9.6"
+set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
+
+echo [OK] Iniciando Backend (Porta 8080)...
+start "TM Backend" cmd /k "cd tm-api && mvn spring-boot:run"
+
+echo [OK] Iniciando Frontend (Porta 5173)...
+start "TM Frontend" cmd /k "cd tm-ui && npm run dev"
 echo.
 echo Aplicacao sendo iniciada!
 echo Backend: http://localhost:8080
