@@ -1,71 +1,47 @@
-$ErrorActionPreference = "Continue" # Don't stop on web errors, we want to see them
+$ErrorActionPreference = "Continue"
 
 Write-Host "==============================" -ForegroundColor Cyan
-Write-Host "   DIAGNOSTICO DE REDE - API  " -ForegroundColor Cyan
+Write-Host "   DIAGNOSTICO DEFINITIVO     " -ForegroundColor Cyan
 Write-Host "=============================="
-Write-Host ""
 
-$port = 8080
-$url = "http://localhost:$port/api/tasks"
-$maxRetries = 20
+$baseUrl = "http://127.0.0.1:8080" # Usando IP diretamente para evitar DNS flakiness
+$maxRetries = 15
 $retryDelay = 2
 
-Write-Host "[PASSO 1] Verificando se a porta $port esta ouvindo..." -ForegroundColor White
-$portOpen = $false
+Write-Host "[1/3] Aguardando Porta 8080..." -NoNewline
 for ($i = 1; $i -le $maxRetries; $i++) {
-    $check = Test-NetConnection -ComputerName localhost -Port $port -WarningAction SilentlyContinue
+    $check = Test-NetConnection -ComputerName 127.0.0.1 -Port 8080 -WarningAction SilentlyContinue
     if ($check.TcpTestSucceeded) {
-        Write-Host " [SUCESSO] Porta $port detectada!" -ForegroundColor Green
-        $portOpen = $true
+        Write-Host " [OK]" -ForegroundColor Green
         break
     }
     Write-Host "." -NoNewline -ForegroundColor Yellow
     Start-Sleep -Seconds $retryDelay
+    if ($i -eq $maxRetries) { Write-Host " [FALHA]" -ForegroundColor Red; exit 1 }
 }
 
-if (-not $portOpen) {
-    Write-Host "`n [FALHA] Nao detectei nada ouvindo na porta $port." -ForegroundColor Red
-    Write-Host "DICA: Olhe a janela 'TM Backend'. Se ela fechou ou parou em erro, o Java caiu." -ForegroundColor White
-    exit 1
-}
-
-Write-Host "`n[PASSO 2] Testando Saúde do Sistema (/health)..." -ForegroundColor White
+Write-Host "[2/3] Testando /health..." -NoNewline
 try {
-    $hRes = Invoke-WebRequest -Uri "http://localhost:8080/health" -Method Get -TimeoutSec 5 -Proxy $null
-    Write-Host " [SUCESSO] Sistema respondeu /health!" -ForegroundColor Green
+    $h = Invoke-WebRequest -Uri "$baseUrl/health" -Method Get -TimeoutSec 5 -Proxy $null -UseBasicParsing
+    Write-Host " [OK]" -ForegroundColor Green
 } catch {
-    Write-Host " [AVISO] /health falhou. Mas vamos tentar a API..." -ForegroundColor Yellow
+    Write-Host " [!] Sem resposta no health." -ForegroundColor Yellow
 }
 
-Write-Host "`n[PASSO 3] Testando requisicao HTTP em $url..." -ForegroundColor White
-
+Write-Host "[3/3] Testando Endpoint /tasks..." -NoNewline
 try {
-    # Usando Proxy $null para evitar interferencia de proxies corporativos
-    $response = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 10 -UseBasicParsing -Proxy $null
-    Write-Host " [SUCESSO] API respondeu com Status $($response.StatusCode)" -ForegroundColor Green
-    $content = $response.Content
-    if ($content.Length -gt 50) { $content = $content.Substring(0, 50) + "..." }
-    Write-Host " Resposta: $content" -ForegroundColor Gray
+    # Testamos com /tasks (novo mapeamento simplificado)
+    $t = Invoke-WebRequest -Uri "$baseUrl/tasks" -Method Get -TimeoutSec 5 -Proxy $null -UseBasicParsing
+    Write-Host " [SUCESSO]" -ForegroundColor Green
+    Write-Host ">>> O SISTEMA ESTA VIVO!" -ForegroundColor Green
     exit 0
 } catch {
     if ($_.Exception.Response) {
-        $status = [int]$_.Exception.Response.StatusCode
-        Write-Host " [ERRO HTTP $status] O servidor respondeu, mas deu erro." -ForegroundColor Red
-        
-        if ($status -eq 404) {
-             Write-Host " [DIAGNOSTICO] Testando Swagger (http://localhost:8080/swagger-ui/index.html)..." -ForegroundColor Cyan
-             try {
-                 $swag = Invoke-WebRequest -Uri "http://localhost:8080/swagger-ui/index.html" -Method Get -TimeoutSec 5 -Proxy $null
-                 Write-Host " [ALERTA] Swagger está ALIVE! O problema é apenas no roteamento do /api." -ForegroundColor Yellow
-             } catch {
-                 Write-Host " [ERRO] Swagger também deu 404. O app não mapeou nada." -ForegroundColor Red
-             }
-        }
-        Write-Host " DICA: Isso pode ser erro no Banco de Dados ou na logica Java." -ForegroundColor White
+        $st = [int]$_.Exception.Response.StatusCode
+        Write-Host " [ERRO $st]" -ForegroundColor Red
+        Write-Host "LOG DO SERVIDOR: Olhe a janela 'TM Backend' para ver o 'QA DIAGNOSTIC'." -ForegroundColor Cyan
     } else {
-        Write-Host " [ERRO DE REDE] Nao consegui completar a chamada HTTP." -ForegroundColor Red
-        Write-Host " Detalhe: $($_.Exception.Message)" -ForegroundColor DarkGray
-        Write-Host " DICA: Verifique se algum Firewall ou Antivirus esta bloqueando a porta 8080." -ForegroundColor Cyan
+        Write-Host " [ERRO DE REDE]" -ForegroundColor Red
     }
     exit 1
 }

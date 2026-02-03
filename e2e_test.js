@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configuration
-const API_URL = 'http://localhost:8080/api/tasks';
+const API_URL = 'http://localhost:8080/tasks';
 const TEST_TASK = {
     title: "E2E Automated Test Task",
     description: "This task was created by the Specialist QA Agent script.",

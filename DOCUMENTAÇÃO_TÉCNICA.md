@@ -116,6 +116,8 @@ Ao arrastar um card entre colunas, o sistema executa uma atualização atômica 
 *   **Spring Boot 3.2.2**: Framework core.
 *   **Spring Data JPA**: Abstração de persistência.
 *   **H2 Database**: Banco de dados relacional em memória para testes e demo.
+*   **API Base**: `http://localhost:8080/tasks`
+*   **Swagger UI**: `http://localhost:8080/swagger-ui/index.html`
 *   **Lombok**: Redução de código boilerplate.
 *   **SpringDoc (Swagger)**: Documentação automática da API.
 
