@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, Search, Moon, Sun, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
 
@@ -22,7 +22,9 @@ function App() {
     updateTaskStateLocal,
     handleSuccess,
     handleUpdateTask,
-    addToast
+    addToast,
+    sortConfig,
+    setSortConfig
   } = useKanbanTasks();
 
   const { theme, toggleTheme } = useTheme();
@@ -196,6 +198,40 @@ function App() {
                 <List size={16} />
                 <span>Lista</span>
               </button>
+            </div>
+
+            <div className="relative group/sort">
+              <button className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all font-bold text-xs">
+                <ArrowUpDown size={16} className="text-blue-500" />
+                <span>Classificar</span>
+              </button>
+
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/sort:opacity-100 group-hover/sort:visible transition-all z-50 p-2 transform origin-top scale-95 group-hover/sort:scale-100">
+                {[
+                  { id: 'dueDate', label: 'Data de Entrega' },
+                  { id: 'priority', label: 'Prioridade' },
+                  { id: 'title', label: 'Nome (A-Z)' },
+                  { id: 'status', label: 'Status' },
+                  { id: 'important', label: 'Importância' },
+                  { id: 'none', label: 'Padrão' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSortConfig(prev => ({
+                      key: opt.id,
+                      direction: prev.key === opt.id && prev.direction === 'asc' ? 'desc' : 'asc'
+                    }))}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-[11px] font-black transition-all flex justify-between items-center ${sortConfig.key === opt.id ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                  >
+                    {opt.label}
+                    {sortConfig.key === opt.id && (
+                      <span className="text-[10px] opacity-60">
+                        {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <button

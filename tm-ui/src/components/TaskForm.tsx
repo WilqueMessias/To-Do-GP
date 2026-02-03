@@ -22,6 +22,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [reminderEnabled, setReminderEnabled] = useState(taskToEdit?.reminderEnabled || false);
     const [reminderTime, setReminderTime] = useState(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
     const [status, setStatus] = useState<Task['status']>(taskToEdit?.status || 'TODO');
+    const [hasTime, setHasTime] = useState(taskToEdit?.dueDate?.includes('T') ? !taskToEdit.dueDate.includes('00:00:00') && !taskToEdit.dueDate.endsWith('T23:59:59') : !!taskToEdit?.dueDate);
+    // Let's simplify hasTime initialization: if it has a non-zero time or if we want to default to true when editing a task with time.
+    // Actually, let's just use a simple heuristic: if it has 'T' and isn't just a date placeholder.
 
     const [subtasks, setSubtasks] = useState<Subtask[]>(taskToEdit?.subtasks || []);
     const [newSubtask, setNewSubtask] = useState('');
@@ -41,6 +44,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             setReminderTime(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
             setStatus(taskToEdit?.status || 'TODO');
             setSubtasks(taskToEdit?.subtasks || []);
+
+            const isDateOnly = taskToEdit?.dueDate ? !taskToEdit.dueDate.includes('T') || taskToEdit.dueDate.includes('00:00:00') : true;
+            setHasTime(!isDateOnly);
         }
     }, [isOpen, taskToEdit]);
 
@@ -141,25 +147,36 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         }
 
         try {
+            let finalDueDate = null;
+            if (dueDate) {
+                if (hasTime) {
+                    finalDueDate = new Date(dueDate).toISOString();
+                } else {
+                    // Force end of day for date-only tasks to ensure they are at the top of the day range
+                    const datePart = dueDate.includes('T') ? dueDate.split('T')[0] : dueDate;
+                    finalDueDate = new Date(`${datePart}T23:59:59.000Z`).toISOString();
+                }
+            }
+
             const payload = {
                 title,
                 description,
                 priority,
                 status,
-                dueDate: new Date(dueDate).toISOString(),
+                dueDate: finalDueDate,
                 important,
-                reminderEnabled,
-                reminderTime: reminderEnabled ? new Date(reminderTime).toISOString() : undefined,
+                reminderEnabled: hasTime ? reminderEnabled : false,
+                reminderTime: (hasTime && reminderEnabled && reminderTime) ? new Date(reminderTime).toISOString() : undefined,
                 subtasks
             };
 
 
 
             if (taskToEdit) {
-                await taskService.update(taskToEdit.id, payload);
+                await taskService.update(taskToEdit.id, payload as any);
                 onSuccess('update');
             } else {
-                await taskService.create(payload);
+                await taskService.create(payload as any);
                 onSuccess('create');
             }
             onClose();
@@ -367,14 +384,34 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
 
                             <div className="col-span-2 grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prazo de Entrega</label>
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prazo de Entrega</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newHasTime = !hasTime;
+                                                setHasTime(newHasTime);
+                                                if (!newHasTime) {
+                                                    setReminderEnabled(false);
+                                                }
+                                            }}
+                                            className={`text-[9px] font-black px-3 py-1 rounded-lg transition-all border ${hasTime ? 'bg-slate-900 border-slate-900 text-white shadow-sm dark:bg-blue-600 dark:border-blue-600' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:border-white/10 dark:text-slate-400'}`}
+                                        >
+                                            {hasTime ? 'COM HORÁRIO' : 'SÓ DATA'}
+                                        </button>
+                                    </div>
                                     <input
-                                        type="datetime-local"
-                                        value={dueDate}
+                                        type={hasTime ? "datetime-local" : "date"}
+                                        value={hasTime ? dueDate : dueDate.split('T')[0]}
                                         onChange={(e) => {
-                                            setDueDate(e.target.value);
-                                            // Disable reminder if due date is cleared
-                                            if (!e.target.value) {
+                                            const val = e.target.value;
+                                            if (hasTime) {
+                                                setDueDate(val);
+                                            } else {
+                                                setDueDate(val + 'T00:00');
+                                            }
+
+                                            if (!val) {
                                                 setReminderEnabled(false);
                                                 setReminderTime('');
                                             }
@@ -387,7 +424,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aviso Sonoro / Alerta</label>
                                         <button
                                             type="button"
-                                            disabled={!dueDate}
+                                            disabled={!dueDate || !hasTime}
                                             onClick={() => {
                                                 const newState = !reminderEnabled;
                                                 setReminderEnabled(newState);
@@ -403,18 +440,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                     }
                                                 }
                                             }}
-                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${!dueDate ? 'opacity-20 cursor-not-allowed bg-slate-100 text-slate-400' : reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${(!dueDate || !hasTime) ? 'opacity-10 cursor-not-allowed bg-slate-100 text-slate-300' : reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                         >
                                             {reminderEnabled ? 'ON' : 'OFF'}
                                         </button>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className={`space-y-2 transition-all ${!hasTime ? 'opacity-20 pointer-events-none grayscale' : ''}`}>
+                                        {!hasTime && (
+                                            <p className="text-[10px] text-slate-400 font-medium italic mt-1">
+                                                Ative o horário para configurar alertas.
+                                            </p>
+                                        )}
                                         <div className="grid grid-cols-4 gap-1">
                                             {[15, 30, 60, 120].map((mins) => (
                                                 <button
                                                     key={mins}
                                                     type="button"
-                                                    disabled={!reminderEnabled || !dueDate}
+                                                    disabled={!reminderEnabled || !dueDate || !hasTime}
                                                     onClick={() => {
                                                         const date = new Date(dueDate);
                                                         date.setMinutes(date.getMinutes() - mins);

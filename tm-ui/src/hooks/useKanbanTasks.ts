@@ -8,6 +8,7 @@ export const useKanbanTasks = () => {
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' }>({ key: 'none', direction: 'asc' });
 
     const addToast = useCallback((type: 'success' | 'error', message: string, action?: ToastMessage['action']) => {
         const id = Math.random().toString(36).substr(2, 9);
@@ -34,7 +35,39 @@ export const useKanbanTasks = () => {
         loadTasks();
     }, [loadTasks]);
 
-    const filteredTasks = tasks.filter(t =>
+    const sortedTasks = [...tasks].sort((a, b) => {
+        if (sortConfig.key === 'none') return 0;
+
+        const dir = sortConfig.direction === 'asc' ? 1 : -1;
+
+        if (sortConfig.key === 'title') {
+            return a.title.localeCompare(b.title) * dir;
+        }
+
+        if (sortConfig.key === 'dueDate') {
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return (new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) * dir;
+        }
+
+        if (sortConfig.key === 'priority') {
+            const weights = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+            return (weights[b.priority] - weights[a.priority]) * dir;
+        }
+
+        if (sortConfig.key === 'status') {
+            const weights = { 'TODO': 1, 'DOING': 2, 'DONE': 3 };
+            return (weights[a.status] - weights[b.status]) * dir;
+        }
+
+        if (sortConfig.key === 'important') {
+            return (a.important === b.important ? 0 : a.important ? -1 : 1) * dir;
+        }
+
+        return 0;
+    });
+
+    const filteredTasks = sortedTasks.filter(t =>
         t.title.toLowerCase().includes(search.toLowerCase()) ||
         t.description.toLowerCase().includes(search.toLowerCase())
     );
@@ -106,6 +139,8 @@ export const useKanbanTasks = () => {
         updateTaskStateLocal,
         handleSuccess,
         handleUpdateTask,
+        sortConfig,
+        setSortConfig,
         refresh: loadTasks
     };
 };
