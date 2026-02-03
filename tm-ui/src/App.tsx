@@ -31,6 +31,54 @@ function App() {
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
+  // Audio Alarm Logic (Web Audio API for zero dependencies)
+  const playAlarmSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5); // Slide to A4
+
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.warn('Audio context failed (likely user interaction required):', e);
+    }
+  };
+
+  // Tab Flashing State
+  const [isAlerting, setIsAlerting] = useState(false);
+
+  useEffect(() => {
+    if (!isAlerting) {
+      document.title = 'To Do GP';
+      return;
+    }
+
+    const interval = setInterval(() => {
+      document.title = document.title === 'To Do GP' ? '⚠️ ALERTA DE TAREFA ⚠️' : 'To Do GP';
+    }, 1000);
+
+    const stopAlert = () => {
+      setIsAlerting(false);
+      window.removeEventListener('focus', stopAlert);
+    };
+    window.addEventListener('focus', stopAlert);
+
+    return () => clearInterval(interval);
+  }, [isAlerting]);
+
   // Monitor for reminders
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,19 +88,25 @@ function App() {
           const reminderTime = new Date(task.reminderTime);
           const diff = now.getTime() - reminderTime.getTime();
 
-          // If reminder was set for within the last 60 seconds and not notified yet in this session
-          // We'll use a session storage to avoid repeating notifications
           const notifiedKey = `notified_${task.id}_${reminderTime.getTime()}`;
           if (diff >= 0 && diff < 60000 && !sessionStorage.getItem(notifiedKey)) {
-            addToast('success', `Lembrete: ${task.title}`);
+            addToast('success', `Lembrete GP: ${task.title}`);
             sessionStorage.setItem(notifiedKey, 'true');
+
+            // Trigger Alarm Actions
+            playAlarmSound();
+            setIsAlerting(true);
+
             if (Notification.permission === 'granted') {
-              new Notification('Lembrete de Tarefa', { body: task.title });
+              new Notification('To Do GP - Inteligência', {
+                body: `Hora de agir: ${task.title}`,
+                icon: '/logo.png'
+              });
             }
           }
         }
       });
-    }, 30000); // Check every 30s
+    }, 15000); // Check every 15s for better precision
     return () => clearInterval(interval);
   }, [tasks, addToast]);
 

@@ -356,22 +356,51 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 </div>
                                 <div>
                                     <div className="flex justify-between items-center mb-1.5">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Notificação</label>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aviso Sonoro / Alerta</label>
                                         <button
                                             type="button"
-                                            onClick={() => setReminderEnabled(!reminderEnabled)}
-                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${reminderEnabled ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}
+                                            onClick={() => {
+                                                const newState = !reminderEnabled;
+                                                setReminderEnabled(newState);
+                                                if (newState && dueDate) {
+                                                    // Default to 15m before if enabled
+                                                    const date = new Date(dueDate);
+                                                    date.setMinutes(date.getMinutes() - 15);
+                                                    setReminderTime(date.toISOString().substring(0, 16));
+                                                }
+                                            }}
+                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                         >
-                                            {reminderEnabled ? 'Ativo' : 'Inativo'}
+                                            {reminderEnabled ? 'ON' : 'OFF'}
                                         </button>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-4 gap-1">
+                                            {[15, 30, 60, 120].map((mins) => (
+                                                <button
+                                                    key={mins}
+                                                    type="button"
+                                                    disabled={!reminderEnabled || !dueDate}
+                                                    onClick={() => {
+                                                        const date = new Date(dueDate);
+                                                        date.setMinutes(date.getMinutes() - mins);
+                                                        setReminderTime(date.toISOString().substring(0, 16));
+                                                    }}
+                                                    className={`py-1 text-[9px] font-black rounded-lg transition-all border ${reminderEnabled && reminderTime && Math.abs((new Date(dueDate).getTime() - new Date(reminderTime).getTime()) / 60000 - mins) < 1
+                                                            ? 'bg-blue-600 border-blue-600 text-white'
+                                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-400 hover:text-blue-500'
+                                                        } disabled:opacity-20`}
+                                                >
+                                                    {mins < 60 ? `${mins}m` : `${mins / 60}h`}
+                                                </button>
+                                            ))}
+                                        </div>
                                         <input
                                             type="datetime-local"
                                             disabled={!reminderEnabled}
                                             value={reminderTime}
                                             onChange={(e) => setReminderTime(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30"
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30"
                                         />
                                     </div>
                                 </div>
