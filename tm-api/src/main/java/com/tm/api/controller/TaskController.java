@@ -20,13 +20,9 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @GetMapping(value = {"", "/", "/ping"})
-    public ResponseEntity<?> pingCheck(@RequestParam(required = false) TaskStatus status) {
-        // If it's a list request
-        if (status == null) {
-            return ResponseEntity.ok(taskService.findAll(null));
-        }
-        return ResponseEntity.ok(taskService.findAll(status));
+    @GetMapping
+    public List<TaskDTO> getAllTasks() {
+        return taskService.findAll(null);
     }
 
     @GetMapping("/{id}")

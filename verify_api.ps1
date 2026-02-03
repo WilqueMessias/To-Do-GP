@@ -28,10 +28,9 @@ try {
     Write-Host " [!] Sem resposta no health." -ForegroundColor Yellow
 }
 
-Write-Host "[3/3] Testando Endpoint /tasks..." -NoNewline
 try {
-    # Testamos com /tasks (novo mapeamento simplificado)
-    $t = Invoke-WebRequest -Uri "$baseUrl/tasks" -Method Get -TimeoutSec 5 -Proxy $null -UseBasicParsing
+    # Usando Proxy $null para evitar interferencia de proxies corporativos
+    $response = Invoke-WebRequest -Uri "$baseUrl/tasks" -Method Get -TimeoutSec 10 -UseBasicParsing -Proxy $null
     Write-Host " [SUCESSO]" -ForegroundColor Green
     Write-Host ">>> O SISTEMA ESTA VIVO!" -ForegroundColor Green
     exit 0
@@ -39,7 +38,15 @@ try {
     if ($_.Exception.Response) {
         $st = [int]$_.Exception.Response.StatusCode
         Write-Host " [ERRO $st]" -ForegroundColor Red
-        Write-Host "LOG DO SERVIDOR: Olhe a janela 'TM Backend' para ver o 'QA DIAGNOSTIC'." -ForegroundColor Cyan
+        
+        Write-Host " [DIAGNOSTICO] Verificando se o servidor recebeu o sinal (requests.log)..." -ForegroundColor Cyan
+        if (Test-Path "d:\GP\requests.log") {
+             $lastLog = Get-Content "d:\GP\requests.log" -Tail 1
+             Write-Host " ULTIMA REQUISICAO RECEBIDA: $lastLog" -ForegroundColor White
+        } else {
+             Write-Host " [AVISO] O servidor nem sequer criou o log. O sinal nao chegou no Java." -ForegroundColor Yellow
+        }
+        Write-Host " DICA: Olhe a janela 'TM Backend' para ver a lista 'REGISTERED ENDPOINTS'." -ForegroundColor Cyan
     } else {
         Write-Host " [ERRO DE REDE]" -ForegroundColor Red
     }
