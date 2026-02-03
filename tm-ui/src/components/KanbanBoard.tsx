@@ -21,11 +21,12 @@ import { TaskCard } from './TaskCard';
 
 interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
+    onUpdateTask?: (id: string, updates: Partial<Task>) => void;
     onTasksChange?: (tasks: Task[]) => void;
     tasks?: Task[];
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksChange, tasks = [] }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTask, onTasksChange, tasks = [] }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -121,6 +122,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
                         title={col.title}
                         tasks={tasks.filter((t) => t.status === col.id)}
                         onTaskClick={onEditTask}
+                        onUpdateTask={onUpdateTask}
                     />
                 ))}
 

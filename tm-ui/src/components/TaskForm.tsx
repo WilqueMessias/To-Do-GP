@@ -170,9 +170,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         setSubtasks(updated);
     };
 
+    const modalRef = React.useRef<HTMLDivElement>(null);
+
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
+        <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all"
+            onClick={handleBackdropClick}
+        >
+            <div ref={modalRef} className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
                 <div className="flex justify-between items-center p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/50">
                     <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
                         {taskToEdit ? 'Editar Tarefa' : 'Nova Demanda'}

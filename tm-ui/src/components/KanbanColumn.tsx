@@ -9,9 +9,10 @@ interface KanbanColumnProps {
     title: string;
     tasks: Task[];
     onTaskClick: (task: Task) => void;
+    onUpdateTask?: (id: string, updates: Partial<Task>) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask }) => {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -38,7 +39,11 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
                             style={{ animationDelay: `${index * 50}ms` }}
                             className="animate-enter"
                         >
-                            <TaskCard task={task} onClick={() => onTaskClick(task)} />
+                            <TaskCard
+                                task={task}
+                                onClick={() => onTaskClick(task)}
+                                onUpdate={onUpdateTask}
+                            />
                         </div>
                     ))}
                 </SortableContext>

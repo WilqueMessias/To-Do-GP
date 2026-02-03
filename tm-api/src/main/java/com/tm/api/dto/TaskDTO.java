@@ -42,10 +42,10 @@ public class TaskDTO {
     private LocalDateTime dueDate;
 
     @Schema(description = "Whether the task is marked as important", example = "true")
-    private boolean important;
+    private Boolean important;
 
     @Schema(description = "Whether a reminder is enabled for this task", example = "true")
-    private boolean reminderEnabled;
+    private Boolean reminderEnabled;
 
     @Schema(description = "Timestamp for the task reminder")
     private LocalDateTime reminderTime;

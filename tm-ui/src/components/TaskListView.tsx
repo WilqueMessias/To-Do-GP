@@ -6,9 +6,10 @@ import { Star, Calendar, Clock } from 'lucide-react';
 interface TaskListViewProps {
     tasks: Task[];
     onEditTask: (task: Task) => void;
+    onUpdateTask?: (id: string, updates: Partial<Task>) => void;
 }
 
-export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask }) => {
+export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask, onUpdateTask }) => {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('pt-BR');
@@ -23,7 +24,22 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask })
         }
     };
 
+    const handlePriorityToggle = (e: React.MouseEvent, task: Task) => {
+        e.stopPropagation();
+        if (!onUpdateTask) return;
 
+        const priorities: Task['priority'][] = ['LOW', 'MEDIUM', 'HIGH'];
+        const currentIndex = priorities.indexOf(task.priority);
+        const nextPriority = priorities[(currentIndex + 1) % priorities.length];
+        onUpdateTask(task.id, { priority: nextPriority });
+    };
+
+    const handleStarToggle = (e: React.MouseEvent, task: Task) => {
+        e.stopPropagation();
+        if (onUpdateTask) {
+            onUpdateTask(task.id, { important: !task.important });
+        }
+    };
 
     return (
         <div className="max-w-[1200px] mx-auto p-8 animate-enter">
@@ -85,12 +101,20 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask })
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center justify-center gap-3">
-                                            <Star
-                                                size={16}
-                                                className={task.important ? 'text-amber-500' : 'text-slate-200 dark:text-slate-700'}
-                                                fill={task.important ? 'currentColor' : 'none'}
-                                            />
-                                            <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black border tracking-wider shadow-sm ${getPriorityDetails(task.priority).color}`}>
+                                            <button
+                                                onClick={(e) => handleStarToggle(e, task)}
+                                                className={`p-1 rounded-full transition-all active:scale-95 ${task.important ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-200 dark:text-slate-700 hover:text-slate-400'}`}
+                                            >
+                                                <Star
+                                                    size={18}
+                                                    fill={task.important ? 'currentColor' : 'none'}
+                                                />
+                                            </button>
+                                            <div
+                                                onClick={(e) => handlePriorityToggle(e, task)}
+                                                title="Clique para alternar prioridade"
+                                                className={`px-2.5 py-1 rounded-lg text-[10px] font-black border tracking-wider shadow-sm transition-all hover:scale-105 active:scale-95 select-none ${getPriorityDetails(task.priority).color}`}
+                                            >
                                                 {getPriorityDetails(task.priority).label}
                                             </div>
                                         </div>

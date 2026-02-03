@@ -21,6 +21,7 @@ function App() {
     removeToast,
     updateTaskStateLocal,
     handleSuccess,
+    handleUpdateTask,
     addToast
   } = useKanbanTasks();
 
@@ -98,8 +99,7 @@ function App() {
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none mb-1">To Do <span className="text-blue-600 dark:text-blue-400">GP</span></h1>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Enterprise Command</p>
+              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none">To Do <span className="text-blue-600 dark:text-blue-400">GP</span></h1>
             </div>
 
           </div>
@@ -157,6 +157,17 @@ function App() {
       </header>
 
 
+      {/* Fluid Dynamic Background (Modern Landing Page Style) */}
+      <div className="fluid-bg">
+        <div className="fluid-blob blob-1"></div>
+        <div className="fluid-blob blob-2"></div>
+        <div className="fluid-blob blob-3"></div>
+
+        {/* Subtle Overlays for Texture */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-80 pointer-events-none"></div>
+      </div>
+
+
 
       {/* Main Board */}
       <main className="flex-1">
@@ -164,12 +175,14 @@ function App() {
           <KanbanBoard
             onEditTask={handleOpenModal}
             onTasksChange={updateTaskStateLocal}
+            onUpdateTask={handleUpdateTask}
             tasks={tasks}
           />
         ) : (
           <TaskListView
             tasks={tasks}
             onEditTask={handleOpenModal}
+            onUpdateTask={handleUpdateTask}
           />
         )}
       </main>

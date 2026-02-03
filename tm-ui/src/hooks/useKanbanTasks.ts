@@ -51,6 +51,23 @@ export const useKanbanTasks = () => {
         }
     }, []);
 
+    const handleUpdateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+        try {
+            // Optimistic UI update
+            setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+
+            const response = await taskService.update(id, updates);
+
+            // Update with actual response data
+            setTasks(prev => prev.map(t => t.id === id ? response.data : t));
+            addToast('success', 'Tarefa atualizada!');
+        } catch (error) {
+            console.error('Failed to update task:', error);
+            addToast('error', 'Falha ao atualizar tarefa');
+            loadTasks();
+        }
+    }, [addToast, loadTasks]);
+
     const handleSuccess = useCallback((action: 'create' | 'update' | 'delete', taskId?: string) => {
         const messages = {
             create: 'Tarefa criada com sucesso!',
@@ -88,6 +105,7 @@ export const useKanbanTasks = () => {
         addToast,
         updateTaskStateLocal,
         handleSuccess,
+        handleUpdateTask,
         refresh: loadTasks
     };
 };

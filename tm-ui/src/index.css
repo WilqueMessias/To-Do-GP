@@ -2,24 +2,98 @@
 
 :root {
   --bg-main: #f8fafc;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #e0f2fe 0%, #f1f5f9 40%, #f8fafc 100%);
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(148, 163, 184, 0.2);
   --text-main: #0f172a;
   --text-muted: #64748b;
   --accent-blue: #2563eb;
-  --header-bg: rgba(255, 255, 255, 0.9);
+  --header-bg: rgba(255, 255, 255, 0.85);
 }
 
 .dark {
   --bg-main: #020617;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #0f172a 0%, #020617 100%);
-  --glass-bg: rgba(30, 41, 59, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --accent-blue: #3b82f6;
-  --header-bg: rgba(15, 23, 42, 0.9);
+  --header-bg: rgba(2, 6, 23, 0.85);
+}
+
+.fluid-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg-gradient);
+}
+
+.fluid-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  animation: fluid-move 20s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+  will-change: transform;
+}
+
+.dark .fluid-blob {
+  mix-blend-mode: screen;
+  opacity: 0.15;
+  filter: blur(120px);
+}
+
+.blob-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation-duration: 25s;
+}
+
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  bottom: -5%;
+  right: -5%;
+  animation-duration: 30s;
+  animation-delay: -5s;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #0ea5e9 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation-duration: 22s;
+  animation-delay: -10s;
+}
+
+@keyframes fluid-move {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(30px, 50px) scale(1.1) rotate(5deg);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9) rotate(-3deg);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
 }
 
 
@@ -91,6 +165,24 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 12s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
   }
 }
 

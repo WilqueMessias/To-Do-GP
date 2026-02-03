@@ -56,7 +56,7 @@ public class TaskController {
     @Operation(summary = "Update an existing task")
     @ApiResponse(responseCode = "200", description = "Task updated successfully")
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDTO> update(@PathVariable UUID id, @Valid @RequestBody TaskDTO dto) {
+    public ResponseEntity<TaskDTO> update(@PathVariable UUID id, @RequestBody TaskDTO dto) {
         log.info("Request to update task id: {}", id);
         return ResponseEntity.ok(taskService.update(id, dto));
     }

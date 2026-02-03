@@ -54,8 +54,8 @@ public class TaskService {
                 .status(dto.getStatus())
                 .priority(dto.getPriority())
                 .dueDate(dto.getDueDate())
-                .important(dto.isImportant())
-                .reminderEnabled(dto.isReminderEnabled())
+                .important(dto.getImportant() != null ? dto.getImportant() : false)
+                .reminderEnabled(dto.getReminderEnabled() != null ? dto.getReminderEnabled() : false)
                 .reminderTime(dto.getReminderTime())
                 .build();
 
@@ -86,61 +86,77 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
 
         TaskStatus oldStatus = task.getStatus();
-        if (!task.getTitle().equals(dto.getTitle())) {
+
+        if (dto.getTitle() != null && !task.getTitle().equals(dto.getTitle())) {
             addActivity(task, "Título alterado: " + task.getTitle() + " -> " + dto.getTitle());
             task.setTitle(dto.getTitle());
         }
 
-        if (task.getDescription() != null && !task.getDescription().equals(dto.getDescription())) {
-            addActivity(task, "Descrição técnica atualizada.");
-            task.setDescription(dto.getDescription());
-        } else if (task.getDescription() == null && dto.getDescription() != null && !dto.getDescription().isBlank()) {
-            addActivity(task, "Descrição técnica adicionada.");
-            task.setDescription(dto.getDescription());
+        if (dto.getDescription() != null) {
+            String newDesc = dto.getDescription();
+            if (task.getDescription() != null && !task.getDescription().equals(newDesc)) {
+                addActivity(task, "Descrição técnica atualizada.");
+                task.setDescription(newDesc);
+            } else if (task.getDescription() == null && !newDesc.isBlank()) {
+                addActivity(task, "Descrição técnica adicionada.");
+                task.setDescription(newDesc);
+            }
         }
 
-        if (task.getPriority() != dto.getPriority()) {
+        if (dto.getPriority() != null && task.getPriority() != dto.getPriority()) {
             addActivity(task, "Prioridade alterada: " + task.getPriority() + " -> " + dto.getPriority());
             task.setPriority(dto.getPriority());
         }
 
-        if (task.getDueDate() != null && !task.getDueDate().equals(dto.getDueDate())) {
-            addActivity(task, "Prazo renegociado.");
-            task.setDueDate(dto.getDueDate());
-        } else if (task.getDueDate() == null && dto.getDueDate() != null) {
-            addActivity(task, "Prazo definido.");
-            task.setDueDate(dto.getDueDate());
+        if (dto.getDueDate() != null) {
+            LocalDateTime newDate = dto.getDueDate();
+            if (task.getDueDate() != null && !task.getDueDate().equals(newDate)) {
+                addActivity(task, "Prazo renegociado.");
+                task.setDueDate(newDate);
+            } else if (task.getDueDate() == null) {
+                addActivity(task, "Prazo definido.");
+                task.setDueDate(newDate);
+            }
         }
 
-        if (task.isImportant() != dto.isImportant()) {
-            addActivity(task, "Importância alterada: " + (dto.isImportant() ? "Alta/Estrela" : "Normal"));
-            task.setImportant(dto.isImportant());
+        // Handle boolean primitive (boolean in DTO, but we need to check if it was
+        // actually in the JSON)
+        // Note: For partial updates, it's better to use Boolean wrapper in DTO,
+        // but here we can check if it differs from current to justify an update if it's
+        // sent.
+        // However, if it's ALWAYS sent as false by default in some clients, this is
+        // risky.
+        // Given TaskDTO.important is boolean, it defaults to false.
+        // Special case: if important changed, update it.
+        if (dto.getImportant() != null && task.isImportant() != dto.getImportant()) {
+            addActivity(task, "Importância alterada: " + (dto.getImportant() ? "Alta/Estrela" : "Normal"));
+            task.setImportant(dto.getImportant());
         }
 
-        if (task.isReminderEnabled() != dto.isReminderEnabled()) {
-            addActivity(task, dto.isReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
+        if (dto.getReminderEnabled() != null && task.isReminderEnabled() != dto.getReminderEnabled()) {
+            addActivity(task, dto.getReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
                     : "Lembrete desativado.");
-            task.setReminderEnabled(dto.isReminderEnabled());
+            task.setReminderEnabled(dto.getReminderEnabled());
         }
 
-        if (dto.isReminderEnabled() && dto.getReminderTime() != null
-                && !dto.getReminderTime().equals(task.getReminderTime())) {
+        if (dto.getReminderTime() != null && !dto.getReminderTime().equals(task.getReminderTime())) {
             task.setReminderTime(dto.getReminderTime());
         }
 
-        task.setStatus(dto.getStatus());
+        if (dto.getStatus() != null) {
+            task.setStatus(dto.getStatus());
+            if (task.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
+                task.setCompletedAt(LocalDateTime.now());
+            } else if (task.getStatus() != TaskStatus.DONE) {
+                task.setCompletedAt(null);
+            }
 
-        if (task.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
-            task.setCompletedAt(LocalDateTime.now());
-        } else if (task.getStatus() != TaskStatus.DONE) {
-            task.setCompletedAt(null);
+            if (oldStatus != task.getStatus()) {
+                addActivity(task, "Status alterado de " + oldStatus + " para " + task.getStatus());
+            }
         }
 
-        if (oldStatus != task.getStatus()) {
-            addActivity(task, "Status alterado de " + oldStatus + " para " + task.getStatus());
-        }
-
-        if (dto.getSubtasks() != null) {
+        if (dto.getSubtasks() != null && !dto.getSubtasks().isEmpty()) {
             // Log subtask completion changes
             dto.getSubtasks().forEach(sdto -> {
                 task.getSubtasks().stream()
