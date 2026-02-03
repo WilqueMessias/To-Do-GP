@@ -97,7 +97,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
 
     const handleRestoreFromHistory = async (taskToRestore: Task) => {
         try {
-            const restored = await taskService.restore(taskToRestore.id);
+            const response = await taskService.restore(taskToRestore.id);
+            const restored = response.data;
             // Remove from history
             setHistory(prev => prev.filter(t => t.id !== taskToRestore.id));
 
