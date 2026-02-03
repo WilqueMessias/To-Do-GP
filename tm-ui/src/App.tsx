@@ -6,6 +6,7 @@ import type { ToastMessage } from './components/Toast';
 import { Plus, Layout, Search } from 'lucide-react';
 import type { Task } from './services/api';
 import { taskService } from './services/api';
+import { SystemClock } from './components/SystemClock';
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -112,8 +113,10 @@ function App() {
             />
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex gap-6 mr-6 border-r pr-6 border-slate-200">
+          {/* Stats & Actions */}
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <SystemClock />
+            <div className="hidden lg:flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20 shadow-inner">
               <div className="text-center">
                 <p className="text-[10px] uppercase font-bold text-slate-400">Total</p>
                 <p className="text-lg font-bold text-slate-700">{stats.total}</p>

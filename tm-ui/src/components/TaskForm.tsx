@@ -16,7 +16,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
     const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
-    const [status] = useState<Task['status']>(taskToEdit?.status || 'TODO');
+    const [status, setStatus] = useState<Task['status']>(taskToEdit?.status || 'TODO');
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -88,7 +88,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             <select
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value as any)}
-                                className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
+                                className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             >
                                 <option value="LOW">Baixa</option>
                                 <option value="MEDIUM">Média</option>
@@ -96,15 +96,28 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Prazo Final *</label>
-                            <input
-                                required
-                                type="datetime-local"
-                                value={dueDate}
-                                onChange={(e) => setDueDate(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none"
-                            />
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value as any)}
+                                className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            >
+                                <option value="TODO">A Fazer</option>
+                                <option value="DOING">Em Progresso</option>
+                                <option value="DONE">Concluído</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Prazo Final *</label>
+                        <input
+                            required
+                            type="datetime-local"
+                            value={dueDate}
+                            onChange={(e) => setDueDate(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
                     </div>
 
                     <div className="pt-4 flex flex-col gap-3">
