@@ -43,4 +43,7 @@ public class TaskDTO {
 
     @Schema(description = "Auto-generated creation timestamp", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
+
+    @Schema(description = "Last update timestamp", accessMode = Schema.AccessMode.READ_ONLY)
+    private LocalDateTime updatedAt;
 }

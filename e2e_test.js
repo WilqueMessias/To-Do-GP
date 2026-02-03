@@ -43,7 +43,8 @@ async function runTest() {
 
         if (getRes.status === 200) {
             console.log("✅ GET Success (200 OK)");
-            const found = getRes.data.find(t => t.id === taskId);
+            // The API now returns a Page<TaskDTO>, so the array is in .content
+            const found = getRes.data.content.find(t => t.id === taskId);
             if (found) {
                 console.log("✅ Integrity Check Passed: Task found in list.");
             } else {

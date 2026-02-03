@@ -7,6 +7,8 @@ import com.tm.api.model.TaskStatus;
 import com.tm.api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,15 +23,15 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
 
-    public List<TaskDTO> findAll(TaskStatus status) {
-        log.info("Fetching all tasks with status: {}", status != null ? status : "ALL");
-        List<Task> tasks;
+    public Page<TaskDTO> findAll(TaskStatus status, Pageable pageable) {
+        log.info("Fetching paginated tasks with status: {}", status != null ? status : "ALL");
+        Page<Task> tasks;
         if (status != null) {
-            tasks = taskRepository.findByStatus(status);
+            tasks = taskRepository.findByStatus(status, pageable);
         } else {
-            tasks = taskRepository.findAll();
+            tasks = taskRepository.findAll(pageable);
         }
-        return tasks.stream().map(this::toDTO).collect(Collectors.toList());
+        return tasks.map(this::toDTO);
     }
 
     public TaskDTO findById(UUID id) {
@@ -84,6 +86,7 @@ public class TaskService {
                 .priority(task.getPriority())
                 .dueDate(task.getDueDate())
                 .createdAt(task.getCreatedAt())
+                .updatedAt(task.getUpdatedAt())
                 .build();
     }
 }

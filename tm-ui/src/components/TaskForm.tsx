@@ -49,14 +49,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="flex justify-between items-center p-6 border-b">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
+                <div className="flex justify-between items-center p-6 border-b border-white/20">
                     <h2 className="text-xl font-bold text-slate-800">
                         {taskToEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
-                        <X size={20} />
+                    <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-full transition-colors">
+                        <X size={20} className="text-slate-500" />
                     </button>
                 </div>
 

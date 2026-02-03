@@ -46,7 +46,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onTasksCha
     const loadTasks = async () => {
         try {
             const { data } = await taskService.getAll();
-            updateTasks(data);
+            updateTasks(data.content);
         } catch (error) {
             console.error('Failed to load tasks', error);
         }

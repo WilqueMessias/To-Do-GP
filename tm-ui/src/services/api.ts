@@ -14,8 +14,17 @@ export interface Task {
     createdAt?: string;
 }
 
+export interface PaginatedResponse<T> {
+    content: T[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+}
+
 export const taskService = {
-    getAll: (status?: string) => api.get<Task[]>('/tasks', { params: { status } }),
+    getAll: (status?: string, page = 0, size = 100) =>
+        api.get<PaginatedResponse<Task>>('/tasks', { params: { status, page, size } }),
     getById: (id: string) => api.get<Task>(`/tasks/${id}`),
     create: (task: Omit<Task, 'id' | 'createdAt'>) => api.post<Task>('/tasks', task),
     update: (id: string, task: Partial<Task>) => api.put<Task>(`/tasks/${id}`, task),

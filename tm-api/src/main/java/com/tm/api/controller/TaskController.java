@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +28,15 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @Operation(summary = "List all tasks", description = "Returns a list of all tasks, optionally filtered by status")
+    @Operation(summary = "List all tasks (Paginated)", description = "Returns a page of tasks, optionally filtered by status")
     @GetMapping
-    public List<TaskDTO> getAllTasks(
+    public Page<TaskDTO> getAllTasks(
             @Parameter(description = "Filter by status (TODO, DOING, DONE)") 
-            @RequestParam(required = false) TaskStatus status) {
-        log.info("Request to get all tasks with status: {}", status);
-        return taskService.findAll(status);
+            @RequestParam(required = false) TaskStatus status,
+            @Parameter(description = "Pagination parameters (page, size, sort)")
+            Pageable pageable) {
+        log.info("Request to get paginated tasks with status: {}", status);
+        return taskService.findAll(status, pageable);
     }
 
     @Operation(summary = "Get task by ID")

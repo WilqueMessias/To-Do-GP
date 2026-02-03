@@ -15,33 +15,38 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
     const { setNodeRef } = useDroppable({ id });
 
     return (
-        <div className="flex flex-col gap-4 w-80">
-            <div className="flex justify-between items-center px-1">
-                <h3 className="font-bold text-slate-700 uppercase tracking-wider text-sm flex items-center gap-2">
-                    {title}
-                    <span className="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">
+        <div ref={setNodeRef} className="flex flex-col flex-shrink-0 w-80">
+            <div className="flex items-center justify-between mb-4 px-2">
+                <div className="flex items-center gap-2">
+                    <h3 className={`font-bold text-lg ${id === 'TODO' ? 'text-slate-700' :
+                            id === 'DOING' ? 'text-blue-700' : 'text-emerald-700'
+                        }`}>
+                        {title}
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
                         {tasks.length}
                     </span>
-                </h3>
+                </div>
             </div>
-            <div
-                ref={setNodeRef}
-                className="bg-slate-100 rounded-lg p-4 min-h-[500px] flex flex-col gap-4"
-            >
-                <SortableContext
-                    id={id}
-                    items={tasks.map(t => t.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {tasks.map((task) => (
-                        <TaskCard key={task.id} task={task} onClick={onTaskClick} />
-                    ))}
-                    {tasks.length === 0 && (
-                        <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-200 rounded-lg text-slate-400 text-sm italic">
-                            Empty
+
+            <div className="glass-panel rounded-2xl p-3 min-h-[150px] transition-colors duration-300 flex flex-col gap-3">
+                <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                    {tasks.map((task, index) => (
+                        <div
+                            key={task.id}
+                            style={{ animationDelay: `${index * 50}ms` }}
+                            className="animate-enter"
+                        >
+                            <TaskCard task={task} onClick={() => onTaskClick(task)} />
                         </div>
-                    )}
+                    ))}
                 </SortableContext>
+
+                {tasks.length === 0 && (
+                    <div className="h-full flex flex-col items-center justify-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                        <p className="text-sm font-medium">Sem tarefas</p>
+                    </div>
+                )}
             </div>
         </div>
     );

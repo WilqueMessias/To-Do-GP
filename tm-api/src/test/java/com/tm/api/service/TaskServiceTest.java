@@ -12,6 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.tm.api.exception.TaskNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -54,12 +59,15 @@ class TaskServiceTest {
     }
 
     @Test
-    void findAll_ShouldReturnList() {
-        when(taskRepository.findAll()).thenReturn(List.of(task));
-        List<TaskDTO> result = taskService.findAll(null);
+    void findAll_ShouldReturnPage() {
+        Page<Task> taskPage = new PageImpl<>(List.of(task));
+        when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
+        
+        Page<TaskDTO> result = taskService.findAll(null, Pageable.unpaged());
+        
         assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        assertEquals(task.getTitle(), result.get(0).getTitle());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(task.getTitle(), result.getContent().get(0).getTitle());
     }
 
     @Test
@@ -83,7 +91,7 @@ class TaskServiceTest {
     void findById_WhenNotExists_ShouldThrowException() {
         UUID id = UUID.randomUUID();
         when(taskRepository.findById(id)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> taskService.findById(id));
+        assertThrows(TaskNotFoundException.class, () -> taskService.findById(id));
     }
 
     @Test
