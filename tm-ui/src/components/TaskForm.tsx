@@ -22,7 +22,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [reminderEnabled, setReminderEnabled] = useState(taskToEdit?.reminderEnabled || false);
     const [reminderTime, setReminderTime] = useState(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
     const [status, setStatus] = useState<Task['status']>(taskToEdit?.status || 'TODO');
-    const [hasTime, setHasTime] = useState(taskToEdit?.dueDate?.includes('T') ? !taskToEdit.dueDate.includes('00:00:00') && !taskToEdit.dueDate.endsWith('T23:59:59') : !!taskToEdit?.dueDate);
+    const [hasTime, setHasTime] = useState(() => {
+        if (!taskToEdit?.dueDate) return false;
+        // Check for sentinels: Start of day (legacy) or End of day (new sort fix)
+        if (taskToEdit.dueDate.includes('T00:00:00') || taskToEdit.dueDate.includes('T23:59:59')) return false;
+        return taskToEdit.dueDate.includes('T');
+    });
     // Let's simplify hasTime initialization: if it has a non-zero time or if we want to default to true when editing a task with time.
     // Actually, let's just use a simple heuristic: if it has 'T' and isn't just a date placeholder.
 
@@ -154,7 +159,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                 } else {
                     // Force end of day for date-only tasks to ensure they are at the top of the day range
                     const datePart = dueDate.includes('T') ? dueDate.split('T')[0] : dueDate;
-                    finalDueDate = new Date(`${datePart}T23:59:59.000Z`).toISOString();
+                    if (datePart) {
+                        finalDueDate = new Date(`${datePart}T23:59:59.000Z`).toISOString();
+                    }
                 }
             }
 
@@ -408,7 +415,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                             if (hasTime) {
                                                 setDueDate(val);
                                             } else {
-                                                setDueDate(val + 'T00:00');
+                                                setDueDate(val ? val + 'T00:00' : '');
                                             }
 
                                             if (!val) {

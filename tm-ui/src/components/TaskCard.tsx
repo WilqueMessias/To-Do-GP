@@ -169,8 +169,7 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({ task, onClick, onUpdate })
                     {new Date(task.dueDate).toLocaleString('pt-BR', {
                         day: '2-digit',
                         month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        ...(task.dueDate.includes('T23:59:59') ? {} : { hour: '2-digit', minute: '2-digit' })
                     })}
                 </span>
             </div>
