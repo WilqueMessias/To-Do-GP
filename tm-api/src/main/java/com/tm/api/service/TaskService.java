@@ -74,10 +74,7 @@ public class TaskService {
             task.setSubtasks(subtasks);
         }
 
-        task.getActivities().add(Activity.builder()
-                .message("Tarefa criada com o status " + task.getStatus())
-                .task(task)
-                .build());
+        addActivity(task, "Tarefa criada com o status " + task.getStatus());
 
         return toDTO(taskRepository.save(task));
     }
@@ -90,55 +87,39 @@ public class TaskService {
 
         TaskStatus oldStatus = task.getStatus();
         if (!task.getTitle().equals(dto.getTitle())) {
-            task.getActivities().add(Activity.builder()
-                    .message("Título alterado: " + task.getTitle() + " -> " + dto.getTitle())
-                    .task(task)
-                    .build());
+            addActivity(task, "Título alterado: " + task.getTitle() + " -> " + dto.getTitle());
             task.setTitle(dto.getTitle());
         }
 
         if (task.getDescription() != null && !task.getDescription().equals(dto.getDescription())) {
-            task.getActivities().add(Activity.builder()
-                    .message("Descrição técnica atualizada.")
-                    .task(task)
-                    .build());
+            addActivity(task, "Descrição técnica atualizada.");
             task.setDescription(dto.getDescription());
-        } else if (task.getDescription() == null && dto.getDescription() != null) {
+        } else if (task.getDescription() == null && dto.getDescription() != null && !dto.getDescription().isBlank()) {
+            addActivity(task, "Descrição técnica adicionada.");
             task.setDescription(dto.getDescription());
         }
 
         if (task.getPriority() != dto.getPriority()) {
-            task.getActivities().add(Activity.builder()
-                    .message("Prioridade alterada: " + task.getPriority() + " -> " + dto.getPriority())
-                    .task(task)
-                    .build());
+            addActivity(task, "Prioridade alterada: " + task.getPriority() + " -> " + dto.getPriority());
             task.setPriority(dto.getPriority());
         }
 
         if (task.getDueDate() != null && !task.getDueDate().equals(dto.getDueDate())) {
-            task.getActivities().add(Activity.builder()
-                    .message("Prazo renegociado.")
-                    .task(task)
-                    .build());
+            addActivity(task, "Prazo renegociado.");
             task.setDueDate(dto.getDueDate());
         } else if (task.getDueDate() == null && dto.getDueDate() != null) {
+            addActivity(task, "Prazo definido.");
             task.setDueDate(dto.getDueDate());
         }
 
         if (task.isImportant() != dto.isImportant()) {
-            task.getActivities().add(Activity.builder()
-                    .message("Importância alterada: " + (dto.isImportant() ? "Alta/Estrela" : "Normal"))
-                    .task(task)
-                    .build());
+            addActivity(task, "Importância alterada: " + (dto.isImportant() ? "Alta/Estrela" : "Normal"));
             task.setImportant(dto.isImportant());
         }
 
         if (task.isReminderEnabled() != dto.isReminderEnabled()) {
-            task.getActivities().add(Activity.builder()
-                    .message(dto.isReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
-                            : "Lembrete desativado.")
-                    .task(task)
-                    .build());
+            addActivity(task, dto.isReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
+                    : "Lembrete desativado.");
             task.setReminderEnabled(dto.isReminderEnabled());
         }
 
@@ -156,27 +137,23 @@ public class TaskService {
         }
 
         if (oldStatus != task.getStatus()) {
-            task.getActivities().add(Activity.builder()
-                    .message("Status alterado de " + oldStatus + " para " + task.getStatus())
-                    .task(task)
-                    .build());
+            addActivity(task, "Status alterado de " + oldStatus + " para " + task.getStatus());
         }
 
         if (dto.getSubtasks() != null) {
             // Log subtask completion changes
             dto.getSubtasks().forEach(sdto -> {
                 task.getSubtasks().stream()
-                        .filter(s -> s.getTitle().equals(sdto.getTitle()) && s.isCompleted() != sdto.isCompleted())
+                        .filter(s -> s.getTitle().trim().equalsIgnoreCase(sdto.getTitle().trim())
+                                && s.isCompleted() != sdto.isCompleted())
                         .findFirst()
                         .ifPresent(s -> {
-                            task.getActivities().add(Activity.builder()
-                                    .message("Checklist item: '" + s.getTitle() + "' marcado como "
-                                            + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"))
-                                    .task(task)
-                                    .build());
+                            addActivity(task, "Checklist item: '" + s.getTitle() + "' marcado como "
+                                    + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"));
                         });
             });
 
+            // Re-sync subtasks
             task.getSubtasks().clear();
             List<Subtask> subtasks = dto.getSubtasks().stream()
                     .map(s -> Subtask.builder()
@@ -207,10 +184,31 @@ public class TaskService {
         if (updated == 0) {
             throw new TaskNotFoundException("Could not restore task with id: " + id);
         }
-        // Use native find to bypass @Where clause in case of cache issues
-        return taskRepository.findByIdIncludeDeleted(id)
-                .map(this::toDTO)
+        Task task = taskRepository.findByIdIncludeDeleted(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task restored but not found: " + id));
+
+        addActivity(task, "Tarefa restaurada.");
+
+        return toDTO(taskRepository.save(task));
+    }
+
+    private void addActivity(Task task, String message) {
+        // Deduplication: Don't add if a very recent activity (last 30s) or a
+        // null-timestamp activity in this session has the same message
+        boolean isDuplicate = task.getActivities().stream()
+                .anyMatch(a -> a.getMessage().equals(message) &&
+                        (a.getTimestamp() == null || a.getTimestamp().isAfter(LocalDateTime.now().minusSeconds(30))));
+
+        if (isDuplicate) {
+            log.debug("Skipping duplicate activity log for task {}: {}", task.getId(), message);
+            return;
+        }
+
+        log.info("Adding activity to task {}: {}", task.getId(), message);
+        task.getActivities().add(Activity.builder()
+                .message(message)
+                .task(task)
+                .build());
     }
 
     private TaskDTO toDTO(Task task) {
