@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { taskService } from '../services/api';
 import type { Task } from '../services/api';
 import type { ToastMessage } from '../components/Toast';
@@ -35,42 +35,44 @@ export const useKanbanTasks = () => {
         loadTasks();
     }, [loadTasks]);
 
-    const sortedTasks = [...tasks].sort((a, b) => {
-        if (sortConfig.key === 'none') return 0;
+    const sortedTasks = useMemo(() => {
+        return [...tasks].sort((a, b) => {
+            if (sortConfig.key === 'none') return 0;
 
-        const dir = sortConfig.direction === 'asc' ? 1 : -1;
+            const dir = sortConfig.direction === 'asc' ? 1 : -1;
 
-        if (sortConfig.key === 'title') {
-            return a.title.localeCompare(b.title) * dir;
-        }
+            if (sortConfig.key === 'title') {
+                return a.title.localeCompare(b.title) * dir;
+            }
 
-        if (sortConfig.key === 'dueDate') {
-            if (!a.dueDate) return 1;
-            if (!b.dueDate) return -1;
-            return (new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) * dir;
-        }
+            if (sortConfig.key === 'dueDate') {
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return (new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) * dir;
+            }
 
-        if (sortConfig.key === 'priority') {
-            const weights = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
-            return (weights[b.priority] - weights[a.priority]) * dir;
-        }
+            if (sortConfig.key === 'priority') {
+                const weights = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+                return (weights[b.priority] - weights[a.priority]) * dir;
+            }
 
-        if (sortConfig.key === 'status') {
-            const weights = { 'TODO': 1, 'DOING': 2, 'DONE': 3 };
-            return (weights[a.status] - weights[b.status]) * dir;
-        }
+            if (sortConfig.key === 'status') {
+                const weights = { 'TODO': 1, 'DOING': 2, 'DONE': 3 };
+                return (weights[a.status] - weights[b.status]) * dir;
+            }
 
-        if (sortConfig.key === 'important') {
-            return (a.important === b.important ? 0 : a.important ? -1 : 1) * dir;
-        }
+            if (sortConfig.key === 'important') {
+                return (a.important === b.important ? 0 : a.important ? -1 : 1) * dir;
+            }
 
-        return 0;
-    });
+            return 0;
+        });
+    }, [tasks, sortConfig]);
 
-    const filteredTasks = sortedTasks.filter(t =>
+    const filteredTasks = useMemo(() => sortedTasks.filter(t =>
         t.title.toLowerCase().includes(search.toLowerCase()) ||
         t.description.toLowerCase().includes(search.toLowerCase())
-    );
+    ), [sortedTasks, search]);
 
     const updateTaskStateLocal = useCallback((updatedTasks: Task[] | ((prev: Task[]) => Task[])) => {
         if (typeof updatedTasks === 'function') {

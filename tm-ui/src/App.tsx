@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
@@ -120,15 +120,15 @@ function App() {
   }, []);
 
 
-  const handleOpenModal = (task?: Task) => {
+  const handleOpenModal = useCallback((task?: Task) => {
     setTaskToEdit(task);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setTaskToEdit(undefined);
-  };
+  }, []);
 
 
   return (

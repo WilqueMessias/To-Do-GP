@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import type { Task } from '../services/api';
 import {
     Calendar,
@@ -37,7 +37,7 @@ const isOverdue = (dateStr: string, status: string) => {
     return new Date(dateStr).getTime() < new Date().getTime();
 };
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) => {
+const TaskCardComponent: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: task.id,
     });
@@ -177,3 +177,5 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onUpdate }) =
         </div>
     );
 };
+
+export const TaskCard = memo(TaskCardComponent);

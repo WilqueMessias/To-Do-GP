@@ -15,6 +15,11 @@ interface KanbanColumnProps {
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask }) => {
     const { setNodeRef } = useDroppable({ id });
 
+    // Use a stable wrapper for the click handler to prevent breaking memoization
+    const handleCardClick = React.useCallback((task: Task) => {
+        onTaskClick(task);
+    }, [onTaskClick]);
+
     return (
         <div ref={setNodeRef} className="flex flex-col flex-shrink-0 w-80">
             <div className="flex items-center justify-between mb-4 px-2">
@@ -41,7 +46,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
                         >
                             <TaskCard
                                 task={task}
-                                onClick={() => onTaskClick(task)}
+                                onClick={handleCardClick}
                                 onUpdate={onUpdateTask}
                             />
                         </div>
