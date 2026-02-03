@@ -2,6 +2,7 @@ package com.tm.api.dto;
 
 import com.tm.api.model.Priority;
 import com.tm.api.model.TaskStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,22 +17,30 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(description = "Data Transfer Object for Task operations")
 public class TaskDTO {
+    @Schema(description = "Unique identifier (UUID)", accessMode = Schema.AccessMode.READ_ONLY)
     private UUID id;
 
+    @Schema(description = "Task title", example = "Integrate API", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Title is required")
     private String title;
 
+    @Schema(description = "Detailed description", example = "Connect the frontend with the Spring Boot backend")
     private String description;
 
+    @Schema(description = "Current status", example = "TODO", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Status is required")
     private TaskStatus status;
 
+    @Schema(description = "Task priority", example = "HIGH", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Priority is required")
     private Priority priority;
 
+    @Schema(description = "Deadline for the task", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Due date is required")
     private LocalDateTime dueDate;
 
+    @Schema(description = "Auto-generated creation timestamp", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 }

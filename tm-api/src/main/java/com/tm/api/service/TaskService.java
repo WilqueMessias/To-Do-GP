@@ -1,10 +1,12 @@
 package com.tm.api.service;
 
 import com.tm.api.dto.TaskDTO;
+import com.tm.api.exception.TaskNotFoundException;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
 import com.tm.api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -19,6 +22,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     public List<TaskDTO> findAll(TaskStatus status) {
+        log.info("Fetching all tasks with status: {}", status != null ? status : "ALL");
         List<Task> tasks;
         if (status != null) {
             tasks = taskRepository.findByStatus(status);
@@ -29,9 +33,10 @@ public class TaskService {
     }
 
     public TaskDTO findById(UUID id) {
+        log.debug("Finding task by id: {}", id);
         return taskRepository.findById(id)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
     }
 
     @Transactional
@@ -48,8 +53,9 @@ public class TaskService {
 
     @Transactional
     public TaskDTO update(UUID id, TaskDTO dto) {
+        log.info("Updating task id: {}", id);
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
         
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
@@ -62,8 +68,9 @@ public class TaskService {
 
     @Transactional
     public void delete(UUID id) {
+        log.info("Deleting task id: {}", id);
         if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found with id: " + id);
+            throw new TaskNotFoundException("Task not found with id: " + id);
         }
         taskRepository.deleteById(id);
     }
