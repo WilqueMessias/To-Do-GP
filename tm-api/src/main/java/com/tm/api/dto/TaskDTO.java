@@ -47,6 +47,15 @@ public class TaskDTO {
     @Schema(description = "Last update timestamp", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
 
+    @Schema(description = "Completion timestamp (if status is DONE)", accessMode = Schema.AccessMode.READ_ONLY)
+    private LocalDateTime completedAt;
+
+    @Schema(description = "Whether the task is overdue", accessMode = Schema.AccessMode.READ_ONLY)
+    private boolean overdue;
+
+    @Schema(description = "Calculated progress (0-100)", accessMode = Schema.AccessMode.READ_ONLY)
+    private double progress;
+
     @Schema(description = "List of subtasks (Checklist)")
     @Builder.Default
     private java.util.List<SubtaskDTO> subtasks = new java.util.ArrayList<>();

@@ -45,9 +45,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     };
 
     const priorityColors = {
-        LOW: 'bg-emerald-100 text-emerald-700',
-        MEDIUM: 'bg-amber-100 text-amber-700',
-        HIGH: 'bg-rose-100 text-rose-700',
+        LOW: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+        MEDIUM: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+        HIGH: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
     };
 
     const overdue = isOverdue(task.dueDate, task.status);
@@ -91,10 +91,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                 </div>
             </div>
 
-            <h3 className="text-slate-800 font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="text-slate-800 dark:text-slate-100 font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {task.title}
             </h3>
-            <p className="text-slate-500 text-xs leading-relaxed line-clamp-2 mb-4">
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed line-clamp-2 mb-4">
                 {task.description}
             </p>
 
@@ -105,9 +105,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                             <CheckSquare size={10} className={completedSubtasks === totalSubtasks ? 'text-emerald-500' : 'text-blue-500'} />
                             <span>{completedSubtasks}/{totalSubtasks} PASSO{totalSubtasks > 1 ? 'S' : ''}</span>
                         </div>
-                        <span className="text-[10px] font-black text-slate-400">{Math.round(progressPercent)}%</span>
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500">{Math.round(progressPercent)}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-white/50">
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-white/50 dark:border-white/5">
                         <div
                             className={`h-full transition-all duration-500 ${completedSubtasks === totalSubtasks ? 'bg-emerald-500' : 'bg-blue-500'}`}
                             style={{ width: `${progressPercent}%` }}
@@ -116,7 +116,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                 </div>
             )}
 
-            <div className="flex items-center gap-2 pt-3 border-t border-white/30 text-slate-400">
+            <div className="flex items-center gap-2 pt-3 border-t border-white/30 dark:border-white/5 text-slate-400 dark:text-slate-500">
                 <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
                 <span className={`text-[11px] font-semibold ${overdue ? 'text-rose-500' : ''}`}>
                     {new Date(task.dueDate).toLocaleString('pt-BR', {

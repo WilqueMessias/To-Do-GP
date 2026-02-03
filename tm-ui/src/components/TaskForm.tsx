@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import type { Task } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import type { Task, Subtask } from '../services/api';
 import { taskService } from '../services/api';
-import { X, Plus, Trash2, CheckSquare, Square, History } from 'lucide-react';
-import type { Subtask } from '../services/api';
+import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles } from 'lucide-react';
 
 interface TaskFormProps {
     isOpen: boolean;
@@ -21,6 +20,68 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [subtasks, setSubtasks] = useState<Subtask[]>(taskToEdit?.subtasks || []);
     const [newSubtask, setNewSubtask] = useState('');
     const [loading, setLoading] = useState(false);
+    const [suggestion, setSuggestion] = useState<{ date: string, label: string } | null>(null);
+
+    // Smart NL Parsing Engine
+    useEffect(() => {
+        if (!title || taskToEdit) return;
+
+        const text = title.toLowerCase();
+        let targetDate = new Date();
+        let found = false;
+        let label = '';
+
+        if (text.includes('hoje') || text.includes('today')) {
+            targetDate.setHours(23, 59, 0, 0);
+            found = true;
+            label = 'Hoje';
+        } else if (text.includes('amanhã') || text.includes('tomorrow')) {
+            targetDate.setDate(targetDate.getDate() + 1);
+            targetDate.setHours(12, 0, 0, 0);
+            found = true;
+            label = 'Amanhã';
+        } else if (text.includes('próxima semana') || text.includes('next week')) {
+            targetDate.setDate(targetDate.getDate() + 7);
+            targetDate.setHours(9, 0, 0, 0);
+            found = true;
+            label = 'Próxima Semana';
+        } else {
+            // Weekday detection
+            const weekdays = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+            for (let i = 0; i < weekdays.length; i++) {
+                if (text.includes(weekdays[i])) {
+                    const currentDay = targetDate.getDay();
+                    let daysToAdd = (i - currentDay + 7) % 7;
+                    if (daysToAdd === 0) daysToAdd = 7; // Target next week if same day
+                    targetDate.setDate(targetDate.getDate() + daysToAdd);
+                    targetDate.setHours(10, 0, 0, 0);
+                    found = true;
+                    label = weekdays[i].charAt(0).toUpperCase() + weekdays[i].slice(1);
+                    break;
+                }
+            }
+        }
+
+        // Relative "em X dias" detection
+        const dayMatch = text.match(/em (\d+) dias/);
+        if (dayMatch && !found) {
+            targetDate.setDate(targetDate.getDate() + parseInt(dayMatch[1]));
+            targetDate.setHours(18, 0, 0, 0);
+            found = true;
+            label = `em ${dayMatch[1]} dias`;
+        }
+
+        if (found) {
+            const formatted = targetDate.toISOString().substring(0, 16);
+            if (formatted !== dueDate) {
+                setSuggestion({ date: formatted, label });
+            } else {
+                setSuggestion(null);
+            }
+        } else {
+            setSuggestion(null);
+        }
+    }, [title, dueDate, taskToEdit]);
 
     if (!isOpen) return null;
 
@@ -59,7 +120,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     };
 
     const removeSubtask = (index: number) => {
-        setSubtasks(subtasks.filter((_, i) => i !== index));
+        setSubtasks(subtasks.filter((_, i: number) => i !== index));
     };
 
     const toggleSubtask = (index: number) => {
@@ -85,12 +146,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl">
-                <div className="flex justify-between items-center p-6 border-b border-white/20">
-                    <h2 className="text-xl font-bold text-slate-800">
+                <div className="flex justify-between items-center p-6 border-b border-white/20 dark:border-white/5">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                         {taskToEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-full transition-colors">
-                        <X size={20} className="text-slate-500" />
+                    <button onClick={onClose} className="p-2 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-full transition-colors">
+                        <X size={20} className="text-slate-500 dark:text-slate-400" />
                     </button>
                 </div>
 
@@ -99,13 +160,28 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                         {/* Essential Info */}
                         <section className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Título da Tarefa</label>
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Título da Tarefa</label>
+                                    {suggestion && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDueDate(suggestion.date);
+                                                setSuggestion(null);
+                                            }}
+                                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 border border-blue-100 animate-pulse hover:animate-none transition-all"
+                                        >
+                                            <Sparkles size={10} />
+                                            <span>Sugerir {suggestion.label}?</span>
+                                        </button>
+                                    )}
+                                </div>
                                 <input
                                     required
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 placeholder:text-slate-300"
-                                    placeholder="Ex: Refatorar API de Autenticação"
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                                    placeholder="Ex: Refatorar API amanhã"
                                 />
                             </div>
 
@@ -114,20 +190,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 placeholder:text-slate-300 resize-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none"
                                     placeholder="Descreva os detalhes da implementação..."
                                 />
                             </div>
                         </section>
 
                         {/* Metadata Grid */}
-                        <section className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <section className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5">
                             <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Prioridade</label>
                                 <select
                                     value={priority}
                                     onChange={(e) => setPriority(e.target.value as any)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
                                 >
                                     <option value="LOW">Baixa</option>
                                     <option value="MEDIUM">Média</option>
@@ -139,7 +215,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 <select
                                     value={status}
                                     onChange={(e) => setStatus(e.target.value as any)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
                                 >
                                     <option value="TODO">A Fazer</option>
                                     <option value="DOING">Em Progresso</option>
@@ -153,7 +229,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     type="datetime-local"
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
                                 />
                             </div>
                         </section>
@@ -165,16 +241,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 <span className="text-[10px] font-black text-blue-500">{subtasks.filter(s => s.completed).length}/{subtasks.length}</span>
                             </div>
                             <div className="space-y-2 mb-3">
-                                {subtasks.map((st, index) => (
-                                    <div key={index} className="flex items-center gap-2 group bg-white p-3 rounded-xl border border-slate-200 hover:border-blue-200 hover:shadow-sm transition-all animate-enter">
+                                {subtasks.map((st: Subtask, index: number) => (
+                                    <div key={index} className="flex items-center gap-2 group bg-white dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-white/5 hover:border-blue-200 dark:hover:border-blue-900/50 hover:shadow-sm transition-all animate-enter">
                                         <button
                                             type="button"
                                             onClick={() => toggleSubtask(index)}
-                                            className={`transition-all ${st.completed ? 'text-emerald-500' : 'text-slate-300 hover:text-blue-400'}`}
+                                            className={`transition-all ${st.completed ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-blue-400'}`}
                                         >
                                             {st.completed ? <CheckSquare size={20} /> : <Square size={20} />}
                                         </button>
-                                        <span className={`text-sm flex-1 font-medium ${st.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                                        <span className={`text-sm flex-1 font-medium ${st.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-700 dark:text-slate-200'}`}>
                                             {st.title}
                                         </span>
                                         <button
@@ -193,7 +269,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     onChange={(e) => setNewSubtask(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
                                     placeholder="Adicionar novo passo..."
-                                    className="flex-1 px-4 py-2 text-sm rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50/50"
+                                    className="flex-1 px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100"
                                 />
                                 <button
                                     type="button"
@@ -213,12 +289,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Logs de Atividade</span>
                                 </div>
                                 <div className="space-y-4 max-h-[160px] overflow-y-auto pr-3 custom-scrollbar">
-                                    {taskToEdit.activities.map((activity) => (
+                                    {taskToEdit.activities?.map((activity: any) => (
                                         <div key={activity.id} className="relative pl-6 pb-4 last:pb-0">
-                                            <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-slate-200 border-2 border-white outline outline-1 outline-slate-100" />
-                                            <div className="absolute left-[3px] top-3 bottom-0 w-0.5 bg-slate-100 last:hidden" />
-                                            <p className="text-[11px] text-slate-600 font-semibold leading-tight mb-1">{activity.message}</p>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
+                                            <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 outline outline-1 outline-slate-100 dark:outline-white/5" />
+                                            <div className="absolute left-[3px] top-3 bottom-0 w-0.5 bg-slate-100 dark:bg-slate-800 last:hidden" />
+                                            <p className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold leading-tight mb-1">{activity.message}</p>
+                                            <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">
                                                 {new Date(activity.timestamp).toLocaleString('pt-BR', {
                                                     day: '2-digit', month: 'short',
                                                     hour: '2-digit', minute: '2-digit'
@@ -232,12 +308,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                     </div>
 
                     {/* Actions footer */}
-                    <div className="sticky bottom-0 bg-white/80 backdrop-blur-md border-t border-slate-100 p-6 flex flex-col gap-3">
+                    <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-white/5 p-6 flex flex-col gap-3">
                         <div className="flex gap-3">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 py-2.5 rounded-lg border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                                className="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-white/10 font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                             >
                                 Cancelar
                             </button>

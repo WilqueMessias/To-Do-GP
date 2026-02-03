@@ -18,12 +18,12 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
         <div ref={setNodeRef} className="flex flex-col flex-shrink-0 w-80">
             <div className="flex items-center justify-between mb-4 px-2">
                 <div className="flex items-center gap-2">
-                    <h3 className={`font-bold text-lg ${id === 'TODO' ? 'text-slate-700' :
-                            id === 'DOING' ? 'text-blue-700' : 'text-emerald-700'
+                    <h3 className={`font-bold text-lg ${id === 'TODO' ? 'text-slate-700 dark:text-slate-300' :
+                        id === 'DOING' ? 'text-blue-700 dark:text-blue-400' : 'text-emerald-700 dark:text-emerald-400'
                         }`}>
                         {title}
                     </h3>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/5">
                         {tasks.length}
                     </span>
                 </div>
@@ -43,7 +43,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
                 </SortableContext>
 
                 {tasks.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                    <div className="h-full flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-xl">
                         <p className="text-sm font-medium">Sem tarefas</p>
                     </div>
                 )}

@@ -1,47 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import type { ToastMessage } from './components/Toast';
-import { Plus, Layout, Search } from 'lucide-react';
-import type { Task } from './services/api';
-import { taskService } from './services/api';
+import { Plus, BarChart3, Search, Moon, Sun } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
+import { AnalyticsPanel } from './components/AnalyticsPanel';
+import { useKanbanTasks } from './hooks/useKanbanTasks';
+import { useTheme } from './hooks/useTheme';
+import type { Task } from './services/api';
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [search, setSearch] = useState('');
+  const {
+    tasks,
+    search,
+    setSearch,
+    toasts,
+    removeToast,
+    updateTaskStateLocal,
+    handleSuccess,
+    addToast
+  } = useKanbanTasks();
+
+  const { theme, toggleTheme } = useTheme();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  const loadTasks = async () => {
-    try {
-      const { data } = await taskService.getAll();
-      setTasks(data.content);
-    } catch (error) {
-      addToast('error', 'Falha ao carregar tarefas');
-    }
-  };
-
-  useEffect(() => {
-    loadTasks();
-  }, [refreshTrigger]);
-
-  const filteredTasks = tasks.filter(t =>
-    t.title.toLowerCase().includes(search.toLowerCase()) ||
-    t.description.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const addToast = (type: 'success' | 'error', message: string, action?: ToastMessage['action']) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, message, action }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
 
   const handleOpenModal = (task?: Task) => {
     setTaskToEdit(task);
@@ -53,110 +36,68 @@ function App() {
     setTaskToEdit(undefined);
   };
 
-  const handleSuccess = (action: 'create' | 'update' | 'delete', taskId?: string) => {
-    const messages = {
-      create: 'Tarefa criada com sucesso!',
-      update: 'Tarefa atualizada com sucesso!',
-      delete: 'Tarefa removida com sucesso!'
-    };
-
-    if (action === 'delete' && taskId) {
-      addToast('success', messages[action], {
-        label: 'Desfazer',
-        onClick: async () => {
-          try {
-            await taskService.restore(taskId);
-            addToast('success', 'Tarefa restaurada!');
-            setRefreshTrigger(prev => prev + 1);
-          } catch (e) {
-            addToast('error', 'Falha ao restaurar tarefa');
-          }
-        }
-      });
-    } else {
-      addToast('success', messages[action]);
-    }
-    setRefreshTrigger(prev => prev + 1);
-  };
-
-  // Calcular estatísticas
-  const stats = {
-    total: tasks.length,
-    todo: tasks.filter(t => t.status === 'TODO').length,
-    doing: tasks.filter(t => t.status === 'DOING').length,
-    done: tasks.filter(t => t.status === 'DONE').length,
-    highPriority: tasks.filter(t => t.priority === 'HIGH').length,
-  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f0f4f8]">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-8 py-4 flex flex-col gap-6 sticky top-0 z-30 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-2 rounded-lg text-white">
-              <Layout size={24} />
+      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200 px-8 py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
+        <div className="max-w-[1600px] mx-auto flex justify-between items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-tr from-blue-700 to-indigo-500 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-200 ring-4 ring-blue-50">
+              <BarChart3 size={22} className="group-hover:rotate-12 transition-transform" />
             </div>
-            <h1 className="text-xl font-bold text-slate-800 tracking-tight">TaskManager <span className="text-blue-600">Kanban</span></h1>
+            <div>
+              <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-1">TM <span className="text-blue-600">ANALYTICS</span></h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Enterprise Command</p>
+            </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl mx-8 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          {/* Search Bar Professionalized */}
+          <div className="flex-1 max-w-2xl relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por título ou descrição..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              placeholder="Pesquisar inteligência de tarefas..."
+              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50/50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium"
             />
           </div>
 
-          {/* Stats & Actions */}
-          <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex items-center gap-6">
             <SystemClock />
-            <div className="hidden lg:flex items-center gap-4 px-6 py-3 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20 shadow-inner">
-              <div className="text-center">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Total</p>
-                <p className="text-lg font-bold text-slate-700">{stats.total}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] uppercase font-bold text-blue-400">Fazendo</p>
-                <p className="text-lg font-bold text-blue-600">{stats.doing}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] uppercase font-bold text-green-400">Concluído</p>
-                <p className="text-lg font-bold text-green-600">{stats.done}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] uppercase font-bold text-red-400">Crítico</p>
-                <p className="text-lg font-bold text-red-600">{stats.highPriority}</p>
-              </div>
-            </div>
+
+            <button
+              onClick={toggleTheme}
+              className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+              title={theme === 'light' ? 'Ativar Modo Dark' : 'Ativar Modo Light'}
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
 
             <button
               onClick={() => handleOpenModal()}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-200 active:scale-95"
+              className="group flex items-center gap-2 bg-slate-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-slate-200 dark:shadow-blue-900/20 active:scale-95 text-sm"
             >
-              <Plus size={20} />
-              <span>Nova Tarefa</span>
+              <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+              <span>Nova Demanda</span>
             </button>
           </div>
         </div>
       </header>
 
+      {/* Analytics Dashboard */}
+      <div className="max-w-[1600px] mx-auto w-full px-8 mt-8">
+        <AnalyticsPanel tasks={tasks} />
+      </div>
+
       {/* Main Board */}
       <main className="flex-1">
         <KanbanBoard
           onEditTask={handleOpenModal}
-          onTasksChange={(updatedFilteredTasks) => {
-            setTasks(prev => prev.map(t => {
-              const updated = updatedFilteredTasks.find(ut => ut.id === t.id);
-              return updated || t;
-            }));
-          }}
-          tasks={filteredTasks}
+          onTasksChange={updateTaskStateLocal}
+          tasks={tasks}
         />
       </main>
 

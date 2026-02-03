@@ -24,6 +24,7 @@ export interface Task {
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     dueDate: string;
     createdAt?: string;
+    completedAt?: string;
     subtasks?: Subtask[];
     activities?: Activity[];
 }

@@ -53,6 +53,9 @@ public class Task {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @Column
+    private LocalDateTime completedAt;
+
     @Builder.Default
     private boolean deleted = Boolean.FALSE;
 
@@ -64,4 +67,16 @@ public class Task {
     @Builder.Default
     @OrderBy("timestamp DESC")
     private java.util.List<Activity> activities = new java.util.ArrayList<>();
+
+    public boolean isOverdue() {
+        return status != TaskStatus.DONE && dueDate != null && dueDate.isBefore(LocalDateTime.now());
+    }
+
+    public double getProgress() {
+        if (subtasks == null || subtasks.isEmpty()) {
+            return status == TaskStatus.DONE ? 100.0 : 0.0;
+        }
+        long completedCount = subtasks.stream().filter(Subtask::isCompleted).count();
+        return (double) completedCount / subtasks.size() * 100.0;
+    }
 }

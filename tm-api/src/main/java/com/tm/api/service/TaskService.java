@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,10 @@ public class TaskService {
                 .dueDate(dto.getDueDate())
                 .build();
         
+        if (dto.getStatus() == TaskStatus.DONE) {
+            task.setCompletedAt(LocalDateTime.now());
+        }
+        
         if (dto.getSubtasks() != null) {
             List<Subtask> subtasks = dto.getSubtasks().stream()
                     .map(s -> Subtask.builder()
@@ -81,11 +86,49 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
         
         TaskStatus oldStatus = task.getStatus();
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
+        if (!task.getTitle().equals(dto.getTitle())) {
+            task.getActivities().add(Activity.builder()
+                    .message("Título alterado: " + task.getTitle() + " -> " + dto.getTitle())
+                    .task(task)
+                    .build());
+            task.setTitle(dto.getTitle());
+        }
+
+        if (task.getDescription() != null && !task.getDescription().equals(dto.getDescription())) {
+            task.getActivities().add(Activity.builder()
+                    .message("Descrição técnica atualizada.")
+                    .task(task)
+                    .build());
+            task.setDescription(dto.getDescription());
+        } else if (task.getDescription() == null && dto.getDescription() != null) {
+             task.setDescription(dto.getDescription());
+        }
+
+        if (task.getPriority() != dto.getPriority()) {
+            task.getActivities().add(Activity.builder()
+                    .message("Prioridade alterada: " + task.getPriority() + " -> " + dto.getPriority())
+                    .task(task)
+                    .build());
+            task.setPriority(dto.getPriority());
+        }
+
+        if (task.getDueDate() != null && !task.getDueDate().equals(dto.getDueDate())) {
+            task.getActivities().add(Activity.builder()
+                    .message("Prazo renegociado.")
+                    .task(task)
+                    .build());
+            task.setDueDate(dto.getDueDate());
+        } else if (task.getDueDate() == null && dto.getDueDate() != null) {
+            task.setDueDate(dto.getDueDate());
+        }
+
         task.setStatus(dto.getStatus());
-        task.setPriority(dto.getPriority());
-        task.setDueDate(dto.getDueDate());
+
+        if (task.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
+            task.setCompletedAt(LocalDateTime.now());
+        } else if (task.getStatus() != TaskStatus.DONE) {
+            task.setCompletedAt(null);
+        }
 
         if (oldStatus != task.getStatus()) {
             task.getActivities().add(Activity.builder()
@@ -95,8 +138,19 @@ public class TaskService {
         }
         
         if (dto.getSubtasks() != null) {
-            // Update subtasks: simple approach - clear and replace for now
-            // In a production app, we might want more granular diffing
+            // Log subtask completion changes
+            dto.getSubtasks().forEach(sdto -> {
+                task.getSubtasks().stream()
+                    .filter(s -> s.getTitle().equals(sdto.getTitle()) && s.isCompleted() != sdto.isCompleted())
+                    .findFirst()
+                    .ifPresent(s -> {
+                        task.getActivities().add(Activity.builder()
+                                .message("Checklist item: '" + s.getTitle() + "' marcado como " + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"))
+                                .task(task)
+                                .build());
+                    });
+            });
+
             task.getSubtasks().clear();
             List<Subtask> subtasks = dto.getSubtasks().stream()
                     .map(s -> Subtask.builder()
@@ -143,6 +197,9 @@ public class TaskService {
                 .dueDate(task.getDueDate())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
+                .completedAt(task.getCompletedAt())
+                .overdue(task.isOverdue())
+                .progress(task.getProgress())
                 .subtasks(task.getSubtasks().stream()
                         .map(s -> SubtaskDTO.builder()
                                 .id(s.getId())
