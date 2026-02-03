@@ -20,4 +20,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @org.springframework.transaction.annotation.Transactional
     @org.springframework.data.jpa.repository.Query(value = "UPDATE tasks SET deleted = false WHERE id = :id", nativeQuery = true)
     int restoreByIdNative(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
+
+    @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM tasks WHERE deleted = true ORDER BY completed_at DESC", nativeQuery = true)
+    java.util.List<Task> findAllDeletedNative();
 }

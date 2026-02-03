@@ -208,6 +208,13 @@ public class TaskService {
         return toDTO(taskRepository.save(task));
     }
 
+    public List<TaskDTO> getHistory() {
+        log.info("Fetching deleted tasks history");
+        return taskRepository.findAllDeletedNative().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private void addActivity(Task task, String message) {
         // Deduplication: Don't add if a very recent activity (last 30s) or a
         // null-timestamp activity in this session has the same message

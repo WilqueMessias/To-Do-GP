@@ -54,22 +54,28 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
     const [history, setHistory] = useState<Task[]>([]);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
-    // Load history from local storage on mount
+    // Initial load
     React.useEffect(() => {
-        const savedHistory = localStorage.getItem('task_cleanup_history');
-        if (savedHistory) {
-            try {
-                setHistory(JSON.parse(savedHistory));
-            } catch (e) {
-                console.error("Failed to load history", e);
-            }
-        }
+        // Prevent flashing by only fetching if modal is open or on initial mount if needed
+        // For now, let's fetch when modal opens or here
+        fetchHistory();
     }, []);
 
-    // Save history when it changes
+    const fetchHistory = async () => {
+        try {
+            const { data } = await taskService.getHistory();
+            setHistory(data);
+        } catch (error) {
+            console.error("Failed to fetch history", error);
+        }
+    };
+
+    // Refresh history when modal opens
     React.useEffect(() => {
-        localStorage.setItem('task_cleanup_history', JSON.stringify(history));
-    }, [history]);
+        if (isHistoryModalOpen) {
+            fetchHistory();
+        }
+    }, [isHistoryModalOpen]);
 
     const handleClearCompleted = async () => {
         const completedTasks = internalTasks.filter(t => t.status === 'DONE');
@@ -78,21 +84,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
         // Optimistic update
         const remainingTasks = internalTasks.filter(t => t.status !== 'DONE');
         setInternalTasks(remainingTasks);
-        // Sync with parent
         if (onTasksChange) onTasksChange(remainingTasks);
 
-        // API Delete & History Update
-        const newHistory = [...history];
+        // API Delete 
         for (const task of completedTasks) {
             try {
                 await taskService.delete(task.id);
-                // Add to history with current timestamp as "deleted at" roughly
-                newHistory.unshift({ ...task, completedAt: new Date().toISOString() });
             } catch (error) {
                 console.error(`Failed to delete task ${task.id}`, error);
             }
         }
-        setHistory(newHistory);
+        // Refresh history after deletion
+        fetchHistory();
     };
 
     const handleRestoreFromHistory = async (taskToRestore: Task) => {
@@ -105,7 +108,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             const updateResponse = await taskService.update(restored.id, { status: 'TODO' });
             restored = updateResponse.data;
 
-            // Remove from history
+            // Update local state (Optimistic)
             setHistory(prev => prev.filter(t => t.id !== taskToRestore.id));
 
             // Add back to board
@@ -113,8 +116,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             setInternalTasks(newTasks);
             if (onTasksChange) onTasksChange(newTasks);
 
-            // Temporary feedback since we don't have access to addToast here yet
-            // alert(`Tarefa "${restored.title}" restaurada para A Fazer!`);
         } catch (error) {
             console.error("Failed to restore task", error);
             alert("Erro ao restaurar tarefa. Verifique o console.");
@@ -122,9 +123,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
     };
 
     const handleClearHistory = () => {
-        if (confirm('Tem certeza? Isso removerá o histórico local permanentemente.')) {
-            setHistory([]);
-        }
+        alert("O histórico é gerenciado pelo servidor e exibe apenas itens excluídos recentemente.");
+        // Optional: Implement a hard-delete endpoint if requested later
     };
 
     // Sync only when NOT dragging to avoid jitter, but listen to external updates

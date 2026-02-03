@@ -77,4 +77,11 @@ public class TaskController {
         log.info("Request to restore task: {}", id);
         return taskService.restore(id);
     }
+
+    @Operation(summary = "Get deleted tasks history", description = "Returns all soft-deleted tasks")
+    @GetMapping("/history")
+    public java.util.List<TaskDTO> getHistory() {
+        log.info("Request to get task history");
+        return taskService.getHistory();
+    }
 }
