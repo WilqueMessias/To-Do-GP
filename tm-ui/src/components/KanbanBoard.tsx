@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     DndContext,
     DragOverlay,
-    closestCorners,
+    rectIntersection,
     KeyboardSensor,
     PointerSensor,
     useSensor,
@@ -14,7 +14,12 @@ import type {
     DragEndEvent,
     DropAnimation,
 } from '@dnd-kit/core';
-import { defaultDropAnimationSideEffects } from '@dnd-kit/core';
+import {
+    defaultDropAnimationSideEffects,
+    MeasuringStrategy,
+    TouchSensor,
+    MouseSensor,
+} from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import type { Task } from '../services/api';
@@ -31,14 +36,31 @@ interface KanbanBoardProps {
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTask, onTasksChange, tasks = [] }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
+            },
+        }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
     const [activeTask, setActiveTask] = useState<Task | null>(null);
+    const [internalTasks, setInternalTasks] = useState<Task[]>(tasks);
+    const isDraggingRef = React.useRef(false);
+
+    // Sync only when NOT dragging to avoid jitter, but listen to external updates
+    React.useEffect(() => {
+        if (!isDraggingRef.current) {
+            setInternalTasks(tasks);
+        }
+    }, [tasks]);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
-        const task = tasks.find((t) => t.id === active.id);
+        isDraggingRef.current = true;
+        const task = internalTasks.find((t) => t.id === active.id);
         if (task) setActiveTask(task);
     };
 
@@ -51,54 +73,66 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
 
         if (activeId === overId) return;
 
-        const isOverAColumn = ['TODO', 'DOING', 'DONE'].includes(overId as string);
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
-        if (activeIndex === -1) return;
+        // Use functional state update with local 'currentTasks' snapshot to avoid dependency bloat
+        setInternalTasks((currentTasks) => {
+            const activeIndex = currentTasks.findIndex((t) => t.id === activeId);
+            const overIndex = currentTasks.findIndex((t) => t.id === overId);
 
-        const activeTask = tasks[activeIndex];
+            if (activeIndex === -1) return currentTasks;
 
-        if (isOverAColumn) {
-            const newStatus = overId as Task['status'];
-            if (activeTask.status !== newStatus) {
-                const newTasks = [...tasks];
-                newTasks[activeIndex] = { ...activeTask, status: newStatus };
-                if (onTasksChange) onTasksChange(newTasks);
+            const activeTask = currentTasks[activeIndex];
+            const isOverAColumn = ['TODO', 'DOING', 'DONE'].includes(overId as string);
+
+            if (isOverAColumn) {
+                const newStatus = overId as Task['status'];
+                if (activeTask.status !== newStatus) {
+                    const newTasks = [...currentTasks];
+                    newTasks[activeIndex] = { ...activeTask, status: newStatus };
+                    return newTasks;
+                }
+                return currentTasks;
             }
-            return;
-        }
 
-        const overIndex = tasks.findIndex((t) => t.id === overId);
-        if (overIndex === -1) return;
+            if (overIndex === -1) return currentTasks;
+            const overTask = currentTasks[overIndex];
 
-        const overTask = tasks[overIndex];
+            const newTasks = [...currentTasks];
 
-        if (activeTask.status !== overTask.status) {
-            const newTasks = [...tasks];
-            newTasks[activeIndex] = { ...activeTask, status: overTask.status };
-            const reordered = arrayMove(newTasks, activeIndex, overIndex);
-            if (onTasksChange) onTasksChange(reordered);
-            return;
-        }
+            // If checking against a task in a different column, update status immediately
+            if (activeTask.status !== overTask.status) {
+                newTasks[activeIndex] = { ...activeTask, status: overTask.status };
+                return arrayMove(newTasks, activeIndex, overIndex);
+            }
 
-        const reordered = arrayMove(tasks, activeIndex, overIndex);
-        if (onTasksChange) onTasksChange(reordered);
+            return arrayMove(newTasks, activeIndex, overIndex);
+        });
     };
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
+        isDraggingRef.current = false;
         setActiveTask(null);
+
+        // Commit the final state to the parent
+        // We use the latest 'internalTasks' state here
+        // However, we need to correctly persist the CHANGE.
+        // DragEnd checks 'over' but we may have already moved the item in 'internalTasks' via DragOver.
+        // So we just push 'internalTasks' to the parent to ensure sync.
+
+        if (onTasksChange) {
+            onTasksChange(internalTasks);
+        }
 
         if (!over) return;
 
-        const task = tasks.find((t) => t.id === active.id);
+        const task = internalTasks.find((t) => t.id === active.id);
         if (!task) return;
 
         try {
             await taskService.update(task.id, { status: task.status });
         } catch (error) {
             console.error('Failed to persist task movement:', error);
-            // Parent App.tsx will handle refresh if needed, 
-            // but we avoid window.location.reload here.
+            // Revert on error if needed, or rely on parent reload
         }
     };
 
@@ -122,17 +156,35 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
         <div className="flex gap-8 p-8 justify-center overflow-x-auto min-h-[calc(100vh-80px)]">
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCorners}
+                collisionDetection={rectIntersection}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
+
+                measuring={{
+                    droppable: {
+                        strategy: MeasuringStrategy.Always,
+                    },
+                }}
+                accessibility={{
+                    // Disable announcements to prevent screen reader lag during rapid drag
+                    announcements: {
+                        onDragStart: () => '',
+                        onDragOver: () => '',
+                        onDragEnd: () => '',
+                        onDragCancel: () => '',
+                    },
+                    screenReaderInstructions: {
+                        draggable: '',
+                    }
+                }}
             >
                 {columns.map((col) => (
                     <KanbanColumn
                         key={col.id}
                         id={col.id}
                         title={col.title}
-                        tasks={tasks.filter((t) => t.status === col.id)}
+                        tasks={internalTasks.filter((t) => t.status === col.id)}
                         onTaskClick={onEditTask}
                         onUpdateTask={onUpdateTask}
                     />

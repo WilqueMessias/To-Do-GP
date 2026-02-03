@@ -12,7 +12,7 @@ interface KanbanColumnProps {
     onUpdateTask?: (id: string, updates: Partial<Task>) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask }) => {
+export const KanbanColumn = React.memo<KanbanColumnProps>(({ id, title, tasks, onTaskClick, onUpdateTask }) => {
     const { setNodeRef } = useDroppable({ id });
 
     // Use a stable wrapper for the click handler to prevent breaking memoization
@@ -61,4 +61,4 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
             </div>
         </div>
     );
-};
+});
