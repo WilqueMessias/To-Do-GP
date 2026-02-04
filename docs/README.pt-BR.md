@@ -19,13 +19,13 @@
 
 ## Visão Geral
 
-O **To Do GP** é um ecossistema de gerenciamento de tarefas desacoplado de classe empresarial, projetado com **Java 17 (Spring Boot 3.2.2)** e **TypeScript (React 19)**. A arquitetura prioriza propagação de eventos assíncronos, fluxos de auditoria não-bloqueantes e encapsulamento rigoroso orientado ao domínio para garantir a integridade do sistema e alta disponibilidade.
+O **To Do GP** é um sistema de gerenciamento de tarefas desacoplado, projetado com **Java 17 (Spring Boot 3.2.2)** e **TypeScript (React 19)**. A arquitetura utiliza propagação de eventos assíncronos e auditoria não bloqueante com limites orientados ao domínio para preservar a integridade dos dados.
 
 ---
 
 ## Core Arquitetônico
 
-O sistema utiliza uma topologia **Monolito Distribuído**, impondo um limite rigoroso entre o gerenciamento de estado transacional e a interface de usuário reativa.
+O sistema utiliza uma topologia **Monolito Distribuído**, estabelecendo um limite claro entre o gerenciamento de estado transacional e a interface de usuário reativa.
 
 - **Serviço Backend**: Orquestra invariantes de domínio, logs de atividade imutáveis e persistência em conformidade com ACID.
 - **SPA Frontend**: Gerencia reconciliação otimista, interações baseadas em física e agregação analítica em tempo real.
@@ -46,9 +46,9 @@ O sistema utiliza uma topologia **Monolito Distribuído**, impondo um limite rig
 | Componente | Tecnologia | Justificativa |
 | :--- | :--- | :--- |
 | **Runtime** | Java 17 / Node 18 | Estabilidade e performance padrão da indústria. |
-| **Frameworks** | Spring Boot / React | Ecossistema robusto para padrões enterprise e UI baseada em componentes. |
+| **Frameworks** | Spring Boot / React | Ecossistema comum para backend e UI baseada em componentes. |
 | **Segurança** | RateLimit Interceptor | Proteção nativa contra exaustão de recursos e força bruta. |
-| **Observabilidade** | Micrometer | Monitoramento profissional de SLI/SLO e telemetria. |
+| **Observabilidade** | Micrometer | Monitoramento de SLI/SLO e telemetria. |
 | **Infraestrutura** | Docker / Compose | Multi-stage builds e orquestração containerizada. |
 
 ---

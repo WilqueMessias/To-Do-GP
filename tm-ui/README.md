@@ -47,7 +47,7 @@ Preview serves the production build at `http://localhost:4173`.
 
 ## Production Deployment
 
-The application is containerized within the root `docker-compose.yml`. In production, assets are served via an optimized Nginx alpine image.
+The application is containerized within the root `docker-compose.yml`. In production, assets are served via an Nginx alpine image.
 
 ---
 Technical specification by Wilque Messias © 2026.

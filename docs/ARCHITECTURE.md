@@ -132,12 +132,12 @@ flowchart TD
 To decouple business throughput from side-effect latency, we implement an asynchronous event-driven audit trail.
 1. **Emit**: `TaskService` publishes a `TaskAuditEvent` upon successful state changes.
 2. **Handle**: A background thread calculates the field-level differential (diff).
-3. **Commit**: The audit log is persisted in a separate database transaction, ensuring the user response is delivered immediately.
+3. **Commit**: The audit log is persisted in a separate database transaction so the user response is not blocked.
 
 ### 2. Resilience Design (Rate Limiting)
 Protecting the API topology via a custom **RateLimitInterceptor**.
 - **Mechanism**: Fixed-Window Counter calculated per Client IP address.
-- **Fail-fast**: Automated `429 Too Many Requests` responses when limits are exceeded, safeguarding backend resources.
+- **Fail-fast**: Automated `429 Too Many Requests` responses when limits are exceeded to protect backend resources.
 
 ### 3. Observability & SLI Monitoring
 Integration with **Micrometer** for exposing Service Level Indicators.
@@ -149,7 +149,7 @@ Integration with **Micrometer** for exposing Service Level Indicators.
 ## Infrastructure Orchestration
 
 The deployment lifecycle is managed via **Docker Compose**, utilizing health-check dependencies to ensure stable service ignition.
-- **Performance**: The UI is served via an optimized Nginx alpine container.
+- **Performance**: The UI is served via an Nginx alpine container.
 - **Stability**: Condition-based startup ensures the UI only initializes after the API reporting a `healthy` status.
 
 ---
@@ -172,8 +172,8 @@ docker-compose up -d --build
 ## Decisions & Trade-offs
 
 - **Distributed Monolith**: reduces coupling between layers without microservices overhead.
-- **Asynchronous auditing**: improves perceived latency with eventual consistency in the log.
-- **Rate limiting at API edge**: immediate protection with IP-based heuristics.
+- **Asynchronous auditing**: reduces response latency with eventual consistency in the log.
+- **Rate limiting at API edge**: protection with IP-based heuristics.
 
 ---
 

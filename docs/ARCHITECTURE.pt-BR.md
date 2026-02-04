@@ -132,12 +132,12 @@ flowchart TD
 Para desacoplar a vazão de negócios da latência de efeitos colaterais, implementamos uma trilha de auditoria assíncrona orientada a eventos.
 1. **Emissão**: o `TaskService` publica um `TaskAuditEvent` após mudanças de estado bem-sucedidas.
 2. **Processamento**: Uma thread secundária calcula o diferencial de campos (diff).
-3. **Persistência**: O log de auditoria é persistido em uma transação de banco de dados separada, garantindo que a resposta ao usuário seja entregue imediatamente.
+3. **Persistência**: O log de auditoria é persistido em uma transação separada para não bloquear a resposta ao usuário.
 
 ### 2. Design de Resiliência (Rate Limiting)
 Proteção da topologia da API através de um **RateLimitInterceptor** customizado.
 - **Mecanismo**: Contador de Janela Fixa calculado por endereço IP do cliente.
-- **Proteção**: Respostas automáticas `429 Too Many Requests` quando os limites são excedidos, salvaguardando os recursos do backend.
+- **Proteção**: Respostas automáticas `429 Too Many Requests` quando os limites são excedidos para proteger os recursos do backend.
 
 ### 3. Observabilidade & Monitoramento de SLI
 Integração com **Micrometer** para exposição de Indicadores de Nível de Serviço.
@@ -149,7 +149,7 @@ Integração com **Micrometer** para exposição de Indicadores de Nível de Ser
 ## Orquestração de Infraestrutura
 
 O ciclo de vida de implantação é gerenciado via **Docker Compose**, utilizando dependências de verificação de saúde para garantir a inicialização estável dos serviços.
-- **Performance**: A UI é servida através de um container Nginx alpine otimizado.
+- **Performance**: A UI é servida através de um container Nginx alpine.
 - **Estabilidade**: A inicialização baseada em condições garante que a UI só inicie após a API reportar status `healthy`.
 
 ---
@@ -172,8 +172,8 @@ docker-compose up -d --build
 ## Decisões & Trade-offs
 
 - **Monolito Distribuído**: reduz acoplamento entre camadas sem incorrer em overhead de microserviços.
-- **Auditoria assíncrona**: melhora latência percebida, com custo de eventual consistência no log.
-- **Rate limiting no edge da API**: proteção imediata, com limite por IP como heurística simples.
+- **Auditoria assíncrona**: reduz latência de resposta, com eventual consistência no log.
+- **Rate limiting no edge da API**: proteção com limite por IP como heurística simples.
 
 ---
 

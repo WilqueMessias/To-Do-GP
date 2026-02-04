@@ -19,7 +19,7 @@
 
 ## System Specification
 
-**To Do GP** is a decoupled task management architecture implemented using **Java 17 (Spring Boot 3.2.2)** and **TypeScript (React 19)**. The design focuses on asynchronous state synchronization, non-blocking auditing pipelines, and strict domain-driven encapsulation to maintain data integrity and system availability.
+**To Do GP** is a decoupled task management system implemented using **Java 17 (Spring Boot 3.2.2)** and **TypeScript (React 19)**. The design uses asynchronous state synchronization and non-blocking audit logging with domain-oriented boundaries to preserve data integrity.
 
 ---
 
@@ -35,9 +35,9 @@ The system adopts a **Distributed Monolith** pattern, establishing a rigid bound
 ## Implementation Patterns
 
 - **Event-Driven Audit Pipeline**: Asynchronous field-level differential tracking utilizing Spring `ApplicationEvent` propagation and dedicated thread-pool isolation via `@Async`.
-- **Traffic Resilience**: Protective **RateLimitInterceptor** (Fixed-Window Counter) safeguarding computational resources and API throughput.
+- **Traffic Resilience**: **RateLimitInterceptor** (Fixed-Window Counter) to protect resources and API throughput.
 - **Deep Observability**: Instrumentation via **Micrometer** for SLI monitoring and custom **Spring Actuator** health probes for business-critical telemetry.
-- **Infrastructure Abstraction**: Multi-stage Docker orchestration with automated service-health verification loops for deterministic startup sequencing.
+- **Infrastructure Abstraction**: Multi-stage Docker orchestration with service-health verification for startup sequencing.
 
 ---
 
@@ -46,9 +46,9 @@ The system adopts a **Distributed Monolith** pattern, establishing a rigid bound
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
 | **Runtime** | Java 17 / Node 18 | Industry-standard stability and performance. |
-| **Frameworks** | Spring Boot / React | Robust ecosystem for enterprise and componentized UI patterns. |
+| **Frameworks** | Spring Boot / React | Common ecosystem for server and component-based UI patterns. |
 | **Security** | RateLimit Interceptor | Protection against resource exhaustion and brute-force. |
-| **Observability** | Micrometer | Professional SLI/SLO monitoring and telemetry. |
+| **Observability** | Micrometer | SLI/SLO monitoring and telemetry. |
 | **Infrastructure** | Docker / Compose | Multi-stage builds and containerized orchestration. |
 
 ---
