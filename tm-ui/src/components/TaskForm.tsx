@@ -89,6 +89,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const pickerRef = React.useRef<HTMLDivElement>(null);
     const hourListRef = React.useRef<HTMLDivElement>(null);
     const minuteListRef = React.useRef<HTMLDivElement>(null);
+    const pickerDateInputRef = React.useRef<HTMLInputElement>(null);
 
     const openPicker = () => setIsPickerOpen(true);
     const closePicker = () => setIsPickerOpen(false);
@@ -162,6 +163,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     useEffect(() => {
         if (!isPickerOpen || !pickerRef.current) return;
         pickerRef.current.focus();
+    }, [isPickerOpen]);
+
+    useEffect(() => {
+        if (!isPickerOpen || !pickerDateInputRef.current) return;
+        const input = pickerDateInputRef.current;
+        input.focus();
+        input.select();
+        if (typeof input.showPicker === 'function') {
+            input.showPicker();
+        }
     }, [isPickerOpen]);
 
     useEffect(() => {
@@ -692,6 +703,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                         <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Data</label>
                                                         <input
                                                             type="date"
+                                                            ref={pickerDateInputRef}
                                                             value={pickerDate}
                                                             onChange={(e) => setPickerDate(normalizeDateInputValue(e.target.value))}
                                                             onBlur={(e) => setPickerDate(normalizeDateInputValue(e.target.value, true))}
