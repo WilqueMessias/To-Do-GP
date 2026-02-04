@@ -37,12 +37,60 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [hasTime, setHasTime] = useState(() => !isDateOnlyValue(taskToEdit?.dueDate));
     // Let's simplify hasTime initialization: if it has a non-zero time or if we want to default to true when editing a task with time.
     // Actually, let's just use a simple heuristic: if it has 'T' and isn't just a date placeholder.
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
+    const [pickerDate, setPickerDate] = useState('');
+    const [pickerTime, setPickerTime] = useState('');
+    const [activeTimeColumn, setActiveTimeColumn] = useState<'hour' | 'minute'>('hour');
+    const [typeBuffer, setTypeBuffer] = useState('');
+    const typeTimerRef = React.useRef<number | null>(null);
 
     const [subtasks, setSubtasks] = useState<Subtask[]>(taskToEdit?.subtasks || []);
     const [newSubtask, setNewSubtask] = useState('');
     const [loading, setLoading] = useState(false);
     const [suggestion, setSuggestion] = useState<{ date: string, label: string } | null>(null);
     const modalRef = React.useRef<HTMLDivElement>(null);
+    const pickerRef = React.useRef<HTMLDivElement>(null);
+    const hourListRef = React.useRef<HTMLDivElement>(null);
+    const minuteListRef = React.useRef<HTMLDivElement>(null);
+
+    const openPicker = () => setIsPickerOpen(true);
+    const closePicker = () => setIsPickerOpen(false);
+    const applyPicker = () => {
+        if (!pickerDate) {
+            closePicker();
+            return;
+        }
+        if (hasTime) {
+            const timePart = pickerTime || '00:00';
+            setDueDate(`${pickerDate}T${timePart}`);
+        } else {
+            setDueDate(`${pickerDate}T00:00`);
+        }
+        closePicker();
+    };
+    const setPickerToday = () => {
+        const now = new Date();
+        const ymd = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+        setPickerDate(ymd);
+        if (hasTime) {
+            setPickerTime(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`);
+        }
+    };
+    const setPickerTomorrow = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const ymd = `${tomorrow.getFullYear()}-${pad2(tomorrow.getMonth() + 1)}-${pad2(tomorrow.getDate())}`;
+        setPickerDate(ymd);
+        if (hasTime && !pickerTime) {
+            setPickerTime('09:00');
+        }
+    };
+    const clearPicker = () => {
+        setPickerDate('');
+        setPickerTime('');
+        setDueDate('');
+        closePicker();
+    };
 
     // Sync state when taskToEdit changes
     useEffect(() => {
@@ -60,6 +108,63 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             setHasTime(!isDateOnlyValue(taskToEdit?.dueDate));
         }
     }, [isOpen, taskToEdit]);
+
+    useEffect(() => {
+        if (!isPickerOpen) return;
+        const current = dueDate || getNowForInput();
+        const [datePart, timePart] = current.split('T');
+        setPickerDate(datePart);
+        setPickerTime(timePart ? timePart.substring(0, 5) : '');
+        setTypeBuffer('');
+        if (typeTimerRef.current) {
+            window.clearTimeout(typeTimerRef.current);
+            typeTimerRef.current = null;
+        }
+    }, [isPickerOpen, dueDate]);
+
+    useEffect(() => {
+        if (!isPickerOpen || !pickerRef.current) return;
+        pickerRef.current.focus();
+    }, [isPickerOpen]);
+
+    useEffect(() => {
+        if (!isPickerOpen) return;
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (pickerRef.current && !pickerRef.current.contains(target)) {
+                closePicker();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isPickerOpen]);
+
+    const handleTypeSelect = (nextBuffer: string) => {
+        const target = activeTimeColumn;
+        const value = target === 'hour'
+            ? pad2(Math.min(23, Math.max(0, parseInt(nextBuffer, 10))))
+            : pad2(Math.min(59, Math.max(0, parseInt(nextBuffer, 10))));
+
+        if (target === 'hour') {
+            setPickerTime(`${value}:${pickerTime?.split(':')[1] || '00'}`);
+            const btn = hourListRef.current?.querySelector<HTMLButtonElement>(`[data-hour="${value}"]`);
+            btn?.scrollIntoView({ block: 'nearest' });
+        } else {
+            setPickerTime(`${pickerTime?.split(':')[0] || '00'}:${value}`);
+            const btn = minuteListRef.current?.querySelector<HTMLButtonElement>(`[data-minute="${value}"]`);
+            btn?.scrollIntoView({ block: 'nearest' });
+        }
+    };
+
+    const onPickerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (!/\d/.test(e.key)) return;
+        e.preventDefault();
+        const next = (typeBuffer + e.key).slice(-2);
+        setTypeBuffer(next);
+        handleTypeSelect(next);
+        if (typeTimerRef.current) window.clearTimeout(typeTimerRef.current);
+        typeTimerRef.current = window.setTimeout(() => setTypeBuffer(''), 800);
+    };
 
     // Smart NL Parsing Engine
     useEffect(() => {
@@ -436,31 +541,134 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     </div>
                                     <div className="relative group/date">
                                         <input
-                                            type={hasTime ? "datetime-local" : "date"}
-                                            value={hasTime ? dueDate : dueDate.split('T')[0]}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (hasTime) {
-                                                    setDueDate(val);
-                                                } else {
-                                                    setDueDate(val ? val + 'T00:00' : '');
-                                                }
-                                            }}
-                                            onDoubleClick={(e) => e.currentTarget.showPicker()}
-                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400 [&::-webkit-calendar-picker-indicator]:hidden"
+                                            type="text"
+                                            readOnly
+                                            value={hasTime ? dueDate.replace('T', ' ') : (dueDate ? dueDate.split('T')[0] : '')}
+                                            placeholder={hasTime ? 'dd/mm/aaaa hh:mm' : 'dd/mm/aaaa'}
+                                            onClick={openPicker}
+                                            onFocus={openPicker}
+                                            onDoubleClick={openPicker}
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400"
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                // Trigger the native picker on the input sibling
-                                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                                                input.showPicker();
-                                            }}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-all"
-                                            title={hasTime ? "Selecionar data e hora" : "Selecionar data"}
-                                        >
-                                            <Calendar size={18} />
-                                        </button>
+                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={openPicker}
+                                                onDoubleClick={openPicker}
+                                                className="p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-all"
+                                                title={hasTime ? "Selecionar data e hora" : "Selecionar data"}
+                                            >
+                                                <Calendar size={18} />
+                                            </button>
+                                        </div>
+
+                                        {isPickerOpen && (
+                                            <div
+                                                ref={pickerRef}
+                                                tabIndex={0}
+                                                onKeyDown={onPickerKeyDown}
+                                                className="absolute right-0 mt-2 z-50 w-64 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 shadow-xl p-3 outline-none"
+                                            >
+                                                <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60 dark:border-white/10">
+                                                    <button
+                                                        type="button"
+                                                        onClick={setPickerToday}
+                                                        className="px-2 py-1 text-[9px] font-bold rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all"
+                                                    >
+                                                        Hoje
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={setPickerTomorrow}
+                                                        className="px-2 py-1 text-[9px] font-bold rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all"
+                                                    >
+                                                        Amanhã
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={clearPicker}
+                                                        className="ml-auto px-2 py-1 text-[9px] font-bold rounded-md text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20 transition-all"
+                                                    >
+                                                        Limpar
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-col gap-3">
+                                                    <div>
+                                                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Data</label>
+                                                        <input
+                                                            type="date"
+                                                            value={pickerDate}
+                                                            onChange={(e) => setPickerDate(e.target.value)}
+                                                            onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
+                                                            className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
+                                                        />
+                                                    </div>
+                                                    {hasTime && (
+                                                        <div>
+                                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Hora</label>
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div onMouseEnter={() => setActiveTimeColumn('hour')}>
+                                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hora</div>
+                                                                    <div ref={hourListRef} className="max-h-28 overflow-y-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800">
+                                                                        {Array.from({ length: 24 }, (_, i) => pad2(i)).map((h) => (
+                                                                            <button
+                                                                                key={h}
+                                                                                type="button"
+                                                                                data-hour={h}
+                                                                                onClick={() => setPickerTime(`${h}:${pickerTime?.split(':')[1] || '00'}`)}
+                                                                                onDoubleClick={() => {
+                                                                                    setPickerTime(`${h}:${pickerTime?.split(':')[1] || '00'}`);
+                                                                                    applyPicker();
+                                                                                }}
+                                                                                className={`w-full px-2 py-1 text-left text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 ${pickerTime.startsWith(h) ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-slate-600 dark:text-slate-200'}`}
+                                                                            >
+                                                                                {h}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <div onMouseEnter={() => setActiveTimeColumn('minute')}>
+                                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Minuto</div>
+                                                                    <div ref={minuteListRef} className="max-h-28 overflow-y-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800">
+                                                                        {Array.from({ length: 60 }, (_, i) => pad2(i)).map((m) => (
+                                                                            <button
+                                                                                key={m}
+                                                                                type="button"
+                                                                                data-minute={m}
+                                                                                onClick={() => setPickerTime(`${pickerTime?.split(':')[0] || '00'}:${m}`)}
+                                                                                onDoubleClick={() => {
+                                                                                    setPickerTime(`${pickerTime?.split(':')[0] || '00'}:${m}`);
+                                                                                    applyPicker();
+                                                                                }}
+                                                                                className={`w-full px-2 py-1 text-left text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 ${pickerTime.endsWith(m) ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300' : 'text-slate-600 dark:text-slate-200'}`}
+                                                                            >
+                                                                                {m}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex justify-end gap-2 pt-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={closePicker}
+                                                            className="px-3 py-1 text-[10px] font-bold rounded-md text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={applyPicker}
+                                                            className="px-3 py-1 text-[10px] font-bold rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-all"
+                                                        >
+                                                            Confirmar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
