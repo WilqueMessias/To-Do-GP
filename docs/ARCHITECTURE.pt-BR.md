@@ -80,6 +80,52 @@ erDiagram
 
 ---
 
+## Ciclo de Requisição (Create/Update)
+
+```mermaid
+sequenceDiagram
+    participant UI as UI (React)
+    participant API as API (Spring Boot)
+    participant SVC as TaskService
+    participant DB as Banco de Dados
+
+    UI->>API: POST /tasks ou PUT /tasks/{id}
+    API->>SVC: validação + mapeamento DTO
+    SVC->>DB: salvar Task
+    DB-->>SVC: entidade persistida
+    SVC-->>API: TaskDTO
+    API-->>UI: 201/200 + payload
+```
+
+---
+
+## Fluxo de Auditoria (Assíncrono)
+
+```mermaid
+flowchart LR
+    A[TaskService] -->|Publica TaskAuditEvent| B[Barramento de Eventos]
+    B -->|Listener Assíncrono| C[Processador de Auditoria]
+    C -->|Persistir Activity Log| D[(Banco de Dados)]
+```
+
+---
+
+## Fluxo de Execução (Dev vs Prod)
+
+```mermaid
+flowchart TD
+    Dev[Desenvolvimento Local] --> DevApi[Subir Spring Boot]
+    Dev --> DevUi[Subir Vite Dev Server]
+    DevApi --> DevDb[(Arquivo H2)]
+
+    Prod[Docker Compose] --> ApiContainer[container tm-api]
+    Prod --> UiContainer[container tm-ui]
+    ApiContainer --> ProdDb[(Arquivo H2)]
+    UiContainer --> ApiContainer
+```
+
+---
+
 ## Padrões de Engenharia Core
 
 ### 1. Auditoria Assíncrona (Não-Bloqueante)
@@ -133,7 +179,7 @@ docker-compose up -d --build
 
 ## Limitações Conhecidas
 
-- **H2 em memória**: adequado para desenvolvimento, não recomendado para produção.
+- **Arquivo H2**: adequado para desenvolvimento, não recomendado para produção.
 - **Rate limit por IP**: não cobre cenários de NAT/Proxy com precisão fina.
 
 ---

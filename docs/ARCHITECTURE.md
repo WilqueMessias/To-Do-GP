@@ -80,6 +80,52 @@ erDiagram
 
 ---
 
+## Request Lifecycle (Create/Update)
+
+```mermaid
+sequenceDiagram
+    participant UI as UI (React)
+    participant API as API (Spring Boot)
+    participant SVC as TaskService
+    participant DB as Database
+
+    UI->>API: POST /tasks or PUT /tasks/{id}
+    API->>SVC: validate + map DTO
+    SVC->>DB: save Task
+    DB-->>SVC: persisted entity
+    SVC-->>API: TaskDTO
+    API-->>UI: 201/200 + payload
+```
+
+---
+
+## Audit Event Flow (Asynchronous)
+
+```mermaid
+flowchart LR
+    A[TaskService] -->|Publish TaskAuditEvent| B[Event Bus]
+    B -->|Async Listener| C[Audit Processor]
+    C -->|Persist Activity Log| D[(Database)]
+```
+
+---
+
+## Execution Flow (Dev vs Prod)
+
+```mermaid
+flowchart TD
+    Dev[Local Dev] --> DevApi[Run Spring Boot]
+    Dev --> DevUi[Run Vite Dev Server]
+    DevApi --> DevDb[(H2 File)]
+
+    Prod[Docker Compose] --> ApiContainer[tm-api container]
+    Prod --> UiContainer[tm-ui container]
+    ApiContainer --> ProdDb[(H2 File)]
+    UiContainer --> ApiContainer
+```
+
+---
+
 ## Core Engineering Patterns
 
 ### 1. Asynchronous Auditing (Non-Blocking)
@@ -133,7 +179,7 @@ docker-compose up -d --build
 
 ## Known Limitations
 
-- **In-memory H2**: suitable for development, not recommended for production.
+- **H2 file storage**: suitable for development, not recommended for production.
 - **IP-based rate limit**: not precise under NAT/Proxy scenarios.
 
 ---
