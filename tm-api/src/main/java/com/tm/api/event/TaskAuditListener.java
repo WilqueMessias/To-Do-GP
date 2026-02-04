@@ -22,15 +22,28 @@ public class TaskAuditListener {
     public void handleTaskAuditEvent(TaskAuditEvent event) {
         log.info("Asynchronously processing audit event for task: {}", event.getTask().getId());
 
+        // If it's a creation event (no old values), we can just log a single "Task
+        // Created"
+        if (event.getOldValues().isEmpty()) {
+            Activity activity = Activity.builder()
+                    .task(event.getTask())
+                    .message("Tarefa criada com sucesso")
+                    .build();
+            activityRepository.save(activity);
+            return;
+        }
+
         event.getNewValues().forEach((field, newValue) -> {
             Object oldValue = event.getOldValues().get(field);
             String message = buildHumanReadableMessage(field, oldValue, newValue);
 
-            Activity activity = Activity.builder()
-                    .task(event.getTask())
-                    .message(message)
-                    .build();
-            activityRepository.save(activity);
+            if (message != null) {
+                Activity activity = Activity.builder()
+                        .task(event.getTask())
+                        .message(message)
+                        .build();
+                activityRepository.save(activity);
+            }
         });
     }
 

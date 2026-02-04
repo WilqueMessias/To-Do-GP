@@ -147,12 +147,29 @@ public class TaskService {
         }
 
         if (dto.getSubtasks() != null) {
-            // Re-sync subtasks
-            task.getSubtasks().clear();
-            task.getSubtasks().addAll(dto.getSubtasks().stream()
-                    .map(s -> Subtask.builder().title(s.getTitle()).completed(s.isCompleted()).task(task).build())
-                    .collect(Collectors.toList()));
-            newValues.put("checklist", "Atualizado");
+            boolean changed = false;
+            if (task.getSubtasks().size() != dto.getSubtasks().size()) {
+                changed = true;
+            } else {
+                for (int i = 0; i < task.getSubtasks().size(); i++) {
+                    Subtask sOld = task.getSubtasks().get(i);
+                    var sNew = dto.getSubtasks().get(i);
+                    if (!sOld.getTitle().equals(sNew.getTitle()) || sOld.isCompleted() != sNew.isCompleted()) {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (changed) {
+                // Re-sync subtasks
+                task.getSubtasks().clear();
+                task.getSubtasks().addAll(dto.getSubtasks().stream()
+                        .map(s -> Subtask.builder().title(s.getTitle()).completed(s.isCompleted()).task(task).build())
+                        .collect(Collectors.toList()));
+                newValues.put("checklist", "atualizado");
+                oldValues.put("checklist", "anterior");
+            }
         }
 
         Task savedTask = taskRepository.save(task);
