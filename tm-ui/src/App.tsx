@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
 
@@ -337,69 +337,35 @@ function App() {
         onError={(msg) => addToast('error', msg)}
         taskToEdit={taskToEdit}
       />
-      {/* Footer */}
-      <footer className="w-full py-8 px-4 md:px-8 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md border-t border-slate-200/50 dark:border-white/5 mt-auto transition-all duration-300">
-        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col items-center md:items-start gap-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-slate-400">© 2026</span>
-              <span className="h-4 w-[1px] bg-slate-200 dark:bg-white/10 hidden md:block"></span>
-              <span className="text-sm font-black tracking-tight text-slate-700 dark:text-slate-200">
-                To Do <span className="text-blue-600 dark:text-blue-400">GP</span>
-              </span>
-            </div>
-            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 tracking-wide uppercase">
-              Engineering & Architecture Excellence
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-              Desenvolvido por
-              <span className="text-slate-800 dark:text-white font-black hover:text-blue-600 transition-colors cursor-default">
-                Wilque Messias
-              </span>
-            </p>
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/WilqueMessias"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all transform hover:scale-110 active:scale-90"
-                title="GitHub"
-              >
-                <img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub" className="h-5 rounded" />
-              </a>
-              <a
-                href="https://br.linkedin.com/in/wilquemessias"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-blue-600 transition-all transform hover:scale-110 active:scale-90"
-                title="LinkedIn"
-              >
-                <img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" className="h-5 rounded" />
-              </a>
-              <a
-                href="https://www.instagram.com/wilquemessias/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-pink-600 transition-all transform hover:scale-110 active:scale-90"
-                title="Instagram"
-              >
-                <img src="https://img.shields.io/badge/-Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram" className="h-5 rounded" />
-              </a>
-            </div>
-          </div>
+      {/* Footer - Minimalist & Discreet */}
+      <footer className="w-full py-4 px-4 md:px-8 bg-white/10 dark:bg-slate-900/10 backdrop-blur-sm border-t border-slate-200/30 dark:border-white/5 mt-auto transition-all">
+        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 opacity-60 hover:opacity-100 transition-opacity duration-500">
 
           <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Master-Grade</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Software Version v1.0</span>
-            </div>
-            <div className="h-8 w-8 bg-blue-600/10 dark:bg-blue-400/10 rounded-lg flex items-center justify-center border border-blue-600/20 dark:border-blue-400/20">
-              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
+            <span className="text-[10px] font-bold text-slate-400">© 2026 To Do GP</span>
+            <span className="h-3 w-[1px] bg-slate-300 dark:bg-white/10"></span>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+              v1.0.0
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+              Developed by <span className="text-slate-700 dark:text-slate-200">Wilque Messias</span>
+            </span>
+            <div className="flex items-center gap-3 ml-2 border-l border-slate-200 dark:border-white/10 pl-4">
+              <a href="https://github.com/WilqueMessias" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <Github size={14} />
+              </a>
+              <a href="https://br.linkedin.com/in/wilquemessias" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 transition-colors">
+                <Linkedin size={14} />
+              </a>
+              <a href="https://www.instagram.com/wilquemessias/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-pink-600 transition-colors">
+                <Instagram size={14} />
+              </a>
             </div>
           </div>
+
         </div>
       </footer>
     </div>
