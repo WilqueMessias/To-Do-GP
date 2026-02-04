@@ -7,6 +7,10 @@ import {
     CheckSquare,
     Star,
     GripVertical,
+    PlayCircle,
+    CheckCircle2,
+    RotateCcw,
+    Undo2,
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -178,15 +182,83 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
                 </div>
             )}
 
-            <div className="flex items-center gap-2 pt-3 border-t border-white/30 dark:border-white/5 text-slate-400 dark:text-slate-500">
-                <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
-                <span className={`text-[11px] font-semibold ${overdue ? 'text-rose-500' : ''}`}>
-                    {new Date(task.dueDate).toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        ...(task.dueDate.includes('T23:59:59') ? {} : { hour: '2-digit', minute: '2-digit' })
-                    })}
-                </span>
+            <div className="flex items-center justify-between pt-3 border-t border-white/30 dark:border-white/5 mt-auto">
+                {/* Date Picker / Display */}
+                <div
+                    className="flex items-center gap-2 text-slate-400 dark:text-slate-500 hover:text-blue-500 transition-colors cursor-pointer group/date"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // Only enable editing if not dragging
+                        if (!isDragging) {
+                            // Logic handled by inner component or simple switch needed?
+                            // Since we can't easily add state to this big component without refactoring, 
+                            // let's use a browser native picker on a label trick or just expose the input.
+                        }
+                    }}
+                >
+                    <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
+                    <input
+                        type="datetime-local"
+                        value={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ''}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                            if (onUpdate) onUpdate(task.id, { dueDate: new Date(e.target.value).toISOString() });
+                        }}
+                        className="bg-transparent border-none p-0 text-[11px] font-semibold text-inherit focus:ring-0 cursor-pointer w-[110px]"
+                    />
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex items-center gap-1 opacity-100 transition-opacity">
+                    {task.status === 'TODO' && (
+                        <>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUpdate && onUpdate(task.id, { status: 'DOING' }); }}
+                                className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                                title="Começar (Mover para Em Progresso)"
+                            >
+                                <PlayCircle size={14} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUpdate && onUpdate(task.id, { status: 'DONE' }); }}
+                                className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all"
+                                title="Concluir"
+                            >
+                                <CheckCircle2 size={14} />
+                            </button>
+                        </>
+                    )}
+
+                    {task.status === 'DOING' && (
+                        <>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUpdate && onUpdate(task.id, { status: 'TODO' }); }}
+                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+                                title="Voltar para A Fazer"
+                            >
+                                <Undo2 size={14} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onUpdate && onUpdate(task.id, { status: 'DONE' }); }}
+                                className="p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all"
+                                title="Concluir"
+                            >
+                                <CheckCircle2 size={14} />
+                            </button>
+                        </>
+                    )}
+
+                    {task.status === 'DONE' && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onUpdate && onUpdate(task.id, { status: 'TODO' }); }}
+                            className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all flex items-center gap-1.5 px-2"
+                            title="Refazer (Voltar para A Fazer)"
+                        >
+                            <RotateCcw size={12} />
+                            <span className="text-[10px] font-bold">Refazer</span>
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
