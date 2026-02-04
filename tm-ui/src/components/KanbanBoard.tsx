@@ -60,7 +60,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const [internalTasks, setInternalTasks] = useState<Task[]>(tasks);
     const isDraggingRef = React.useRef(false);
     const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
-    const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
     const [confirmationModal, setConfirmationModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -120,17 +119,31 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             );
             if (isTypingField) return;
             if (!hoveredTaskId) return;
-            if (taskToConfirmDelete) return;
 
             const taskToDelete = internalTasks.find(t => t.id === hoveredTaskId);
             if (!taskToDelete) return;
 
-            setTaskToConfirmDelete(taskToDelete);
+            try {
+                await taskService.delete(taskToDelete.id);
+
+                setInternalTasks(prev => prev.filter(t => t.id !== taskToDelete.id));
+                if (onRemoveTasks) {
+                    onRemoveTasks([taskToDelete.id]);
+                } else if (onTasksChange) {
+                    onTasksChange(internalTasks.filter(t => t.id !== taskToDelete.id));
+                }
+
+                if (onRefresh) onRefresh();
+                await fetchHistory();
+                setHoveredTaskId(null);
+            } catch (error) {
+                console.error("Failed to delete task", error);
+            }
         };
 
         window.addEventListener('keydown', handleDeleteKey);
         return () => window.removeEventListener('keydown', handleDeleteKey);
-    }, [hoveredTaskId, internalTasks, taskToConfirmDelete]);
+    }, [hoveredTaskId, internalTasks, onRemoveTasks, onTasksChange, onRefresh]);
 
     // Cleanup: task deletion confirming logic is now handled by ConfirmationModal implicitly
     // but we still need to handle the Enter/Esc for taskToConfirmDelete if we keep it separate,
@@ -262,28 +275,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         });
     };
 
-    const confirmDeleteTask = async () => {
-        if (!taskToConfirmDelete) return;
-
-        try {
-            await taskService.delete(taskToConfirmDelete.id);
-
-            setInternalTasks(prev => prev.filter(t => t.id !== taskToConfirmDelete.id));
-            if (onRemoveTasks) {
-                onRemoveTasks([taskToConfirmDelete.id]);
-            } else if (onTasksChange) {
-                onTasksChange(internalTasks.filter(t => t.id !== taskToConfirmDelete.id));
-            }
-
-            if (onRefresh) onRefresh();
-            await fetchHistory();
-            setHoveredTaskId(null);
-        } catch (error) {
-            console.error("Failed to delete task", error);
-        } finally {
-            setTaskToConfirmDelete(null);
-        }
-    };
 
     // Sync only when NOT dragging to avoid jitter, but listen to external updates
     React.useEffect(() => {
@@ -467,17 +458,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 onClearHistory={handleClearHistory}
                 onRestoreAll={handleRestoreAllHistory}
             />
-
-            {taskToConfirmDelete && (
-                <ConfirmationModal
-                    isOpen={!!taskToConfirmDelete}
-                    title="Confirmar exclusão"
-                    message={`Excluir a tarefa "${taskToConfirmDelete.title}"?`}
-                    onConfirm={confirmDeleteTask}
-                    onClose={() => setTaskToConfirmDelete(null)}
-                    confirmLabel="Excluir"
-                />
-            )}
 
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
