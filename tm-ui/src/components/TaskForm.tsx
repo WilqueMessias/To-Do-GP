@@ -714,7 +714,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                             type="date"
                                                             ref={pickerDateInputRef}
                                                             value={pickerDate}
-                                                            onChange={(e) => setPickerDate(normalizeDateInputValue(e.target.value))}
+                                                            onChange={(e) => {
+                                                                setPickerDate(normalizeDateInputValue(e.target.value));
+                                                                if (hasTime) {
+                                                                    setActiveTimeColumn('hour');
+                                                                    setTimeTabStarted(true);
+                                                                    const [h = '00'] = pickerTime.split(':');
+                                                                    const btn = hourListRef.current?.querySelector<HTMLButtonElement>(`[data-hour="${h}"]`);
+                                                                    btn?.scrollIntoView({ block: 'nearest' });
+                                                                }
+                                                            }}
                                                             onBlur={(e) => setPickerDate(normalizeDateInputValue(e.target.value, true))}
                                                             onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
