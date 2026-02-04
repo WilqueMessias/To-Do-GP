@@ -65,6 +65,33 @@ The system adopts a **Distributed Monolith** pattern, establishing a rigid bound
 
 ---
 
+## Host Requirements & Compatibility
+
+Target environment: 64‑bit developer workstations capable of running Docker Desktop/Engine.
+
+**Supported operating systems (Docker runtime):**
+- Windows 10/11 64‑bit with Docker Desktop
+	- Home: Docker Desktop with **WSL2** backend (required)
+	- Pro/Enterprise: Docker Desktop with **WSL2** backend (recommended) or **Hyper‑V** engine
+- Linux (x86_64) with Docker Engine 24+ and Docker Compose v2
+- macOS 12+ (Apple Silicon or Intel) with Docker Desktop
+
+**Minimum hardware profile (for Docker builds + runtime):**
+- CPU: 64‑bit dual‑core (x86_64 or Apple Silicon)
+- Memory: 8 GB RAM
+- Disk: ~10 GB free (images + build caches)
+
+**Local development without Docker (Execution → Development):**
+- Same CPU/memory class as above, plus:
+	- Java 17 JDK and Maven 3.9+
+	- Node.js 18+ and npm
+
+Notes:
+- Build time is primarily constrained by CPU, disk I/O, and network throughput when pulling dependencies and images.
+- The UI build uses Vite and will run faster with higher single‑core performance and SSD storage.
+
+---
+
 ## Windows WSL2 Setup (for Docker)
 
 Docker Desktop on Windows uses the WSL2 backend. Ensure WSL2 is enabled before running containers.

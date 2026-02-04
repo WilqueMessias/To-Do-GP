@@ -65,6 +65,33 @@ O sistema utiliza uma topologia **Monolito Distribuído**, estabelecendo um limi
 
 ---
 
+## Requisitos do Host ^& Compatibilidade
+
+Ambiente alvo: estações de trabalho 64‑bits capazes de executar Docker Desktop/Engine.
+
+**Sistemas operacionais suportados (runtime Docker):**
+- Windows 10/11 64‑bits com Docker Desktop
+	- Home: Docker Desktop com backend **WSL2** (obrigatório)
+	- Pro/Enterprise: Docker Desktop com backend **WSL2** (recomendado) ou engine **Hyper‑V**
+- Linux (x86_64) com Docker Engine 24+ e Docker Compose v2
+- macOS 12+ (Apple Silicon ou Intel) com Docker Desktop
+
+**Perfil mínimo de hardware (build + runtime em Docker):**
+- CPU: 64‑bits com 2 núcleos (x86_64 ou Apple Silicon)
+- Memória: 8 GB de RAM
+- Disco: ~10 GB livres (imagens + caches de build)
+
+**Desenvolvimento local sem Docker (Execução → Desenvolvimento):**
+- Mesmo perfil de CPU/memória indicado acima, mais:
+	- JDK 17 e Maven 3.9+
+	- Node.js 18+ e npm
+
+Notas:
+- O tempo de build é limitado principalmente por CPU, I/O de disco e rede ao baixar dependências e imagens.
+- O build do frontend usa Vite e se beneficia de bom desempenho single‑core e SSD.
+
+---
+
 ## Configuração WSL2 no Windows (para Docker)
 
 O Docker Desktop no Windows utiliza o backend WSL2. Garanta que o WSL2 esteja habilitado antes de executar os containers.
