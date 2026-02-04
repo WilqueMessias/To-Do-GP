@@ -9,7 +9,7 @@
 
 **To Do GP** is a decoupled task management system built with Java (Spring Boot) and TypeScript (React). It focuses on high-precision data auditing, real-time analytics, and persistent state management.
 
-[Technical Documentation](./TECHNICAL_DOCUMENTATION.md) · [Architecture Deep-Dive](./docs/ARCHITECTURE.md) · [Backend API (tm-api)](./tm-api/README.md) · [Frontend SPA (tm-ui)](./tm-ui/README.md)
+[Architecture & Technical Deep-Dive](./docs/ARCHITECTURE.md) · [Backend API (tm-api)](./tm-api/README.md) · [Frontend SPA (tm-ui)](./tm-ui/README.md)
 
 </div>
 
@@ -26,14 +26,14 @@ The system is designed following the **Separated Core** pattern, ensuring strict
 
 ---
 
-## 💎 Staff-Level Engineering Highlights
+## 🏗️ Technical Highlights
 
-This project incorporates advanced patterns typically found in large-scale enterprise systems:
+Implementation focuses on non-functional requirements and distributed system patterns:
 
-- **Asynchronous Event-Driven Auditing**: Decoupled diff-based activity logging using Spring Events and `@Async` execution.
-- **API Resilience (Rate Limiting)**: Protective interceptors safeguarding backend resources with automated `429` responses.
-- **Deep Observability**: Extensive business KPI tracking via custom Micrometer counters and granular health checks.
-- **Production-Grade Orchestration**: Docker composition with internal health-verification loops for stable cold-starts.
+- **Asynchronous Event-Driven Auditing**: Decoupled activity logging using Spring Events and `@Async` execution.
+- **API Resilience (Rate Limiting)**: Protective interceptors safeguarding backend resources.
+- **Observability**: Specialized business KPI tracking via Micrometer and custom health probes.
+- **Container Orchestration**: Docker-based deployment with integrated health-verification loops.
 
 ---
 
@@ -67,10 +67,10 @@ Execute `start.bat` for an interactive bootstrap menu.
 
 ## 📑 Detailed Navigation
 
-- **[Architecture Deep-Dive](./TECHNICAL_DOCUMENTATION.md)**: Diagrams for Entity Relationships, Components, and Operational Flows.
-- **[Task Entity Model](./tm-api/src/main/java/com/tm/api/model/Task.java)**: Core domain definition and soft-delete logic.
-- **[Frontend State Management](./tm-ui/src/hooks/useKanbanTasks.ts)**: Optimistic update implementation and service coordination.
-- **[Audit Logic](./tm-api/src/main/java/com/tm/api/service/TaskService.java)**: Technical implementation of the differential activity logger.
+- **[System Architecture](./docs/ARCHITECTURE.md)**: Diagrams for Entity Relationships, Components, and Operational Flows.
+- **[Domain Model](./tm-api/src/main/java/com/tm/api/model/Task.java)**: Core entity implementation and logical state transitions.
+- **[State Management](./tm-ui/src/hooks/useKanbanTasks.ts)**: Implementation details for optimistic UI updates.
+- **[Auditing Implementation](./tm-api/src/main/java/com/tm/api/event/TaskAuditListener.java)**: Technical details of the asynchronous listener patterns.
 
 ---
 
