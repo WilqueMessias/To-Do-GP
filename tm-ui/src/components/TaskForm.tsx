@@ -92,13 +92,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const minuteListRef = React.useRef<HTMLDivElement>(null);
     const pickerDateInputRef = React.useRef<HTMLInputElement>(null);
 
-    const handlePreventDoubleClick = (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleSelectAllOnDoubleClick = (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const target = e.currentTarget;
-        const pos = typeof target.selectionStart === 'number' ? target.selectionStart : target.value.length;
-        if (typeof target.setSelectionRange === 'function') {
-            target.setSelectionRange(pos, pos);
+        if (typeof target.select === 'function') {
+            target.select();
         }
     };
 
@@ -545,7 +542,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         autoFocus
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        onDoubleClick={handlePreventDoubleClick}
+                                        onDoubleClick={handleSelectAllOnDoubleClick}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm cursor-default"
                                         placeholder="Ex: Refatorar API amanhã"
                                     />
@@ -579,7 +576,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        onDoubleClick={handlePreventDoubleClick}
+                                        onDoubleClick={handleSelectAllOnDoubleClick}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none shadow-sm cursor-default"
                                         placeholder="Descreva os detalhes da implementação..."
                                     />
@@ -674,10 +671,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                             placeholder={hasTime ? 'dd/mm/aaaa hh:mm' : 'dd/mm/aaaa'}
                                             onClick={openPicker}
                                             onFocus={openPicker}
-                                            onDoubleClick={(e) => {
-                                                handlePreventDoubleClick(e);
-                                                openPicker();
-                                            }}
+                                            onDoubleClick={openPicker}
                                             className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans"
                                         />
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -740,10 +734,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                                 }
                                                             }}
                                                             onBlur={(e) => setPickerDate(normalizeDateInputValue(e.target.value, true))}
-                                                            onDoubleClick={(e) => {
-                                                                handlePreventDoubleClick(e);
-                                                                (e.currentTarget as HTMLInputElement).showPicker();
-                                                            }}
+                                                            onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
                                                         />
                                                     </div>
@@ -857,7 +848,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     value={newSubtask}
                                     onChange={(e) => setNewSubtask(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
-                                    onDoubleClick={handlePreventDoubleClick}
+                                    onDoubleClick={handleSelectAllOnDoubleClick}
                                     placeholder="Adicionar novo passo..."
                                     className="flex-1 px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100"
                                 />
