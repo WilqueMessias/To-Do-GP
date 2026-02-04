@@ -52,5 +52,6 @@ export const taskService = {
     update: (id: string, task: Partial<Task>) => api.put<Task>(`/tasks/${id}`, task),
     delete: (id: string) => api.delete(`/tasks/${id}`),
     restore: (id: string) => api.post<Task>(`/tasks/${id}/restore`),
+    hardDelete: (id: string) => api.delete(`/tasks/${id}/hard`),
     getHistory: () => api.get<Task[]>('/tasks/history'),
 };

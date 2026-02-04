@@ -215,6 +215,26 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void hardDelete(UUID id) {
+        log.info("Permanently deleting task id: {}", id);
+        // Manual Cascade for Native Delete
+        try {
+            // Check if table exists/handle safe delete if needed, but simple DELETE is
+            // usually fine
+            // Assuming notifications table check isn't needed if not present, but good to
+            // add if schema has it
+            // taskRepository.deleteNotificationsNative(id);
+
+            taskRepository.deleteActivitiesNative(id);
+            taskRepository.deleteSubtasksNative(id);
+            taskRepository.deletePermanentlyNative(id);
+        } catch (Exception e) {
+            log.error("Failed to hard delete task {}", id, e);
+            throw e;
+        }
+    }
+
     private void addActivity(Task task, String message) {
         // Deduplication: Don't add if a very recent activity (last 30s) or a
         // null-timestamp activity in this session has the same message

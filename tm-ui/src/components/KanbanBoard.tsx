@@ -116,9 +116,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             setInternalTasks(newTasks);
             if (onTasksChange) onTasksChange(newTasks);
 
+            // Refresh history from server
+            fetchHistory();
+
         } catch (error) {
             console.error("Failed to restore task", error);
             alert("Erro ao restaurar tarefa. Verifique o console.");
+        }
+    };
+
+    const handleHardDelete = async (taskToDelete: Task) => {
+        if (!confirm(`Tem certeza que deseja excluir permanentemente "${taskToDelete.title}"? Esta ação não pode ser desfeita.`)) {
+            return;
+        }
+
+        try {
+            await taskService.hardDelete(taskToDelete.id);
+            // Update local state
+            setHistory(prev => prev.filter(t => t.id !== taskToDelete.id));
+            // Refresh history from server
+            fetchHistory();
+        } catch (error) {
+            console.error("Failed to delete task permanently", error);
+            alert("Erro ao excluir tarefa permanentemente.");
         }
     };
 
@@ -303,6 +323,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
                 onClose={() => setIsHistoryModalOpen(false)}
                 history={history}
                 onRestore={handleRestoreFromHistory}
+                onHardDelete={handleHardDelete}
                 onClearHistory={handleClearHistory}
             />
         </div>

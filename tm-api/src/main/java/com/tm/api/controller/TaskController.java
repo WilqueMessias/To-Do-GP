@@ -84,4 +84,13 @@ public class TaskController {
         log.info("Request to get task history");
         return taskService.getHistory();
     }
+
+    @Operation(summary = "Permanently delete a task", description = "Removes the task from the database entirely. Cannot be undone.")
+    @ApiResponse(responseCode = "204", description = "Task permanently deleted")
+    @DeleteMapping("/{id}/hard")
+    public ResponseEntity<Void> hardDelete(@PathVariable UUID id) {
+        log.info("Request to hard delete task: {}", id);
+        taskService.hardDelete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

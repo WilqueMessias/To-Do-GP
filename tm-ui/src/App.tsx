@@ -166,7 +166,7 @@ function App() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Pesquisar inteligência de tarefas..."
+              placeholder="Pesquisar tarefas..."
               className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium text-slate-700 dark:text-slate-200"
             />
 

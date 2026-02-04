@@ -18,9 +18,29 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.transaction.annotation.Transactional
-    @org.springframework.data.jpa.repository.Query(value = "UPDATE tasks SET deleted = false WHERE id = :id", nativeQuery = true)
-    int restoreByIdNative(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
+    @org.springframework.data.jpa.repository.Query(value = "UPDATE tasks SET deleted = false WHERE id = ?1", nativeQuery = true)
+    int restoreByIdNative(java.util.UUID id);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM tasks WHERE deleted = true ORDER BY completed_at DESC", nativeQuery = true)
     java.util.List<Task> findAllDeletedNative();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM tasks WHERE id = ?1", nativeQuery = true)
+    void deletePermanentlyNative(java.util.UUID id);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM notifications WHERE task_id = ?1", nativeQuery = true)
+    void deleteNotificationsNative(java.util.UUID id);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM activities WHERE task_id = ?1", nativeQuery = true)
+    void deleteActivitiesNative(java.util.UUID id);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM subtasks WHERE task_id = ?1", nativeQuery = true)
+    void deleteSubtasksNative(java.util.UUID id);
 }
