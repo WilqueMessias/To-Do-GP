@@ -138,6 +138,24 @@ Next steps: see Execution below for running via Docker or local dev.
 
 ---
 
+## Using start.bat (Windows)
+
+Run the launcher from the repository root:
+
+```bat
+start.bat
+```
+
+Menu options:
+- **[1] Containerized**: builds and starts Docker Compose. Access UI at http://localhost and API at http://localhost:8080.
+- **[2] Native Development**: starts backend (Spring Boot) and frontend (Vite). Access UI at http://localhost:5173 and API at http://localhost:8080.
+- **[3] Initialize**: installs frontend dependencies (`npm install`).
+- **[4] Exit**: closes the launcher.
+
+If option **[1]** fails, check Docker Desktop and WSL2 status (Windows Home requires WSL2).
+
+---
+
 ## Environment Variables (Optional)
 
 **Backend (Spring Boot):**

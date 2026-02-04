@@ -65,7 +65,7 @@ O sistema utiliza uma topologia **Monolito Distribuído**, estabelecendo um limi
 
 ---
 
-## Requisitos do Host ^& Compatibilidade
+## Requisitos do Host & Compatibilidade
 
 Ambiente alvo: estações de trabalho 64‑bits capazes de executar Docker Desktop/Engine.
 
@@ -135,6 +135,24 @@ git pull
 ```
 
 Próximos passos: veja a seção Execução abaixo para rodar via Docker ou ambiente local.
+
+---
+
+## Uso do start.bat (Windows)
+
+Execute o launcher na raiz do repositório:
+
+```bat
+start.bat
+```
+
+Opções do menu:
+- **[1] Containerizado**: faz build e inicia o Docker Compose. UI em http://localhost e API em http://localhost:8080.
+- **[2] Desenvolvimento nativo**: inicia backend (Spring Boot) e frontend (Vite). UI em http://localhost:5173 e API em http://localhost:8080.
+- **[3] Inicializar**: instala as dependências do frontend (`npm install`).
+- **[4] Sair**: fecha o launcher.
+
+Se a opção **[1]** falhar, verifique o Docker Desktop e o WSL2 (Windows Home exige WSL2).
 
 ---
 
