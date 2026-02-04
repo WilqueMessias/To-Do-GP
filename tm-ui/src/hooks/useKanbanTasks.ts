@@ -8,7 +8,7 @@ export const useKanbanTasks = () => {
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' }>({ key: 'none', direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' }>({ key: 'priority', direction: 'asc' });
 
     const addToast = useCallback((type: 'success' | 'error', message: string, action?: ToastMessage['action']) => {
         const id = Math.random().toString(36).substr(2, 9);
