@@ -168,9 +168,36 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         }
     };
 
-    const handleClearHistory = () => {
-        alert("O histórico é gerenciado pelo servidor e exibe apenas itens excluídos recentemente.");
-        // Optional: Implement a hard-delete endpoint if requested later
+    const handleRestoreAllHistory = async () => {
+        if (!confirm("Tem certeza que deseja restaurar TODAS as tarefas do histórico para 'Concluído'?")) {
+            return;
+        }
+
+        try {
+            await taskService.restoreAllHistory();
+            setHistory([]);
+
+            // Sync with parent for full reload
+            if (onRefresh) onRefresh();
+
+        } catch (error) {
+            console.error("Failed to restore all history", error);
+            alert("Erro ao restaurar todo o histórico.");
+        }
+    };
+
+    const handleClearHistory = async () => {
+        if (!confirm("ATENÇÃO: Isso excluirá PERMANENTEMENTE todo o histórico de tarefas.\n\nEsta ação não pode ser desfeita. Deseja continuar?")) {
+            return;
+        }
+
+        try {
+            await taskService.clearHistory();
+            setHistory([]);
+        } catch (error) {
+            console.error("Failed to clear history", error);
+            alert("Erro ao limpar histórico.");
+        }
     };
 
     // Sync only when NOT dragging to avoid jitter, but listen to external updates
@@ -351,6 +378,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 onRestore={handleRestoreFromHistory}
                 onHardDelete={handleHardDelete}
                 onClearHistory={handleClearHistory}
+                onRestoreAll={handleRestoreAllHistory}
             />
         </div>
     );

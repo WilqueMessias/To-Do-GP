@@ -9,6 +9,7 @@ import com.tm.api.model.Subtask;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
 import com.tm.api.repository.TaskRepository;
+import com.tm.api.repository.ActivityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final ActivityRepository activityRepository;
 
     public Page<TaskDTO> findAll(TaskStatus status, Pageable pageable) {
         log.info("Fetching paginated tasks with status: {}", status != null ? status : "ALL");
@@ -236,22 +238,32 @@ public class TaskService {
     }
 
     private void addActivity(Task task, String message) {
-        // Deduplication: Don't add if a very recent activity (last 30s) or a
-        // null-timestamp activity in this session has the same message
-        boolean isDuplicate = task.getActivities().stream()
-                .anyMatch(a -> a.getMessage().equals(message) &&
-                        (a.getTimestamp() == null || a.getTimestamp().isAfter(LocalDateTime.now().minusSeconds(30))));
 
-        if (isDuplicate) {
-            log.debug("Skipping duplicate activity log for task {}: {}", task.getId(), message);
-            return;
-        }
-
-        log.info("Adding activity to task {}: {}", task.getId(), message);
-        task.getActivities().add(Activity.builder()
-                .message(message)
+        Activity activity = Activity.builder()
                 .task(task)
-                .build());
+                .message(message)
+                .build();
+        activityRepository.save(activity);
+    }
+
+    @Transactional
+    public void restoreAllHistory() {
+        log.info("Restoring all deleted tasks history");
+        taskRepository.restoreAllDeletedNative();
+    }
+
+    @Transactional
+    public void clearHistory() {
+        log.info("Clearing all deleted tasks history permanently");
+        // Cascade delete for all deleted tasks
+        try {
+            taskRepository.deleteAllDeletedActivitiesNative();
+            taskRepository.deleteAllDeletedSubtasksNative();
+            taskRepository.deleteAllDeletedNative();
+        } catch (Exception e) {
+            log.error("Failed to clear history", e);
+            throw e;
+        }
     }
 
     private TaskDTO toDTO(Task task) {

@@ -53,5 +53,7 @@ export const taskService = {
     delete: (id: string) => api.delete(`/tasks/${id}`),
     restore: (id: string) => api.post<Task>(`/tasks/${id}/restore`),
     hardDelete: (id: string) => api.delete(`/tasks/${id}/hard`),
+    clearHistory: () => api.delete('/tasks/history'),
+    restoreAllHistory: () => api.post('/tasks/history/restore'),
     getHistory: () => api.get<Task[]>('/tasks/history'),
 };

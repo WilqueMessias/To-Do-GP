@@ -85,6 +85,24 @@ public class TaskController {
         return taskService.getHistory();
     }
 
+    @Operation(summary = "Clear all history", description = "Permanently removes all soft-deleted tasks.")
+    @ApiResponse(responseCode = "204", description = "History cleared")
+    @DeleteMapping("/history")
+    public ResponseEntity<Void> clearHistory() {
+        log.info("Request to clear all task history");
+        taskService.clearHistory();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Restore all history", description = "Restores all soft-deleted tasks to DONE.")
+    @ApiResponse(responseCode = "204", description = "All history restored")
+    @PostMapping("/history/restore")
+    public ResponseEntity<Void> restoreAllHistory() {
+        log.info("Request to restore all task history");
+        taskService.restoreAllHistory();
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Permanently delete a task", description = "Removes the task from the database entirely. Cannot be undone.")
     @ApiResponse(responseCode = "204", description = "Task permanently deleted")
     @DeleteMapping("/{id}/hard")

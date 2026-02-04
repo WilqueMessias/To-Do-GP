@@ -43,4 +43,25 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @org.springframework.transaction.annotation.Transactional
     @org.springframework.data.jpa.repository.Query(value = "DELETE FROM subtasks WHERE task_id = ?1", nativeQuery = true)
     void deleteSubtasksNative(java.util.UUID id);
+
+    // Bulk Operations
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "UPDATE tasks SET deleted = false, status = 'DONE' WHERE deleted = true", nativeQuery = true)
+    void restoreAllDeletedNative();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM activities WHERE task_id IN (SELECT id FROM tasks WHERE deleted = true)", nativeQuery = true)
+    void deleteAllDeletedActivitiesNative();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE deleted = true)", nativeQuery = true)
+    void deleteAllDeletedSubtasksNative();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM tasks WHERE deleted = true", nativeQuery = true)
+    void deleteAllDeletedNative();
 }
