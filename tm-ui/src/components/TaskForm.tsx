@@ -157,8 +157,21 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     };
 
     const onPickerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            applyPicker();
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closePicker();
+            return;
+        }
         if (!/\d/.test(e.key)) return;
         e.preventDefault();
+        e.stopPropagation();
         const next = (typeBuffer + e.key).slice(-2);
         setTypeBuffer(next);
         handleTypeSelect(next);
@@ -599,6 +612,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                             type="date"
                                                             value={pickerDate}
                                                             onChange={(e) => setPickerDate(e.target.value)}
+                                                            onKeyDown={(e) => onPickerKeyDown(e as React.KeyboardEvent<HTMLDivElement>)}
                                                             onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
                                                         />
