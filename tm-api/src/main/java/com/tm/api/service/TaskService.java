@@ -147,29 +147,53 @@ public class TaskService {
         }
 
         if (dto.getSubtasks() != null) {
-            boolean changed = false;
-            if (task.getSubtasks().size() != dto.getSubtasks().size()) {
-                changed = true;
-            } else {
-                for (int i = 0; i < task.getSubtasks().size(); i++) {
-                    Subtask sOld = task.getSubtasks().get(i);
-                    var sNew = dto.getSubtasks().get(i);
-                    if (!sOld.getTitle().equals(sNew.getTitle()) || sOld.isCompleted() != sNew.isCompleted()) {
-                        changed = true;
-                        break;
+            List<Subtask> currentSubtasks = new java.util.ArrayList<>(task.getSubtasks());
+            List<com.tm.api.dto.SubtaskDTO> newSubtasksDTO = dto.getSubtasks();
+
+            // Find Added
+            for (var subDTO : newSubtasksDTO) {
+                if (subDTO.getId() == null
+                        || currentSubtasks.stream().noneMatch(s -> s.getId().equals(subDTO.getId()))) {
+                    newValues.put("subtask_added_" + subDTO.getTitle(), subDTO.getTitle());
+                    oldValues.put("subtask_added_" + subDTO.getTitle(), null);
+                }
+            }
+
+            // Find Removed and Changed
+            for (Subtask sOld : currentSubtasks) {
+                var matchingNew = newSubtasksDTO.stream()
+                        .filter(n -> n.getId() != null && n.getId().equals(sOld.getId()))
+                        .findFirst();
+
+                if (matchingNew.isEmpty()) {
+                    newValues.put("subtask_removed_" + sOld.getTitle(), null);
+                    oldValues.put("subtask_removed_" + sOld.getTitle(), sOld.getTitle());
+                } else {
+                    var sNew = matchingNew.get();
+                    if (sOld.isCompleted() != sNew.isCompleted()) {
+                        String key = (sNew.isCompleted() ? "subtask_completed_" : "subtask_uncompleted_")
+                                + sOld.getTitle();
+                        newValues.put(key, sOld.getTitle());
+                        oldValues.put(key, !sNew.isCompleted());
+                    }
+                    if (!sOld.getTitle().equals(sNew.getTitle())) {
+                        String key = "subtask_renamed_" + sOld.getId();
+                        newValues.put(key, sNew.getTitle());
+                        oldValues.put(key, sOld.getTitle());
                     }
                 }
             }
 
-            if (changed) {
-                // Re-sync subtasks
-                task.getSubtasks().clear();
-                task.getSubtasks().addAll(dto.getSubtasks().stream()
-                        .map(s -> Subtask.builder().title(s.getTitle()).completed(s.isCompleted()).task(task).build())
-                        .collect(Collectors.toList()));
-                newValues.put("checklist", "atualizado");
-                oldValues.put("checklist", "anterior");
-            }
+            // Sync database state
+            task.getSubtasks().clear();
+            task.getSubtasks().addAll(newSubtasksDTO.stream()
+                    .map(s -> Subtask.builder()
+                            .id(s.getId())
+                            .title(s.getTitle())
+                            .completed(s.isCompleted())
+                            .task(task)
+                            .build())
+                    .collect(Collectors.toList()));
         }
 
         Task savedTask = taskRepository.save(task);
@@ -202,14 +226,16 @@ public class TaskService {
         if (updated == 0) {
             throw new TaskNotFoundException("Could not restore task with id: " + id);
         }
-        Task task = taskRepository.findByIdIncludeDeleted(id)
+
+        // Load the recently restored entity
+        Task restoredTask = taskRepository.findByIdIncludeDeleted(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task restored but not found: " + id));
 
-        Task savedTask = taskRepository.save(task);
-        eventPublisher
-                .publishEvent(new TaskAuditEvent(this, savedTask, Map.of("deleted", true), Map.of("deleted", false)));
+        // Publish event for activity log
+        eventPublisher.publishEvent(new TaskAuditEvent(this, restoredTask,
+                Map.of("deleted", true), Map.of("deleted", false)));
 
-        return taskMapper.toDTO(savedTask);
+        return taskMapper.toDTO(restoredTask);
     }
 
     public List<TaskDTO> getHistory() {

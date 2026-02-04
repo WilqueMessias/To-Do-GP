@@ -811,7 +811,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             <section className="pt-2">
                                 <div className="flex items-center gap-2 mb-4 text-slate-400">
                                     <History size={14} />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">Logs de Atividade</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Alterações Realizadas</span>
                                 </div>
                                 <div className="space-y-4 max-h-[160px] overflow-y-auto pr-3 custom-scrollbar">
                                     <div className="flex flex-col gap-4">

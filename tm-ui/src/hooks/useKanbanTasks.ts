@@ -91,11 +91,27 @@ export const useKanbanTasks = () => {
     }, []);
 
     const handleUpdateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+        const current = tasks.find(t => t.id === id);
+        if (!current) return;
+
+        const payload: Partial<Task> = {
+            title: current.title,
+            description: current.description,
+            status: current.status,
+            priority: current.priority,
+            dueDate: current.dueDate,
+            important: current.important,
+            reminderEnabled: current.reminderEnabled,
+            reminderTime: current.reminderTime,
+            subtasks: current.subtasks ?? [],
+            ...updates
+        };
+
         try {
             // Optimistic UI update
             setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
 
-            const response = await taskService.update(id, updates);
+            const response = await taskService.update(id, payload);
 
             // Update with actual response data
             setTasks(prev => prev.map(t => t.id === id ? response.data : t));
@@ -105,7 +121,7 @@ export const useKanbanTasks = () => {
             addToast('error', 'Falha ao atualizar tarefa');
             loadTasks();
         }
-    }, [addToast, loadTasks]);
+    }, [addToast, loadTasks, tasks]);
 
     const handleSuccess = useCallback((action: 'create' | 'update' | 'delete', taskId?: string) => {
         const messages = {

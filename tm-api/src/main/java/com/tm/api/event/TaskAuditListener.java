@@ -52,13 +52,28 @@ public class TaskAuditListener {
             String oldValStr = oldValue == null ? "vazio" : oldValue.toString();
             String newValStr = newValue == null ? "vazio" : newValue.toString();
 
+            if (field.startsWith("subtask_added_")) {
+                return String.format("Subtarefa adicionada: '%s'", newValue);
+            }
+            if (field.startsWith("subtask_removed_")) {
+                return String.format("Subtarefa removida: '%s'", oldValue);
+            }
+            if (field.startsWith("subtask_completed_")) {
+                return String.format("Subtarefa concluída: '%s'", newValue);
+            }
+            if (field.startsWith("subtask_uncompleted_")) {
+                return String.format("Subtarefa marcada como pendente: '%s'", newValue);
+            }
+            if (field.startsWith("subtask_renamed_")) {
+                return String.format("Subtarefa renomeada: '%s' → '%s'", oldValue, newValue);
+            }
+
             return switch (field) {
                 case "status" -> String.format("Status atualizado: %s → %s", oldValStr, newValStr);
                 case "título" -> String.format("Título alterado de '%s' para '%s'", oldValStr, newValStr);
                 case "prioridade" -> String.format("Prioridade alterada de %s para %s", oldValStr, newValStr);
                 case "deleted" ->
                     (Boolean) newValue ? "Tarefa movida para a lixeira" : "Tarefa restaurada do histórico";
-                case "checklist" -> "Checklist de subtarefas atualizado";
                 case "prazo" -> newValue == null ? "Prazo removido"
                         : String.format("Prazo alterado para %s", formatValue(newValue));
                 case "importância" ->
