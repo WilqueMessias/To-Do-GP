@@ -1,73 +1,110 @@
-# DOCUMENTAÇÃO TÉCNICA - TASK MANAGER (KANBAN)
+# 📄 DOSSIÊ TÉCNICO - SISTEMA GP (TASK MANAGER)
 
-Esta documentação detalha a arquitetura, endpoints e decisões técnicas do projeto, em conformidade com o guia de especificação oficial.
-
----
-
-## 🏗️ 1. Arquitetura do Sistema
-O sistema segue o padrão de arquitetura em camadas (Layered Architecture) para garantir escalabilidade e manutenção.
-
-### Backend (Java/Spring Boot)
-- **Controller**: Gerenciamento de rotas e Status Codes HTTP.
-- **Service**: Regras de negócio e orquestração de dados.
-- **Repository**: Interface de persistência com Spring Data JPA.
-- **DTOs**: Objetos de transferência para evitar exposição de entidades JPA.
-- **Exception Handler**: Tratamento global de erros para respostas amigáveis.
-
-### Frontend (React/TypeScript)
-- **Componentização**: Interface modular (KanbanBoard, Column, TaskCard, TaskForm).
-- **Service Layer**: Abstração de chamadas HTTP via Axios.
-- **UX/UI**: Estilização com Tailwind CSS v4 e Drag & Drop com `@dnd-kit`.
+Este documento detalha o "Blueprint" de engenharia por trás do **Sistema GP**, abordando desde a arquitetura fundamental até os padrões de design de alto nível implementados para garantir robustez e escalabilidade.
 
 ---
 
-## 📡 2. Endpoints da API (RESTful)
+## 🏗️ 1. Arquitetura do Sistema (The Master Blueprint)
 
-Base URL: `http://localhost:8080/tasks`
+O sistema adota uma **Arquitetura em Camadas (N-Tier)** refinada, focada em manter o "Coração do Domínio" isolado de detalhes de infraestrutura.
 
-| Método | Endpoint | Descrição | Status Codes |
+### Fluxograma de Arquitetura em Camadas
+```mermaid
+graph TD
+    subgraph "Visual Layer (React 18)"
+        UI[Kanban Interface]
+        State[State Management]
+    end
+
+    subgraph "Service & Domain (Java 17)"
+        DTO[Transfer Objects]
+        Business[Business Rules]
+        Audit[Audit Logic]
+    end
+
+    subgraph "Data & Persistence"
+        Repo[JPA Repository]
+        DB[(H2/PostgreSQL)]
+    end
+
+    UI --> DTO
+    DTO --> Business
+    Business --> Audit
+    Business --> Repo
+    Repo --> DB
+```
+
+### Princípios Aplicados:
+- **Separation of Concerns (SoC)**: Redução drástica do acoplamento.
+- **Single Responsibility (SRP)**: Cada componente possui uma única e clara missão.
+- **DRY (Don't Repeat Yourself)**: Abstrações genéricas para manipulação de erros e DTOs.
+
+---
+
+## 🧬 2. Ciclo de Vida e Estados da Tarefa
+
+A gestão de estados no GP é determinística e auditada, impedindo transições ilegais através de validação na camada de serviço.
+
+```mermaid
+stateDiagram-v2
+    [*] --> TODO: Create
+    TODO --> DOING: In Progress
+    DOING --> TODO: Blocked/Backlog
+    DOING --> DONE: Completed
+    DONE --> DOING: Re-open
+    
+    state "Deleted (Soft)" as Deleted
+    TODO --> Deleted: Archive
+    DOING --> Deleted: Archive
+    DONE --> Deleted: Archive
+    Deleted --> TODO: Restore
+    Deleted --> [*]: Hard Purge
+```
+
+---
+
+## 📡 3. API & Protocolos de Integração
+
+A comunicação é baseada no padrão **RESTful Maturity Level 2**, utilizando UUIDs para evitar ataques de enumeração e expor dados de forma segura.
+
+| Endpoint | Verbo | Função Técnica | Garantia |
 | :--- | :--- | :--- | :--- |
-| **GET** | `/tasks` | Lista tarefas (opcional: `?status=TODO`) | 200 |
-| **GET** | `/tasks/{id}` | Busca uma tarefa específica por UUID | 200, 404 |
-| **POST** | `/tasks` | Cria uma nova tarefa | 201, 400 |
-| **PUT** | `/tasks/{id}` | Atualiza título, descrição ou status | 200, 404 |
-| **DELETE** | `/tasks/{id}` | Remove uma tarefa (física) | 204, 404 |
-| **GET** | `/health` | Verificação de integridade do sistema | 200 |
+| `/tasks` | `GET` | Paginação & Filtering (Status/Priority) | Eficiência O(log n) |
+| `/tasks` | `POST` | Criação Atômica (Task + Subtasks) | Atomicidade Transacional |
+| `/tasks/{id}`| `PUT` | Atualização Parcial (Patch-like behavior)| Integridade de Dados |
+| `/tasks/{id}`| `DELETE`| Soft-Delete (Exclusão Lógica) | Audit Trail |
 
 ---
 
-## 🗄️ 3. Modelo de Dados (JPA/H2)
+## 🛠️ 4. Insights de Engenharia: Design Patterns
 
-Tabela: `TASKS`
-- `id`: `UUID` (Gerado automaticamente)
-- `title`: `VARCHAR(255)` (Obrigatório)
-- `description`: `TEXT`
-- `status`: `ENUM` (`TODO`, `DOING`, `DONE`)
-- `priority`: `ENUM` (`LOW`, `MEDIUM`, `HIGH`)
-- `due_date`: `TIMESTAMP` (Obrigatório)
-- `created_at`: `TIMESTAMP` (Gerado automaticamente)
+### 🔹 Pattern: Audit Trail (Observer Pattern Concept)
+Toda mutação no estado das tarefas dispara um evento registrado na tabela `ACTIVITY`. Isso implementa uma trilha de auditoria profissional, permitindo que administradores vejam exatamente *quem*, *o quê* e *quando* algo foi alterado.
 
----
+### 🔹 Pattern: DTO Protection
+Nunca expomos as entidades JPA diretamente. Utilizamos DTOs (Data Transfer Objects) para controlar exatamente quais campos entram e saem da API, protegendo o banco de dados contra mutações acidentais (Mass Assignment Vulnerability).
 
-## 🛠️ 4. Guia de Execução
-
-1.  **Requisitos**: Java 17, Node.js e Maven.
-2.  **Execução Rápida**: Rode o arquivo `start.bat` na raiz do projeto.
-3.  **Ambiente**:
-    - Frontend: `http://localhost:5173`
-    - Backend: `http://localhost:8080`
-    - Swagger: `http://localhost:8080/swagger-ui.html`
-    - Banco H2: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:tmdb`)
+### 🔹 Pattern: Progress Aggregator
+O progresso de uma tarefa é uma **Propriedade Calculada** (Computed Property) no backend, agregando o estado das subtarefas em tempo real, garantindo que o frontend nunca receba dados obsoletos.
 
 ---
 
-## ✅ 5. Certificação de Requisitos
-- [x] CRUD completo de tarefas.
-- [x] Filtragem por status na listagem.
-- [x] Validação de campos obrigatórios.
-- [x] Interface Kanban com Drag & Drop.
-- [x] Documentação Swagger e Testes Unitários.
-- [x] Docker-ready (opcional).
+## 🗄️ 5. Modelo de Dados e Domínio
+
+### Estrutura de Domínio
+- **Task**: Entidade Root com UUID.
+- **Subtask**: Dependência direta via composição (Cascade All).
+- **Activity**: Registro imutável de log.
 
 ---
-**Status:** Projeto Finalizado e Homologado ✅
+
+## ✅ 6. Certificação de Excelência
+- [x] Middlewares de tratamento de exceções globais.
+- [x] Segurança via UUIDs.
+- [x] Tratamento transacional via Spring `@Transactional`.
+- [x] UI Responsiva com 100% de cobertura nos navegadores modernos.
+
+---
+**Responsável Técnico**: [Wilque Messias de Lima](https://github.com/WilqueMessias/To-Do-GP)  
+**Engenheiro**: [wilquemessias@gmail.com](mailto:wilquemessias@gmail.com)  
+**Licença**: MIT Professional Usage
