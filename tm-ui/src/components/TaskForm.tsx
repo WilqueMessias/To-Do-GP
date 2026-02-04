@@ -253,7 +253,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[80vh] custom-scrollbar">
+                <form
+                    onSubmit={handleSubmit}
+                    className="overflow-y-auto max-h-[80vh] custom-scrollbar"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.preventDefault();
+                            e.currentTarget.requestSubmit();
+                        }
+                    }}
+                >
                     <div className="p-6 space-y-6">
                         {/* Essential Info */}
                         <section className="space-y-4">
@@ -529,7 +538,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                             </button>
                             <button
                                 type="submit"
-                                disabled={loading}
+                                title="Salvar (Ctrl + Enter)"
                                 className="flex-1 py-2.5 rounded-lg bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
                                 {loading ? 'Salvando...' : 'Salvar Tarefa'}
