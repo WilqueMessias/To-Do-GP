@@ -422,6 +422,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                     setDueDate(val ? val + 'T00:00' : '');
                                                 }
                                             }}
+                                            onDoubleClick={(e) => e.currentTarget.showPicker()}
                                             className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400 [&::-webkit-calendar-picker-indicator]:hidden"
                                         />
                                         <button
