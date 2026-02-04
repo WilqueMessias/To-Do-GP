@@ -124,8 +124,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             const response = await taskService.restore(taskToRestore.id);
             let restored = response.data;
 
-            // 2. Force move to TODO so it's visible and active
-            const updateResponse = await taskService.update(restored.id, { status: 'TODO' });
+            // 2. Force move to DONE as requested
+            const updateResponse = await taskService.update(restored.id, { status: 'DONE' });
             restored = updateResponse.data;
 
             // Update local state (Optimistic)
