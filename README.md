@@ -1,65 +1,96 @@
 # To Do GP
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Java: 17](https://img.shields.io/badge/Java-17-blue.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![React: 18](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
-[![Spring Boot: 3](https://img.shields.io/badge/Spring_Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
+[![Maintained by: Wilque Messias](https://img.shields.io/badge/Maintained%20by-Wilque%20Messias-blue.svg)](https://github.com/WilqueMessias)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Docker: Ready](https://img.shields.io/badge/Docker-Ready-blue.svg?logo=docker)](https://www.docker.com/)
 
-A professional task orchestration system with a focus on real-time feedback, deep audit trails, and cognitive ergonomics. **To Do GP** delivers a high-fidelity Kanban experience backed by a robust, transactional Java ecosystem.
-
-[Technical Documentation](./TECHNICAL_DOCUMENTATION.md) | [Architecture](./TECHNICAL_DOCUMENTATION.md#architecture--design)
+**To Do GP** is a professional task management ecosystem designed for engineers and project leads. It combines a high-performance Java backend with a fluid, reactive TypeScript frontend to deliver a superior Kanban experience focused on data integrity and real-time analytics.
 
 ---
 
-## Technical Highlights
+## 🛠️ Comprehensive Tech Stack
 
-**To Do GP** is engineered to handle complex workflows with features that go beyond a simple checklist:
+### Backend Tier
+*   **Runtime**: Java 17 (OpenJDK)
+*   **Framework**: Spring Boot 3.4.1
+*   **Data Access**: Spring Data JPA / Hibernate
+*   **Database**: H2 (In-memory, persistent data schemas)
+*   **API Documentation**: Swagger UI / OpenAPI 3.0
+*   **Utilities**: Project Lombok (Boilerplate reduction), Jakarta Validation
+*   **Logging**: SLF4J / Logback
 
-*   **Audit Trail**: Every mutation (status change, priority shift, deadline renegotiation) is durably logged, providing a transparent history of the task's lifecycle.
-*   **Intelligent History**: A resilient "Soft Delete" mechanism ensures data is never lost by accident. Tasks move to a managed history for review or immediate restoration.
-*   **Checklist Progress**: Real-time progress aggregation where subtask completion status is reflected in the main task's visual indicators.
-*   **Timezone-Aware Precision**: Specifically tuned for consistent date/time handling across different client locales, ensuring deadlines are absolute.
-*   **Built-in Analytics**: Instant insights into Delivery Rate, Cycle Time (Creation to Completion), and Team Velocity.
+### Frontend Tier
+*   **Build Tool**: Vite (Ultra-fast HMR)
+*   **Library**: React 18
+*   **Language**: TypeScript (Strict Mode)
+*   **Styling**: Tailwind CSS v4 (Modern JIT engine)
+*   **Drag & Drop**: @dnd-kit (Optimized for performance and accessibility)
+*   **Icons**: Lucide React
+*   **HTTP Client**: Axios
 
-## Stack Overview
-
-### Backend (Robustness & Integrity)
-- **Spring Boot 3 / Java 17**: Modern reactive base for the service layer.
-- **Spring Data JPA**: Efficient ORM with transactional safety.
-- **Swagger / OpenAPI**: Fully documented API surface for seamless integration.
-- **H2 Database**: High-performance in-memory persistence (ready for Production DB migration).
-
-### Frontend (Fluidity & UX)
-- **Vite / React 18 / TypeScript**: Strict typing for runtime reliability.
-- **dnd-kit Sortable**: Highly optimized drag-and-drop engine with adaptive sensors.
-- **Tailwind CSS v4**: Advanced styling system for a premium, fast interface.
-- **Lucide Icons**: Crisp, professional iconography.
-
----
-
-## Quick Start
-
-### 📦 Prerequisites
-- **Docker** (Recommended) or **JDK 17+**, **Maven**, and **Node.js 18+**.
-
-### 🚀 Automation Scripts
-The easiest way to launch the ecosystem is using the included orchestrators:
-
-- **Windows**: Run `start.bat`
-- **Linux/POSIX**: Run `sh start.sh`
-
-Navigate to `http://localhost:5173` for the UI and `http://localhost:8080/swagger-ui/index.html` for API exploration.
+### Infrastructure & DevOps
+*   **Containerization**: Docker & Docker Compose
+*   **Package Managers**: Maven (Backend) / NPM (Frontend)
+*   **Automation**: PowerShell / Batch orchestrators
 
 ---
 
-## Author & Contact
+## 🚀 Deployment (Docker Focus)
 
-**Wilque Messias de Lima**  
-*Software & Infrastructure Engineer*
+The recommended way to run **To Do GP** in a production-like environment is via **Docker Compose**. This ensures all services are correctly networked and volume-mapped for data persistence.
 
-- **GitHub**: [github.com/WilqueMessias/To-Do-GP](https://github.com/WilqueMessias/To-Do-GP)
-- **LinkedIn**: [wilquemessias](https://br.linkedin.com/in/wilquemessias)
-- **Email**: [wilquemessias@gmail.com](mailto:wilquemessias@gmail.com)
+### 1. Standard Docker Launch
+From the root directory, execute:
+```bash
+docker-compose up --build
+```
+This command orchestrates:
+-   **tm-api**: Compiles and runs the Spring Boot service on port `8080`.
+-   **tm-ui**: Builds the React application and serves it via Nginx on port `80`.
+
+### 2. High-Level Automation
+If you are on Windows, you can use the interactive launcher:
+1.  Run `start.bat`.
+2.  Select **Option [1] CONTAINERIZED**.
+This will automatically handle build synchronization and deployment.
+
+### 3. Accessing the System
+-   **User Interface**: [http://localhost](http://localhost) (or `http://localhost:5173` in Dev Mode)
+-   **REST API**: [http://localhost:8080/tasks](http://localhost:8080/tasks)
+-   **API Documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ---
-Developed by **Wilque Messias de Lima** © 2024. Project licensed under **MIT**.
+
+## 📖 How to Use the System
+
+**To Do GP** follows a standard Kanban methodology enhanced by analytical features.
+
+### 1. Task Management
+-   **Create**: Click the "Add Task" button. You can define title, description, priority, and due dates.
+-   **Drag & Drop**: Effortlessly move cards between columns (**To Do**, **In Progress**, **Done**).
+-   **Subtasks**: Break down tasks into smaller steps. The main card's progress bar will update automatically as you check them off.
+
+### 2. Advanced Controls
+-   **Importance**: Star a task to pin it as a high-priority item.
+-   **Activity Log**: Click on a task to view its history. Every status change and update is recorded in the **Activity Trail**.
+-   **Soft Delete**: When you delete a task, it moves to the **History Panel**. Access it via the "History" button to restore or permanently purge data.
+
+### 3. Monitoring Productivity
+-   Use the **Analytics Panel** at the top to track:
+    -   **Delivery Rate**: Percentage of successfully closed tasks.
+    -   **Average Cycle Time**: How long a task takes from creation to completion.
+    -   **Checklist Efficiency**: Your subtask completion ratio.
+    -   **Velocity**: Number of tasks finished in the last 7 days.
+
+---
+
+## 👨‍💻 Author & Credits
+
+**To Do GP** was architected and developed by **Wilque Messias de Lima**.
+
+-   **Repository**: [github.com/WilqueMessias/To-Do-GP](https://github.com/WilqueMessias/To-Do-GP)
+-   **LinkedIn**: [Wilque Messias](https://br.linkedin.com/in/wilquemessias)
+-   **Email**: [wilquemessias@gmail.com](mailto:wilquemessias@gmail.com)
+
+---
+Developed by **Wilque Messias de Lima** © 2024. Licensed under **MIT**.
