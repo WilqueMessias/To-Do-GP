@@ -27,7 +27,9 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @Operation(summary = "List all tasks (Paginated)", description = "Returns a page of tasks, optionally filtered by status")
+    @Operation(summary = "List all tasks (Paginated)", description = "Terminal endpoint to retrieve task entities. Supports server-side status filtering and JPA-based pagination. "
+            +
+            "Calculated fields like 'overdue' and 'progress' are hydrated during entity induction.")
     @GetMapping
     public Page<TaskDTO> getAllTasks(
             @Parameter(description = "Filter by status (TODO, DOING, DONE)") @RequestParam(required = false) TaskStatus status,
@@ -53,16 +55,20 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(taskService.create(dto));
     }
 
-    @Operation(summary = "Update an existing task")
-    @ApiResponse(responseCode = "200", description = "Task updated successfully")
+    @Operation(summary = "Update an existing task", description = "Triggers the **Differential Audit Engine**. Compares incoming DTO values with persistent state. "
+            +
+            "Generates human-readable immutable Activity logs for every detected state transition.")
+    @ApiResponse(responseCode = "200", description = "Task updated successfully and audit logs generated")
     @PutMapping("/{id}")
     public ResponseEntity<TaskDTO> update(@PathVariable UUID id, @RequestBody TaskDTO dto) {
         log.info("Request to update task id: {}", id);
         return ResponseEntity.ok(taskService.update(id, dto));
     }
 
-    @Operation(summary = "Delete a task", description = "Performs a soft delete on the specified task")
-    @ApiResponse(responseCode = "204", description = "Task deleted")
+    @Operation(summary = "Delete a task (Logical Deletion)", description = "Applies a logical 'deleted' flag using Hibernate @SQLDelete. "
+            +
+            "The entity remains in the database for recovery or audit review.")
+    @ApiResponse(responseCode = "204", description = "Task logically archived")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
         log.info("Request to delete task: {}", id);

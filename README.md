@@ -71,5 +71,5 @@ Execute `start.bat` for an interactive bootstrap menu.
 
 ---
 <div align="center">
-Developed by Desenvolvedor © 2026.
+Developed by Wilque Messias © 2026.
 </div>

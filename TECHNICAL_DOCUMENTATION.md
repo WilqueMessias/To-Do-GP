@@ -9,19 +9,19 @@ The system operates as a distributed architecture with a clear separation betwee
 ```mermaid
 graph LR
     subgraph "Frontend Layer (React)"
-        Store[useKanbanTasks Hook]
-        UI[Kanban Board / Components]
-        DND[@dnd-kit Orchestrator]
+        Store["useKanbanTasks Hook"]
+        UI["Kanban Board / Components"]
+        DND["@dnd-kit Orchestrator"]
     end
 
     subgraph "Backend Layer (Spring Boot)"
-        Controller[REST Controller]
-        Service[TaskService / Audit Logic]
-        Repo[JPA Repositories / Native SQL]
+        Controller["REST Controller"]
+        Service["TaskService / Audit Logic"]
+        Repo["JPA Repositories / Native SQL"]
     end
 
     subgraph "Persistence Layer"
-        DB[(H2 Database)]
+        DB[("H2 Database")]
     end
 
     UI <--> Store
@@ -125,5 +125,5 @@ The UI utilizes **Optimistic Updates** to provide zero-latency interactions:
 
 ---
 <div align="center">
-Documented for Technical Review by Desenvolvedor.
+Documented for Technical Review by Wilque Messias © 2026.
 </div>
