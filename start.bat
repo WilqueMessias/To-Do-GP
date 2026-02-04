@@ -23,8 +23,28 @@ IF "%choice%"=="4" EXIT
 
 :DOCKER
 echo.
-echo [DEPLOY] Synchronizing containers...
-docker-compose up --build
+echo [1/3] Deployment: Synchronizing containers...
+docker-compose up -d --build
+
+echo [2/3] Stability: Waiting for API health (this may take 30-60s)...
+:WAIT_HEALTH
+powershell -Command "$status = docker inspect --format='{{.State.Health.Status}}' gp-tm-api-1; if($status -ne 'healthy') { exit 1 } else { exit 0 }" >nul 2>&1
+if %errorlevel% neq 0 (
+    <nul set /p=.
+    timeout /t 2 /nobreak >nul
+    goto WAIT_HEALTH
+)
+
+echo.
+echo [3/3] User Access: Launching Production Interface...
+timeout /t 2 /nobreak >nul
+start http://localhost
+echo.
+echo ===================================================
+echo   DOCKER DEPLOYMENT SUCCESSFUL
+echo   Interface: http://localhost
+echo   API Docs:  http://localhost:8080/swagger-ui.html
+echo ===================================================
 pause
 GOTO MENU
 

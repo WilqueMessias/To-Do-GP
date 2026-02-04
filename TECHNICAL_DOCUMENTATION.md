@@ -29,6 +29,9 @@ graph LR
     Store -- "JSON DTO" --> Controller
     Controller <--> Service
     Service <--> Repo
+    Service -- "Event" --> EventBus["Application Event Bus"]
+    EventBus -- "Async" --> Audit["TaskAuditListener"]
+    Audit -- "Log" --> Repo
     Repo <--> DB
 ```
 
@@ -86,12 +89,13 @@ sequenceDiagram
     participant DB as Persistence Layer
 
     UI->>SVC: PUT /tasks/{id} (TaskDTO)
-    SVC->>DB: Fetch Current State (Task Entity)
-    SVC->>SVC: Compare Field Values (title, status, priority, etc.)
-    Note over SVC: If field changed, create new Activity Entity
-    SVC->>DB: Save Activity Logs
-    SVC->>DB: Save Updated Task Entity
-    SVC->>UI: Return Updated TaskDTO
+    SVC->>DB: Fetch and Update Task State
+    SVC-->>UI: 200 OK (Immediate Response)
+    
+    Note over SVC,Audit: Asynchronous Background Flow
+    SVC->>Audit: Publish TaskAuditEvent
+    Audit->>Audit: Calculate Values Diff
+    Audit->>DB: Persist Activity Log
 ```
 
 ### 2. Logical Deletion (Soft-Delete)
@@ -111,7 +115,21 @@ Persistence is managed via a logical flag to ensure history retention and instan
 | `POST` | `/tasks` | O(N) | Activity creation |
 | `PUT` | `/tasks/{id}` | O(Diff * N) | Multiple Activity insertions |
 | `DELETE` | `/tasks/{id}` | O(1) | Flag Toggle |
-| `POST` | `/tasks/{id}/restore` | O(1) | Flag Toggle + Activity Log |
+| `POST` | `/tasks/{id}/restore` | O(1) | Flag Toggle + Async Event |
+
+---
+
+## 🛡️ Resilience & Engineering Excellence
+
+### 1. Request Rate Limiting
+To protect backend resources, the system implements a fixed-window counter interceptor.
+- **Limit**: 60 req/min per IP.
+- **Fail-Safe**: Automated `429 Too Many Requests` responses.
+
+### 2. Deep Observability (SLIs/SLOs)
+The application exposes business-level metrics via **Micrometer** targets:
+- `tasks.created` / `tasks.completed`: Throughput metrics for system utility.
+- `/actuator/health`: Granular readiness probes for Docker orchestration.
 
 ---
 

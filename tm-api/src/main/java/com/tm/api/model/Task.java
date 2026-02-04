@@ -84,6 +84,21 @@ public class Task {
         return status != TaskStatus.DONE && dueDate != null && dueDate.isBefore(LocalDateTime.now());
     }
 
+    /**
+     * Business Logic: Unified Status Transition
+     */
+    public void transitionTo(TaskStatus newStatus) {
+        if (this.status == TaskStatus.DONE && newStatus != TaskStatus.DONE) {
+            this.completedAt = null;
+        } else if (newStatus == TaskStatus.DONE && this.status != TaskStatus.DONE) {
+            this.completedAt = LocalDateTime.now();
+        }
+        this.status = newStatus;
+    }
+
+    /**
+     * Business Logic: Progress Calculation
+     */
     public double getProgress() {
         if (subtasks == null || subtasks.isEmpty()) {
             return status == TaskStatus.DONE ? 100.0 : 0.0;

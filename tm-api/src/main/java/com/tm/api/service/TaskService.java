@@ -4,20 +4,22 @@ import com.tm.api.dto.ActivityDTO;
 import com.tm.api.dto.SubtaskDTO;
 import com.tm.api.dto.TaskDTO;
 import com.tm.api.exception.TaskNotFoundException;
-import com.tm.api.model.Activity;
 import com.tm.api.model.Subtask;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
+import com.tm.api.event.TaskAuditEvent;
 import com.tm.api.repository.TaskRepository;
-import com.tm.api.repository.ActivityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.util.List;
+import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,7 +30,8 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-    private final ActivityRepository activityRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final MeterRegistry meterRegistry;
 
     public Page<TaskDTO> findAll(TaskStatus status, Pageable pageable) {
         log.info("Fetching paginated tasks with status: {}", status != null ? status : "ALL");
@@ -76,9 +79,13 @@ public class TaskService {
             task.setSubtasks(subtasks);
         }
 
-        addActivity(task, "Tarefa criada com o status " + task.getStatus());
+        Task savedTask = taskRepository.save(task);
+        eventPublisher
+                .publishEvent(new TaskAuditEvent(this, savedTask, Map.of(), Map.of("status", savedTask.getStatus())));
 
-        return toDTO(taskRepository.save(task));
+        meterRegistry.counter("tasks.created").increment();
+
+        return toDTO(savedTask);
     }
 
     @Transactional
@@ -89,101 +96,76 @@ public class TaskService {
 
         TaskStatus oldStatus = task.getStatus();
 
+        Map<String, Object> oldValues = new java.util.HashMap<>();
+        Map<String, Object> newValues = new java.util.HashMap<>();
+
         if (dto.getTitle() != null && !task.getTitle().equals(dto.getTitle())) {
-            addActivity(task, "Título alterado: " + task.getTitle() + " -> " + dto.getTitle());
+            oldValues.put("título", task.getTitle());
             task.setTitle(dto.getTitle());
+            newValues.put("título", task.getTitle());
         }
 
-        if (dto.getDescription() != null) {
-            String newDesc = dto.getDescription();
-            if (task.getDescription() != null && !task.getDescription().equals(newDesc)) {
-                addActivity(task, "Descrição técnica atualizada.");
-                task.setDescription(newDesc);
-            } else if (task.getDescription() == null && !newDesc.isBlank()) {
-                addActivity(task, "Descrição técnica adicionada.");
-                task.setDescription(newDesc);
-            }
+        if (dto.getDescription() != null
+                && (task.getDescription() == null || !task.getDescription().equals(dto.getDescription()))) {
+            oldValues.put("descrição", task.getDescription());
+            task.setDescription(dto.getDescription());
+            newValues.put("descrição", "Atualizada");
         }
 
         if (dto.getPriority() != null && task.getPriority() != dto.getPriority()) {
-            addActivity(task, "Prioridade alterada: " + task.getPriority() + " -> " + dto.getPriority());
+            oldValues.put("prioridade", task.getPriority());
             task.setPriority(dto.getPriority());
+            newValues.put("prioridade", task.getPriority());
         }
 
-        if (dto.getDueDate() != null) {
-            LocalDateTime newDate = dto.getDueDate();
-            if (task.getDueDate() != null && !task.getDueDate().equals(newDate)) {
-                addActivity(task, "Prazo renegociado.");
-                task.setDueDate(newDate);
-            } else if (task.getDueDate() == null) {
-                addActivity(task, "Prazo definido.");
-                task.setDueDate(newDate);
-            }
+        if (dto.getDueDate() != null && (task.getDueDate() == null || !task.getDueDate().equals(dto.getDueDate()))) {
+            oldValues.put("prazo", task.getDueDate());
+            task.setDueDate(dto.getDueDate());
+            newValues.put("prazo", task.getDueDate());
         }
 
-        // Handle boolean primitive (boolean in DTO, but we need to check if it was
-        // actually in the JSON)
-        // Note: For partial updates, it's better to use Boolean wrapper in DTO,
-        // but here we can check if it differs from current to justify an update if it's
-        // sent.
-        // However, if it's ALWAYS sent as false by default in some clients, this is
-        // risky.
-        // Given TaskDTO.important is boolean, it defaults to false.
-        // Special case: if important changed, update it.
         if (dto.getImportant() != null && task.isImportant() != dto.getImportant()) {
-            addActivity(task, "Importância alterada: " + (dto.getImportant() ? "Alta/Estrela" : "Normal"));
+            oldValues.put("importância", task.isImportant());
             task.setImportant(dto.getImportant());
+            newValues.put("importância", task.isImportant());
         }
 
         if (dto.getReminderEnabled() != null && task.isReminderEnabled() != dto.getReminderEnabled()) {
-            addActivity(task, dto.getReminderEnabled() ? "Lembrete ativado para " + dto.getReminderTime()
-                    : "Lembrete desativado.");
+            oldValues.put("lembrete", task.isReminderEnabled());
             task.setReminderEnabled(dto.getReminderEnabled());
+            newValues.put("lembrete", task.isReminderEnabled());
         }
 
         if (dto.getReminderTime() != null && !dto.getReminderTime().equals(task.getReminderTime())) {
             task.setReminderTime(dto.getReminderTime());
         }
 
-        if (dto.getStatus() != null) {
-            task.setStatus(dto.getStatus());
-            if (task.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
-                task.setCompletedAt(LocalDateTime.now());
-            } else if (task.getStatus() != TaskStatus.DONE) {
-                task.setCompletedAt(null);
-            }
-
-            if (oldStatus != task.getStatus()) {
-                addActivity(task, "Status alterado de " + oldStatus + " para " + task.getStatus());
-            }
+        if (dto.getStatus() != null && oldStatus != dto.getStatus()) {
+            oldValues.put("status", oldStatus);
+            task.transitionTo(dto.getStatus());
+            newValues.put("status", task.getStatus());
         }
 
-        if (dto.getSubtasks() != null && !dto.getSubtasks().isEmpty()) {
-            // Log subtask completion changes
-            dto.getSubtasks().forEach(sdto -> {
-                task.getSubtasks().stream()
-                        .filter(s -> s.getTitle().trim().equalsIgnoreCase(sdto.getTitle().trim())
-                                && s.isCompleted() != sdto.isCompleted())
-                        .findFirst()
-                        .ifPresent(s -> {
-                            addActivity(task, "Checklist item: '" + s.getTitle() + "' marcado como "
-                                    + (sdto.isCompleted() ? "CONCLUÍDO" : "PENDENTE"));
-                        });
-            });
-
+        if (dto.getSubtasks() != null) {
             // Re-sync subtasks
             task.getSubtasks().clear();
-            List<Subtask> subtasks = dto.getSubtasks().stream()
-                    .map(s -> Subtask.builder()
-                            .title(s.getTitle())
-                            .completed(s.isCompleted())
-                            .task(task)
-                            .build())
-                    .collect(Collectors.toList());
-            task.getSubtasks().addAll(subtasks);
+            task.getSubtasks().addAll(dto.getSubtasks().stream()
+                    .map(s -> Subtask.builder().title(s.getTitle()).completed(s.isCompleted()).task(task).build())
+                    .collect(Collectors.toList()));
+            newValues.put("checklist", "Atualizado");
         }
 
-        return toDTO(taskRepository.save(task));
+        Task savedTask = taskRepository.save(task);
+
+        if (!newValues.isEmpty()) {
+            eventPublisher.publishEvent(new TaskAuditEvent(this, savedTask, oldValues, newValues));
+        }
+
+        if (savedTask.getStatus() == TaskStatus.DONE && oldStatus != TaskStatus.DONE) {
+            meterRegistry.counter("tasks.completed").increment();
+        }
+
+        return toDTO(savedTask);
     }
 
     @Transactional
@@ -193,6 +175,7 @@ public class TaskService {
             throw new TaskNotFoundException("Task not found with id: " + id);
         }
         taskRepository.deleteById(id);
+        meterRegistry.counter("tasks.deleted").increment();
     }
 
     @Transactional
@@ -205,9 +188,11 @@ public class TaskService {
         Task task = taskRepository.findByIdIncludeDeleted(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task restored but not found: " + id));
 
-        addActivity(task, "Tarefa restaurada.");
+        Task savedTask = taskRepository.save(task);
+        eventPublisher
+                .publishEvent(new TaskAuditEvent(this, savedTask, Map.of("deleted", true), Map.of("deleted", false)));
 
-        return toDTO(taskRepository.save(task));
+        return toDTO(savedTask);
     }
 
     public List<TaskDTO> getHistory() {
@@ -237,14 +222,7 @@ public class TaskService {
         }
     }
 
-    private void addActivity(Task task, String message) {
-
-        Activity activity = Activity.builder()
-                .task(task)
-                .message(message)
-                .build();
-        activityRepository.save(activity);
-    }
+    // Event-driven auditing replaces direct repository calls
 
     @Transactional
     public void restoreAllHistory() {

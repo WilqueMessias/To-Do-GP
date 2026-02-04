@@ -8,44 +8,42 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private final Map<String, UserRequestInfo> requestCounts = new ConcurrentHashMap<>();
-    private static final int MAX_REQUESTS_PER_MINUTE = 100;
+    private static final int MAX_REQUESTS_PER_MINUTE = 60;
+    private final Map<String, RequestCounter> clientRequests = new ConcurrentHashMap<>();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String clientIp = request.getRemoteAddr();
-        long currentTime = System.currentTimeMillis() / 60000; // Minute precision
+        RequestCounter counter = clientRequests.computeIfAbsent(clientIp, k -> new RequestCounter());
 
-        UserRequestInfo info = requestCounts.compute(clientIp, (key, val) -> {
-            if (val == null || val.minute != currentTime) {
-                return new UserRequestInfo(currentTime, new AtomicInteger(1));
-            }
-            val.count.incrementAndGet();
-            return val;
-        });
-
-        if (info.count.get() > MAX_REQUESTS_PER_MINUTE) {
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.getWriter().write("Too many requests. Please try again in a minute.");
-            return false;
+        if (counter.incrementAndCheckLimit()) {
+            return true;
         }
 
-        return true;
+        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        response.getWriter().write("Too many requests. Please try again in a minute.");
+        return false;
     }
 
-    private static class UserRequestInfo {
-        long minute;
-        AtomicInteger count;
+    private static class RequestCounter {
+        private final AtomicInteger count = new AtomicInteger(0);
+        private long lastResetTime = System.currentTimeMillis();
 
-        UserRequestInfo(long minute, AtomicInteger count) {
-            this.minute = minute;
-            this.count = count;
+        public synchronized boolean incrementAndCheckLimit() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastResetTime > TimeUnit.MINUTES.toMillis(1)) {
+                count.set(0);
+                lastResetTime = currentTime;
+            }
+
+            return count.incrementAndGet() <= MAX_REQUESTS_PER_MINUTE;
         }
     }
 }

@@ -9,7 +9,7 @@
 
 **To Do GP** is a decoupled task management system built with Java (Spring Boot) and TypeScript (React). It focuses on high-precision data auditing, real-time analytics, and persistent state management.
 
-[Technical Documentation](./TECHNICAL_DOCUMENTATION.md) · [Backend API (tm-api)](./tm-api/README.md) · [Frontend SPA (tm-ui)](./tm-ui/README.md)
+[Technical Documentation](./TECHNICAL_DOCUMENTATION.md) · [Architecture Deep-Dive](./docs/ARCHITECTURE.md) · [Backend API (tm-api)](./tm-api/README.md) · [Frontend SPA (tm-ui)](./tm-ui/README.md)
 
 </div>
 
@@ -23,6 +23,17 @@ The system is designed following the **Separated Core** pattern, ensuring strict
 
 - **Backend**: Implements the Business Logic, Immutable Audit Trail, and Persistence Layer.
 - **Frontend**: Manages Optimistic State, UI Orchestration, and Real-time Analytics Calculations.
+
+---
+
+## 💎 Staff-Level Engineering Highlights
+
+This project incorporates advanced patterns typically found in large-scale enterprise systems:
+
+- **Asynchronous Event-Driven Auditing**: Decoupled diff-based activity logging using Spring Events and `@Async` execution.
+- **API Resilience (Rate Limiting)**: Protective interceptors safeguarding backend resources with automated `429` responses.
+- **Deep Observability**: Extensive business KPI tracking via custom Micrometer counters and granular health checks.
+- **Production-Grade Orchestration**: Docker composition with internal health-verification loops for stable cold-starts.
 
 ---
 
