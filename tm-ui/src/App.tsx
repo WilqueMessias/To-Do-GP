@@ -379,6 +379,15 @@ function App() {
               >
                 <img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" className="h-5 rounded" />
               </a>
+              <a
+                href="https://www.instagram.com/wilquemessias/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-pink-600 transition-all transform hover:scale-110 active:scale-90"
+                title="Instagram"
+              >
+                <img src="https://img.shields.io/badge/-Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram" className="h-5 rounded" />
+              </a>
             </div>
           </div>
 
