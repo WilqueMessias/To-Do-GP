@@ -58,6 +58,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const [activeTask, setActiveTask] = useState<Task | null>(null);
     const [internalTasks, setInternalTasks] = useState<Task[]>(tasks);
     const isDraggingRef = React.useRef(false);
+    const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
 
     // History & Modal State
     const [history, setHistory] = useState<Task[]>([]);
@@ -91,6 +92,48 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             console.error("Failed to fetch history", error);
         }
     };
+
+    React.useEffect(() => {
+        const handleDeleteKey = async (event: KeyboardEvent) => {
+            if (event.key !== 'Delete') return;
+
+            const target = event.target as HTMLElement | null;
+            const isTypingField = target && (
+                target.tagName === 'INPUT' ||
+                target.tagName === 'TEXTAREA' ||
+                target.tagName === 'SELECT' ||
+                target.isContentEditable
+            );
+            if (isTypingField) return;
+            if (!hoveredTaskId) return;
+
+            const taskToDelete = internalTasks.find(t => t.id === hoveredTaskId);
+            if (!taskToDelete) return;
+
+            const confirmed = confirm(`Excluir a tarefa "${taskToDelete.title}"?`);
+            if (!confirmed) return;
+
+            try {
+                await taskService.delete(taskToDelete.id);
+
+                setInternalTasks(prev => prev.filter(t => t.id !== taskToDelete.id));
+                if (onRemoveTasks) {
+                    onRemoveTasks([taskToDelete.id]);
+                } else if (onTasksChange) {
+                    onTasksChange(internalTasks.filter(t => t.id !== taskToDelete.id));
+                }
+
+                if (onRefresh) onRefresh();
+                await fetchHistory();
+                setHoveredTaskId(null);
+            } catch (error) {
+                console.error("Failed to delete task", error);
+            }
+        };
+
+        window.addEventListener('keydown', handleDeleteKey);
+        return () => window.removeEventListener('keydown', handleDeleteKey);
+    }, [hoveredTaskId, internalTasks, onRemoveTasks, onTasksChange, onRefresh]);
 
     // Refresh history when modal opens
     React.useEffect(() => {
@@ -352,6 +395,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                             tasks={internalTasks.filter((t) => t.status === col.id)}
                             onTaskClick={onEditTask}
                             onUpdateTask={onUpdateTask}
+                            onHoverChange={setHoveredTaskId}
                             headerAction={col.id === 'DONE' ? (
                                 <div className="flex gap-1">
                                     <button

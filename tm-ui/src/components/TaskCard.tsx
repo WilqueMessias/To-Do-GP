@@ -19,6 +19,7 @@ export interface TaskCardProps {
     task: Task;
     onClick: (task: Task) => void;
     onUpdate?: (id: string, updates: Partial<Task>) => void;
+    onHoverChange?: (taskId: string | null) => void;
 }
 
 interface TaskCardContentProps extends TaskCardProps {
@@ -59,6 +60,7 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
     task,
     onClick,
     onUpdate,
+    onHoverChange,
     setNodeRef,
     style,
     attributes,
@@ -104,6 +106,8 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
             ref={setNodeRef}
 
             onClick={() => onClick(task)}
+            onMouseEnter={() => onHoverChange?.(task.id)}
+            onMouseLeave={() => onHoverChange?.(null)}
             className={`
                 glass-card group p-5 cursor-pointer relative
                 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] 

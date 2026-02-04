@@ -11,9 +11,10 @@ interface KanbanColumnProps {
     onTaskClick: (task: Task) => void;
     onUpdateTask?: (id: string, updates: Partial<Task>) => void;
     headerAction?: React.ReactNode;
+    onHoverChange?: (taskId: string | null) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask, headerAction }) => {
+export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, onTaskClick, onUpdateTask, headerAction, onHoverChange }) => {
     const { setNodeRef } = useDroppable({
         id: id,
     });
@@ -48,6 +49,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tasks, on
                             task={task}
                             onClick={handleCardClick}
                             onUpdate={onUpdateTask}
+                            onHoverChange={onHoverChange}
                         />
                     ))}
                 </SortableContext>
