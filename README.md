@@ -152,6 +152,10 @@ npm run lint
 - **Distribution Analysis**: Percentage-based visualization of tasks across state clusters.
 
 ---
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
 <div align="center">
 Technical Design by Wilque Messias © 2026.
 </div>

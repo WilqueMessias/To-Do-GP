@@ -1,4 +1,5 @@
 @echo off
+pushd "%~dp0"
 TITLE Task Manager Kanban - Launcher
 CLS
 
@@ -28,7 +29,9 @@ docker-compose up -d --build
 
 echo [2/3] Stability: Waiting for API health (this may take 30-60s)...
 :WAIT_HEALTH
-powershell -Command "$status = docker inspect --format='{{.State.Health.Status}}' gp-tm-api-1; if($status -ne 'healthy') { exit 1 } else { exit 0 }" >nul 2>&1
+for /f "delims=" %%i in ('docker-compose ps -q tm-api') do set "TM_API_CID=%%i"
+if not defined TM_API_CID goto WAIT_HEALTH
+powershell -Command "$status = docker inspect --format='{{.State.Health.Status}}' %TM_API_CID%; if($status -ne 'healthy') { exit 1 } else { exit 0 }" >nul 2>&1
 if %errorlevel% neq 0 (
     <nul set /p=.
     timeout /t 2 /nobreak >nul
@@ -99,4 +102,5 @@ pause
 GOTO MENU
 
 :MENU
-start.bat
+popd
+call "%~dp0start.bat"

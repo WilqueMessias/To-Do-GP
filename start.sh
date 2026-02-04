@@ -1,5 +1,8 @@
 #!/bin/bash
 
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$BASE_DIR" || exit 1
+
 echo "==================================================="
 echo "   TASK MANAGER KANBAN - LAUNCHER (Linux/Mac)"
 echo "==================================================="

@@ -152,6 +152,10 @@ npm run lint
 - **Análise de Distribuição**: Visualização percentual de tarefas distribuídas entre clusters de estado.
 
 ---
+
+## Licença
+
+Licença MIT. Veja [LICENSE](../LICENSE).
 <div align="center">
 Design Técnico por Wilque Messias © 2026.
 </div>
