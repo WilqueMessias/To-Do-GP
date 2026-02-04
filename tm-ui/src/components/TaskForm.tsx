@@ -513,13 +513,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Título da Tarefa</label>
                                     <div className="flex gap-2">
                                         {title && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setTitle('')}
-                                                className="text-[10px] font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
-                                            >
-                                                Limpar
-                                            </button>
+                                            <div />
                                         )}
                                         {suggestion && (
                                             <button
@@ -563,13 +557,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 <div className="flex justify-between items-center mb-1.5">
                                     <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Descrição Técnica</label>
                                     {description && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setDescription('')}
-                                            className="text-[10px] font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
-                                        >
-                                            Limpar
-                                        </button>
+                                        <div />
                                     )}
                                 </div>
                                 <div className="relative group/textarea">
@@ -708,13 +696,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                     >
                                                         Amanhã
                                                     </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={clearPicker}
-                                                        className="ml-auto px-2 py-1 text-[9px] font-bold rounded-md text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20 transition-all"
-                                                    >
-                                                        Limpar
-                                                    </button>
+                                                    <div className="ml-auto" />
                                                 </div>
                                                 <div className="flex flex-col gap-3">
                                                     <div>
