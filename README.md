@@ -53,17 +53,95 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 
 ---
 
+## ✅ Prerequisites
+
+- **Java 17** (JDK)
+- **Maven** (for local development)
+- **Node 18**
+- **Docker + Docker Compose** (for production run)
+
+---
+
+## 🔧 Environment Variables (Optional)
+
+**Backend (Spring Boot):**
+- `SERVER_PORT` (default: `8080`)
+- `SPRING_DATASOURCE_URL` (default: `jdbc:h2:file:./data/tmdb`)
+- `SPRING_DATASOURCE_USERNAME` (default: `sa`)
+- `SPRING_DATASOURCE_PASSWORD` (default: empty)
+
+**Frontend:**
+- `VITE_API_BASE_URL` (default: `http://localhost:8080`)
+	- Example: copy [tm-ui/.env.example](tm-ui/.env.example) to `tm-ui/.env`
+
 ## 🚀 Execution
 
-### 1. Containerized (Recommended)
+### 1) Production (Docker Compose)
+**Quick start (scripts):**
+- Windows: `start.bat`
+- Linux/Mac: `start.sh`
+
+**Manual run:**
 ```bash
 docker-compose up -d --build
 ```
 - **Interface**: [http://localhost](http://localhost)
 - **API Spec**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
-### 2. Native Orchestrator
-Execute `start.bat` for an automated bootstrap process including network readiness and dependency verification.
+### 2) Development (Local)
+**Install frontend deps:**
+```bash
+cd tm-ui
+npm install
+```
+
+**Run backend:**
+```bash
+cd tm-api
+mvn clean spring-boot:run
+```
+
+**Run frontend:**
+```bash
+cd tm-ui
+npm run dev
+```
+
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend**: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 🌐 Ports
+
+- **Frontend (dev)**: `5173`
+- **Frontend (prod)**: `80`
+- **Backend API**: `8080`
+
+---
+
+## 🧪 Tests
+
+**Backend:**
+```bash
+cd tm-api
+mvn test
+```
+
+**Frontend (lint):**
+```bash
+cd tm-ui
+npm run lint
+```
+
+---
+
+## 🛟 Troubleshooting
+
+- **Port conflicts**: stop processes on `8080` or `5173` and retry.
+- **Docker build slow**: run `docker system prune` and rebuild.
+- **API not healthy**: check [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health).
 
 ---
 

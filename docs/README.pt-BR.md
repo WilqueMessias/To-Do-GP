@@ -53,17 +53,95 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 
 ---
 
+## ✅ Pré-requisitos
+
+- **Java 17** (JDK)
+- **Maven** (para desenvolvimento local)
+- **Node 18**
+- **Docker + Docker Compose** (para execução em produção)
+
+---
+
+## 🔧 Variáveis de Ambiente (Opcional)
+
+**Backend (Spring Boot):**
+- `SERVER_PORT` (padrão: `8080`)
+- `SPRING_DATASOURCE_URL` (padrão: `jdbc:h2:file:./data/tmdb`)
+- `SPRING_DATASOURCE_USERNAME` (padrão: `sa`)
+- `SPRING_DATASOURCE_PASSWORD` (padrão: vazio)
+
+**Frontend:**
+- `VITE_API_BASE_URL` (padrão: `http://localhost:8080`)
+	- Exemplo: copie [tm-ui/.env.example](../tm-ui/.env.example) para `tm-ui/.env`
+
 ## 🚀 Execução
 
-### 1. Containerizado (Recomendado)
+### 1) Produção (Docker Compose)
+**Inicialização rápida (scripts):**
+- Windows: `start.bat`
+- Linux/Mac: `start.sh`
+
+**Execução manual:**
 ```bash
 docker-compose up -d --build
 ```
 - **Interface**: [http://localhost](http://localhost)
 - **Especificação API**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
-### 2. Orquestrador Nativo
-Execute o `start.bat` para um processo de bootstrap automatizado, incluindo resolução de conflitos de rede e verificação de dependências.
+### 2) Desenvolvimento (Local)
+**Instalar dependências do frontend:**
+```bash
+cd tm-ui
+npm install
+```
+
+**Subir backend:**
+```bash
+cd tm-api
+mvn clean spring-boot:run
+```
+
+**Subir frontend:**
+```bash
+cd tm-ui
+npm run dev
+```
+
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend**: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 🌐 Portas
+
+- **Frontend (dev)**: `5173`
+- **Frontend (prod)**: `80`
+- **Backend API**: `8080`
+
+---
+
+## 🧪 Testes
+
+**Backend:**
+```bash
+cd tm-api
+mvn test
+```
+
+**Frontend (lint):**
+```bash
+cd tm-ui
+npm run lint
+```
+
+---
+
+## 🛟 Solução de Problemas
+
+- **Conflito de portas**: finalize processos em `8080` ou `5173` e tente novamente.
+- **Build Docker lento**: execute `docker system prune` e reconstrua.
+- **API sem health**: verifique [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health).
 
 ---
 

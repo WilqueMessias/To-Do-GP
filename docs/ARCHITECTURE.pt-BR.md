@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**[English version](ARCHITECTURE.md)** | **[Versão em Português](README.pt-BR.md)**
+**[English version](ARCHITECTURE.md)** | **[Versão em Português](ARCHITECTURE.pt-BR.md)**
 
 </div>
 
@@ -29,7 +29,7 @@ graph LR
     end
 
     subgraph "Infraestrutura"
-        DB[("Bando de Dados H2")]
+        DB[("Banco de Dados H2")]
     end
 
     UI <--> Store
@@ -105,6 +105,44 @@ Integração com **Micrometer** para exposição de Indicadores de Nível de Ser
 O ciclo de vida de implantação é gerenciado via **Docker Compose**, utilizando dependências de verificação de saúde para garantir a inicialização estável dos serviços.
 - **Performance**: A UI é servida através de um container Nginx alpine otimizado.
 - **Estabilidade**: A inicialização baseada em condições garante que a UI só inicie após a API reportar status `healthy`.
+
+---
+
+## ✅ Pré-requisitos & Execução
+
+- **Java 17** (Spring Boot)
+- **Node 18** (Frontend)
+- **Docker + Docker Compose** (execução recomendada)
+
+**Execução rápida (Docker Compose):**
+```bash
+docker-compose up -d --build
+```
+- **Interface**: [http://localhost](http://localhost)
+- **Swagger**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## ⚖️ Decisões & Trade-offs
+
+- **Monolito Distribuído**: reduz acoplamento entre camadas sem incorrer em overhead de microserviços.
+- **Auditoria assíncrona**: melhora latência percebida, com custo de eventual consistência no log.
+- **Rate limiting no edge da API**: proteção imediata, com limite por IP como heurística simples.
+
+---
+
+## 🚧 Limitações Conhecidas
+
+- **H2 em memória**: adequado para desenvolvimento, não recomendado para produção.
+- **Rate limit por IP**: não cobre cenários de NAT/Proxy com precisão fina.
+
+---
+
+## 🧭 Próximos Passos
+
+- Persistência externa (PostgreSQL) com migrações (Flyway).
+- Tracing distribuído (OpenTelemetry) e métricas avançadas.
+- Política de rate limit por token/usuário.
 
 ---
 Arquitetura Técnica por Wilque Messias © 2026.

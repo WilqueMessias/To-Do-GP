@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**[English version](../README.md)** | **[Versão em Português](ARCHITECTURE.pt-BR.md)**
+**[English version](ARCHITECTURE.md)** | **[Versão em Português](ARCHITECTURE.pt-BR.md)**
 
 </div>
 
@@ -105,6 +105,44 @@ Integration with **Micrometer** for exposing Service Level Indicators.
 The deployment lifecycle is managed via **Docker Compose**, utilizing health-check dependencies to ensure stable service ignition.
 - **Performance**: The UI is served via an optimized Nginx alpine container.
 - **Stability**: Condition-based startup ensures the UI only initializes after the API reporting a `healthy` status.
+
+---
+
+## ✅ Prerequisites & Execution
+
+- **Java 17** (Spring Boot)
+- **Node 18** (Frontend)
+- **Docker + Docker Compose** (recommended execution)
+
+**Quick run (Docker Compose):**
+```bash
+docker-compose up -d --build
+```
+- **Interface**: [http://localhost](http://localhost)
+- **Swagger**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## ⚖️ Decisions & Trade-offs
+
+- **Distributed Monolith**: reduces coupling between layers without microservices overhead.
+- **Asynchronous auditing**: improves perceived latency with eventual consistency in the log.
+- **Rate limiting at API edge**: immediate protection with IP-based heuristics.
+
+---
+
+## 🚧 Known Limitations
+
+- **In-memory H2**: suitable for development, not recommended for production.
+- **IP-based rate limit**: not precise under NAT/Proxy scenarios.
+
+---
+
+## 🧭 Next Steps
+
+- External persistence (PostgreSQL) with migrations (Flyway).
+- Distributed tracing (OpenTelemetry) and advanced metrics.
+- Rate limit policy per token/user.
 
 ---
 Technical Architecture by Wilque Messias © 2026.
