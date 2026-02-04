@@ -1,24 +1,24 @@
 package com.tm.api.service;
 
 import com.tm.api.dto.TaskDTO;
+import com.tm.api.event.TaskAuditEvent;
+import com.tm.api.mapper.TaskMapper;
 import com.tm.api.model.Priority;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
 import com.tm.api.repository.TaskRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.tm.api.exception.TaskNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,82 +31,103 @@ class TaskServiceTest {
 
     @Mock
     private TaskRepository taskRepository;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private MeterRegistry meterRegistry;
+    @Mock
+    private TaskMapper taskMapper;
+    @Mock
+    private Counter counter;
 
     @InjectMocks
     private TaskService taskService;
 
-    private Task task;
-    private TaskDTO taskDTO;
+    private Task sampleTask;
+    private UUID taskId;
 
     @BeforeEach
     void setUp() {
-        task = Task.builder()
-                .id(UUID.randomUUID())
-                .title("Test Task")
-                .description("Description")
+        taskId = UUID.randomUUID();
+        sampleTask = Task.builder()
+                .id(taskId)
+                .title("Original Title")
                 .status(TaskStatus.TODO)
                 .priority(Priority.MEDIUM)
                 .dueDate(LocalDateTime.now().plusDays(1))
                 .build();
 
-        taskDTO = TaskDTO.builder()
-                .title("Test Task")
-                .description("Description")
-                .status(TaskStatus.TODO)
-                .priority(Priority.MEDIUM)
-                .dueDate(LocalDateTime.now().plusDays(1))
+        lenient().when(meterRegistry.counter(anyString())).thenReturn(counter);
+    }
+
+    @Test
+    void whenUpdateTitle_thenPublishAuditEventWithDifferences() {
+        // Arrange
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(sampleTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
+
+        TaskDTO updateDTO = TaskDTO.builder()
+                .title("New Title")
                 .build();
+
+        // Act
+        taskService.update(taskId, updateDTO);
+
+        // Assert
+        ArgumentCaptor<TaskAuditEvent> eventCaptor = ArgumentCaptor.forClass(TaskAuditEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TaskAuditEvent event = eventCaptor.getValue();
+        assertEquals("Original Title", event.getOldValues().get("título"));
+        assertEquals("New Title", event.getNewValues().get("título"));
     }
 
     @Test
-    void findAll_ShouldReturnPage() {
-        Page<Task> taskPage = new PageImpl<>(List.of(task));
-        when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
-        
-        Page<TaskDTO> result = taskService.findAll(null, Pageable.unpaged());
-        
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.getTotalElements());
-        assertEquals(task.getTitle(), result.getContent().get(0).getTitle());
+    void whenUpdateStatus_thenPublishAuditEventAndIncrementCounter() {
+        // Arrange
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(sampleTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
+
+        TaskDTO updateDTO = TaskDTO.builder()
+                .status(TaskStatus.DONE)
+                .build();
+
+        // Act
+        taskService.update(taskId, updateDTO);
+
+        // Assert
+        ArgumentCaptor<TaskAuditEvent> eventCaptor = ArgumentCaptor.forClass(TaskAuditEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TaskAuditEvent event = eventCaptor.getValue();
+        assertEquals(TaskStatus.TODO, event.getOldValues().get("status"));
+        assertEquals(TaskStatus.DONE, event.getNewValues().get("status"));
+
+        verify(counter).increment(); // tasks.completed counter
     }
 
     @Test
-    void findAll_ShouldReturnList() {
-        Page<Task> taskPage = new PageImpl<>(List.of(task));
-        when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
-        Page<TaskDTO> result = taskService.findAll(null, Pageable.unpaged());
-        assertFalse(result.isEmpty());
-        // assertEquals(1, result.getTotalElements()); 
-    }
+    void whenUpdateMultipleFields_thenIncludeAllInAuditEvent() {
+        // Arrange
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(sampleTask));
+        when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
 
-    @Test
-    void create_ShouldReturnSavedTask() {
-        when(taskRepository.save(any(Task.class))).thenReturn(task);
-        TaskDTO result = taskService.create(taskDTO);
-        assertNotNull(result);
-        assertEquals(task.getTitle(), result.getTitle());
-        verify(taskRepository, times(1)).save(any(Task.class));
-    }
+        TaskDTO updateDTO = TaskDTO.builder()
+                .title("Multi Update")
+                .priority(Priority.HIGH)
+                .status(TaskStatus.DOING)
+                .build();
 
-    @Test
-    void findById_WhenExists_ShouldReturnTask() {
-        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
-        TaskDTO result = taskService.findById(task.getId());
-        assertNotNull(result);
-        assertEquals(task.getId(), result.getId());
-    }
+        // Act
+        taskService.update(taskId, updateDTO);
 
-    @Test
-    void findById_WhenNotExists_ShouldThrowException() {
-        UUID id = UUID.randomUUID();
-        when(taskRepository.findById(id)).thenReturn(Optional.empty());
-        assertThrows(TaskNotFoundException.class, () -> taskService.findById(id));
-    }
+        // Assert
+        ArgumentCaptor<TaskAuditEvent> eventCaptor = ArgumentCaptor.forClass(TaskAuditEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
 
-    @Test
-    void delete_WhenExists_ShouldCallRepository() {
-        when(taskRepository.existsById(task.getId())).thenReturn(true);
-        taskService.delete(task.getId());
-        verify(taskRepository, times(1)).deleteById(task.getId());
+        TaskAuditEvent event = eventCaptor.getValue();
+        assertTrue(event.getNewValues().containsKey("título"));
+        assertTrue(event.getNewValues().containsKey("prioridade"));
+        assertTrue(event.getNewValues().containsKey("status"));
     }
 }

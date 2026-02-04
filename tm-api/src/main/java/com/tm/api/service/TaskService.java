@@ -1,9 +1,8 @@
 package com.tm.api.service;
 
-import com.tm.api.dto.ActivityDTO;
-import com.tm.api.dto.SubtaskDTO;
 import com.tm.api.dto.TaskDTO;
 import com.tm.api.exception.TaskNotFoundException;
+import com.tm.api.mapper.TaskMapper;
 import com.tm.api.model.Subtask;
 import com.tm.api.model.Task;
 import com.tm.api.model.TaskStatus;
@@ -32,6 +31,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final MeterRegistry meterRegistry;
+    private final TaskMapper taskMapper;
 
     public Page<TaskDTO> findAll(TaskStatus status, Pageable pageable) {
         log.info("Fetching paginated tasks with status: {}", status != null ? status : "ALL");
@@ -41,13 +41,13 @@ public class TaskService {
         } else {
             tasks = taskRepository.findAll(pageable);
         }
-        return tasks.map(this::toDTO);
+        return tasks.map(taskMapper::toDTO);
     }
 
     public TaskDTO findById(UUID id) {
         log.debug("Finding task by id: {}", id);
         return taskRepository.findById(id)
-                .map(this::toDTO)
+                .map(taskMapper::toDTO)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
     }
 
@@ -85,7 +85,7 @@ public class TaskService {
 
         meterRegistry.counter("tasks.created").increment();
 
-        return toDTO(savedTask);
+        return taskMapper.toDTO(savedTask);
     }
 
     @Transactional
@@ -165,7 +165,7 @@ public class TaskService {
             meterRegistry.counter("tasks.completed").increment();
         }
 
-        return toDTO(savedTask);
+        return taskMapper.toDTO(savedTask);
     }
 
     @Transactional
@@ -192,13 +192,13 @@ public class TaskService {
         eventPublisher
                 .publishEvent(new TaskAuditEvent(this, savedTask, Map.of("deleted", true), Map.of("deleted", false)));
 
-        return toDTO(savedTask);
+        return taskMapper.toDTO(savedTask);
     }
 
     public List<TaskDTO> getHistory() {
         log.info("Fetching deleted tasks history");
         return taskRepository.findAllDeletedNative().stream()
-                .map(this::toDTO)
+                .map(taskMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -242,39 +242,5 @@ public class TaskService {
             log.error("Failed to clear history", e);
             throw e;
         }
-    }
-
-    private TaskDTO toDTO(Task task) {
-        return TaskDTO.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .description(task.getDescription())
-                .status(task.getStatus())
-                .priority(task.getPriority())
-                .dueDate(task.getDueDate())
-                .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt())
-                .completedAt(task.getCompletedAt())
-                .overdue(task.isOverdue())
-                .progress(task.getProgress())
-                .important(task.isImportant())
-                .reminderEnabled(task.isReminderEnabled())
-                .reminderTime(task.getReminderTime())
-                .subtasks(task.getSubtasks().stream()
-
-                        .map(s -> SubtaskDTO.builder()
-                                .id(s.getId())
-                                .title(s.getTitle())
-                                .completed(s.isCompleted())
-                                .build())
-                        .collect(Collectors.toList()))
-                .activities(task.getActivities().stream()
-                        .map(a -> ActivityDTO.builder()
-                                .id(a.getId())
-                                .message(a.getMessage())
-                                .timestamp(a.getTimestamp())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
     }
 }

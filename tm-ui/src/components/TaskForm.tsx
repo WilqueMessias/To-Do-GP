@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Task, Subtask } from '../services/api';
 import { taskService } from '../services/api';
 import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles, Star, Calendar } from 'lucide-react';
+import { format, parseISO, isValid, addDays, setHours, setMinutes } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 
 
@@ -18,51 +20,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
-    const pad2 = (value: number) => String(value).padStart(2, '0');
-    const formatLocalForInput = (date: Date) => {
-        return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
-    };
-    const getNowForInput = () => formatLocalForInput(new Date());
-    const normalizeYear = (year: string) => {
-        const digits = year.replace(/\D/g, '');
-        if (digits.length >= 4) return digits.slice(-4);
-        if (digits.length === 3) {
-            const millennium = Math.floor(new Date().getFullYear() / 1000);
-            return `${millennium}${digits}`;
-        }
-        if (digits.length === 2) {
-            const century = Math.floor(new Date().getFullYear() / 100);
-            return `${century}${digits}`;
-        }
-        return digits.padStart(4, '0');
-    };
-    const normalizeDateInputValue = (value: string, finalize = false) => {
-        if (!value) return value;
-        const [rawYear = '', rawMonth = '', rawDay = ''] = value.split('-');
-        const yearDigits = rawYear.replace(/\D/g, '').slice(0, 4);
-        const monthDigits = rawMonth.replace(/\D/g, '').slice(0, 2);
-        const dayDigits = rawDay.replace(/\D/g, '').slice(0, 2);
 
-        const year = finalize && yearDigits ? normalizeYear(yearDigits) : yearDigits;
-        let next = year;
-        if (rawMonth || value.includes('-')) next += `-${monthDigits}`;
-        if (rawDay || value.split('-').length >= 3) next += `-${dayDigits}`;
-        return next;
-    };
+    const getNowForInput = () => format(new Date(), "yyyy-MM-dd'T'HH:mm");
+
     const formatDisplayDate = (value: string, withTime: boolean) => {
         if (!value) return '';
-        const [datePart, timePart] = value.split('T');
-        if (!datePart) return '';
-        const [yyyy, mm, dd] = datePart.split('-');
-        if (!yyyy || !mm || !dd) return '';
-        const dateStr = `${dd}/${mm}/${normalizeYear(yyyy)}`;
-        if (!withTime) return dateStr;
-        const timeStr = timePart ? timePart.substring(0, 5) : '00:00';
-        return `${dateStr} ${timeStr}`;
+        const date = parseISO(value);
+        if (!isValid(date)) return '';
+        return format(date, withTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy", { locale: ptBR });
     };
+
     const isDateOnlyValue = (value?: string) => {
         if (!value) return true;
-        if (!value.includes('T')) return true;
         return value.includes('T00:00') || value.includes('T23:59:59') || value.includes('T23:59');
     };
 
@@ -116,26 +85,17 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     };
     const setPickerToday = () => {
         const now = new Date();
-        const ymd = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
-        setPickerDate(ymd);
+        setPickerDate(format(now, 'yyyy-MM-dd'));
         if (hasTime) {
-            setPickerTime(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`);
+            setPickerTime(format(now, 'HH:mm'));
         }
     };
     const setPickerTomorrow = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const ymd = `${tomorrow.getFullYear()}-${pad2(tomorrow.getMonth() + 1)}-${pad2(tomorrow.getDate())}`;
-        setPickerDate(ymd);
+        const tomorrow = addDays(new Date(), 1);
+        setPickerDate(format(tomorrow, 'yyyy-MM-dd'));
         if (hasTime && !pickerTime) {
             setPickerTime('09:00');
         }
-    };
-    const clearPicker = () => {
-        setPickerDate('');
-        setPickerTime('');
-        setDueDate('');
-        closePicker();
     };
 
     // Sync state when taskToEdit changes
@@ -217,8 +177,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const handleTypeSelect = (nextBuffer: string) => {
         const target = activeTimeColumn;
         const value = target === 'hour'
-            ? pad2(Math.min(23, Math.max(0, parseInt(nextBuffer, 10))))
-            : pad2(Math.min(59, Math.max(0, parseInt(nextBuffer, 10))));
+            ? String(Math.min(23, Math.max(0, parseInt(nextBuffer, 10)))).padStart(2, '0')
+            : String(Math.min(59, Math.max(0, parseInt(nextBuffer, 10)))).padStart(2, '0');
 
         if (target === 'hour') {
             setPickerTime(`${value}:${pickerTime?.split(':')[1] || '00'}`);
@@ -294,17 +254,17 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         let label = '';
 
         if (text.includes('hoje') || text.includes('today')) {
-            targetDate.setHours(23, 59, 0, 0);
+            targetDate = setHours(setMinutes(targetDate, 59), 23);
             found = true;
             label = 'Hoje';
         } else if (text.includes('amanhã') || text.includes('tomorrow')) {
-            targetDate.setDate(targetDate.getDate() + 1);
-            targetDate.setHours(12, 0, 0, 0);
+            targetDate = addDays(targetDate, 1);
+            targetDate = setHours(setMinutes(targetDate, 0), 12);
             found = true;
             label = 'Amanhã';
         } else if (text.includes('próxima semana') || text.includes('next week')) {
-            targetDate.setDate(targetDate.getDate() + 7);
-            targetDate.setHours(9, 0, 0, 0);
+            targetDate = addDays(targetDate, 7);
+            targetDate = setHours(setMinutes(targetDate, 0), 9);
             found = true;
             label = 'Próxima Semana';
         } else {
@@ -314,9 +274,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                 if (text.includes(weekdays[i])) {
                     const currentDay = targetDate.getDay();
                     let daysToAdd = (i - currentDay + 7) % 7;
-                    if (daysToAdd === 0) daysToAdd = 7; // Target next week if same day
-                    targetDate.setDate(targetDate.getDate() + daysToAdd);
-                    targetDate.setHours(10, 0, 0, 0);
+                    if (daysToAdd === 0) daysToAdd = 7;
+                    targetDate = addDays(targetDate, daysToAdd);
+                    targetDate = setHours(setMinutes(targetDate, 0), 10);
                     found = true;
                     label = weekdays[i].charAt(0).toUpperCase() + weekdays[i].slice(1);
                     break;
@@ -334,7 +294,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         }
 
         if (found) {
-            const formatted = formatLocalForInput(targetDate);
+            const formatted = format(targetDate, "yyyy-MM-dd'T'HH:mm");
             if (formatted !== dueDate) {
                 setSuggestion({ date: formatted, label });
             } else {
@@ -518,6 +478,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         {suggestion && (
                                             <button
                                                 type="button"
+                                                tabIndex={-1}
                                                 onClick={() => {
                                                     setDueDate(suggestion.date);
                                                     setSuggestion(null);
@@ -543,6 +504,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     {title && (
                                         <button
                                             type="button"
+                                            tabIndex={-1}
                                             onClick={() => setTitle('')}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover/input:opacity-100 transition-all rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                             title="Limpar título"
@@ -571,6 +533,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                     {description && (
                                         <button
                                             type="button"
+                                            tabIndex={-1}
                                             onClick={() => setDescription('')}
                                             className="absolute right-3 top-3 p-1.5 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover/textarea:opacity-100 transition-all rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                             title="Limpar descrição"
@@ -660,7 +623,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                             onClick={openPicker}
                                             onFocus={openPicker}
                                             onDoubleClick={openPicker}
-                                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans cursor-default"
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans cursor-default"
                                         />
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                             <button
@@ -706,7 +669,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                             ref={pickerDateInputRef}
                                                             value={pickerDate}
                                                             onChange={(e) => {
-                                                                setPickerDate(normalizeDateInputValue(e.target.value));
+                                                                setPickerDate(e.target.value);
                                                                 if (hasTime) {
                                                                     setActiveTimeColumn('hour');
                                                                     setTimeTabStarted(true);
@@ -715,7 +678,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                                     btn?.scrollIntoView({ block: 'nearest' });
                                                                 }
                                                             }}
-                                                            onBlur={(e) => setPickerDate(normalizeDateInputValue(e.target.value, true))}
                                                             onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200 cursor-default"
                                                         />
@@ -729,7 +691,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                                         Hora
                                                                     </div>
                                                                     <div ref={hourListRef} className={`max-h-28 overflow-y-auto rounded-lg border bg-white dark:bg-slate-800 ${activeTimeColumn === 'hour' ? 'border-blue-300 ring-2 ring-blue-100 dark:border-blue-700/60 dark:ring-blue-900/30' : 'border-slate-200 dark:border-white/10'}`}>
-                                                                        {Array.from({ length: 24 }, (_, i) => pad2(i)).map((h) => (
+                                                                        {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
                                                                             <button
                                                                                 key={h}
                                                                                 type="button"
@@ -751,7 +713,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                                         Minuto
                                                                     </div>
                                                                     <div ref={minuteListRef} className={`max-h-28 overflow-y-auto rounded-lg border bg-white dark:bg-slate-800 ${activeTimeColumn === 'minute' ? 'border-blue-300 ring-2 ring-blue-100 dark:border-blue-700/60 dark:ring-blue-900/30' : 'border-slate-200 dark:border-white/10'}`}>
-                                                                        {Array.from({ length: 60 }, (_, i) => pad2(i)).map((m) => (
+                                                                        {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map((m) => (
                                                                             <button
                                                                                 key={m}
                                                                                 type="button"

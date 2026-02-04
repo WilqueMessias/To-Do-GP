@@ -22,10 +22,9 @@ public class TaskAuditListener {
     public void handleTaskAuditEvent(TaskAuditEvent event) {
         log.info("Asynchronously processing audit event for task: {}", event.getTask().getId());
 
-        // Dynamic diffing or simple message building
         event.getNewValues().forEach((field, newValue) -> {
             Object oldValue = event.getOldValues().get(field);
-            String message = String.format("Campo '%s' alterado de [%s] para [%s]", field, oldValue, newValue);
+            String message = buildHumanReadableMessage(field, oldValue, newValue);
 
             Activity activity = Activity.builder()
                     .task(event.getTask())
@@ -33,5 +32,36 @@ public class TaskAuditListener {
                     .build();
             activityRepository.save(activity);
         });
+    }
+
+    private String buildHumanReadableMessage(String field, Object oldValue, Object newValue) {
+        try {
+            String oldValStr = oldValue == null ? "vazio" : oldValue.toString();
+            String newValStr = newValue == null ? "vazio" : newValue.toString();
+
+            return switch (field) {
+                case "status" -> String.format("Status atualizado: %s → %s", oldValStr, newValStr);
+                case "título" -> String.format("Título alterado de '%s' para '%s'", oldValStr, newValStr);
+                case "prioridade" -> String.format("Prioridade alterada de %s para %s", oldValStr, newValStr);
+                case "deleted" ->
+                    (Boolean) newValue ? "Tarefa movida para a lixeira" : "Tarefa restaurada do histórico";
+                case "checklist" -> "Checklist de subtarefas atualizado";
+                case "prazo" -> newValue == null ? "Prazo removido"
+                        : String.format("Prazo alterado para %s", formatValue(newValue));
+                case "importância" ->
+                    (Boolean) newValue ? "Tarefa marcada como importante" : "Marcação de importância removida";
+                case "lembrete" -> (Boolean) newValue ? "Lembrete ativado" : "Lembrete desativado";
+                default -> String.format("Campo '%s' atualizado", field);
+            };
+        } catch (Exception e) {
+            return String.format("Alteração detectada no campo '%s'", field);
+        }
+    }
+
+    private String formatValue(Object value) {
+        if (value instanceof java.time.LocalDateTime ldt) {
+            return ldt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return value.toString();
     }
 }
