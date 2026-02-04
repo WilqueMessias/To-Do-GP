@@ -36,6 +36,19 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         }
         return digits.padStart(4, '0');
     };
+    const normalizeDateInputValue = (value: string, finalize = false) => {
+        if (!value) return value;
+        const [rawYear = '', rawMonth = '', rawDay = ''] = value.split('-');
+        const yearDigits = rawYear.replace(/\D/g, '').slice(0, 4);
+        const monthDigits = rawMonth.replace(/\D/g, '').slice(0, 2);
+        const dayDigits = rawDay.replace(/\D/g, '').slice(0, 2);
+
+        const year = finalize && yearDigits ? normalizeYear(yearDigits) : yearDigits;
+        let next = year;
+        if (rawMonth || value.includes('-')) next += `-${monthDigits}`;
+        if (rawDay || value.split('-').length >= 3) next += `-${dayDigits}`;
+        return next;
+    };
     const formatDisplayDate = (value: string, withTime: boolean) => {
         if (!value) return '';
         const [datePart, timePart] = value.split('T');
@@ -680,7 +693,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                         <input
                                                             type="date"
                                                             value={pickerDate}
-                                                            onChange={(e) => setPickerDate(e.target.value)}
+                                                            onChange={(e) => setPickerDate(normalizeDateInputValue(e.target.value))}
+                                                            onBlur={(e) => setPickerDate(normalizeDateInputValue(e.target.value, true))}
                                                             onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
                                                         />
