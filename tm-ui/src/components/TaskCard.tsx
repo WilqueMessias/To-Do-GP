@@ -185,36 +185,11 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
             <div className="flex items-center justify-between pt-3 border-t border-white/30 dark:border-white/5 mt-auto">
                 {/* Date Picker / Display */}
                 <div
-                    className="flex items-center gap-2 text-slate-400 dark:text-slate-500 hover:text-blue-500 transition-colors cursor-pointer group/date"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Only enable editing if not dragging
-                        if (!isDragging) {
-                            // Logic handled by inner component or simple switch needed?
-                            // Since we can't easily add state to this big component without refactoring, 
-                            // let's use a browser native picker on a label trick or just expose the input.
-                        }
-                    }}
+                    className="flex items-center gap-2 text-slate-400 dark:text-slate-500 transition-colors"
                 >
                     <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
-                    <div className="relative group/date-input">
-                        <input
-                            type="datetime-local"
-                            value={task.dueDate ? (() => {
-                                const date = new Date(task.dueDate);
-                                const offset = date.getTimezoneOffset() * 60000;
-                                return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-                            })() : ''}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.currentTarget.showPicker();
-                            }}
-                            onChange={(e) => {
-                                if (onUpdate) onUpdate(task.id, { dueDate: new Date(e.target.value).toISOString() });
-                            }}
-                            className="bg-transparent border-none p-0 text-[11px] font-semibold text-inherit focus:ring-0 cursor-pointer min-w-[130px] outline-none opacity-0 absolute inset-0 w-full h-full z-10"
-                        />
-                        <span className="text-[11px] font-semibold relative z-0 group-hover/date-input:text-blue-500 transition-colors">
+                    <div className="relative">
+                        <span className="text-[11px] font-semibold">
                             {task.dueDate ? new Date(task.dueDate).toLocaleString('pt-BR', {
                                 day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                             }) : 'Definir data'}
