@@ -11,9 +11,10 @@ interface TaskFormProps {
     onSuccess: (action: 'create' | 'update' | 'delete', id?: string) => void;
     onError: (message: string) => void;
     taskToEdit?: Task;
+    onTaskUpdated?: (task: Task) => void;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, onError, taskToEdit }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, onError, taskToEdit, onTaskUpdated }) => {
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
@@ -22,18 +23,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     };
     const getNowForInput = () => formatLocalForInput(new Date());
+    const isDateOnlyValue = (value?: string) => {
+        if (!value) return true;
+        if (!value.includes('T')) return true;
+        return value.includes('T00:00') || value.includes('T23:59:59') || value.includes('T23:59');
+    };
 
     const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : getNowForInput());
     const [important, setImportant] = useState(taskToEdit?.important || false);
     const [reminderEnabled, setReminderEnabled] = useState(taskToEdit?.reminderEnabled || false);
     const [reminderTime, setReminderTime] = useState(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
     const [status, setStatus] = useState<Task['status']>(taskToEdit?.status || 'TODO');
-    const [hasTime, setHasTime] = useState(() => {
-        if (!taskToEdit?.dueDate) return false;
-        // Check for sentinels: Start of day (legacy) or End of day (new sort fix)
-        if (taskToEdit.dueDate.includes('T00:00:00') || taskToEdit.dueDate.includes('T23:59:59')) return false;
-        return taskToEdit.dueDate.includes('T');
-    });
+    const [hasTime, setHasTime] = useState(() => !isDateOnlyValue(taskToEdit?.dueDate));
     // Let's simplify hasTime initialization: if it has a non-zero time or if we want to default to true when editing a task with time.
     // Actually, let's just use a simple heuristic: if it has 'T' and isn't just a date placeholder.
 
@@ -56,8 +57,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             setStatus(taskToEdit?.status || 'TODO');
             setSubtasks(taskToEdit?.subtasks || []);
 
-            const isDateOnly = taskToEdit?.dueDate ? !taskToEdit.dueDate.includes('T') || taskToEdit.dueDate.includes('00:00:00') : true;
-            setHasTime(!isDateOnly);
+            setHasTime(!isDateOnlyValue(taskToEdit?.dueDate));
         }
     }, [isOpen, taskToEdit]);
 
@@ -192,7 +192,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
 
 
             if (taskToEdit) {
-                await taskService.update(taskToEdit.id, payload as any);
+                const response = await taskService.update(taskToEdit.id, payload as any);
+                if (response?.data) {
+                    onTaskUpdated?.(response.data);
+                }
                 onSuccess('update');
             } else {
                 await taskService.create(payload as any);

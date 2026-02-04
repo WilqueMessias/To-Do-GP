@@ -29,6 +29,12 @@ interface TaskCardContentProps extends TaskCardProps {
     isDragging?: boolean;
 }
 
+const isDateOnlyValue = (value?: string) => {
+    if (!value) return true;
+    if (!value.includes('T')) return true;
+    return value.includes('T00:00') || value.includes('T23:59:59') || value.includes('T23:59');
+};
+
 const getTimeAgo = (dateStr?: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -190,9 +196,15 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
                     <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
                     <div className="relative">
                         <span className="text-[11px] font-semibold">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleString('pt-BR', {
-                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                            }) : 'Definir data'}
+                            {task.dueDate ? (
+                                isDateOnlyValue(task.dueDate)
+                                    ? new Date(task.dueDate).toLocaleDateString('pt-BR', {
+                                        day: '2-digit', month: '2-digit', year: 'numeric'
+                                    })
+                                    : new Date(task.dueDate).toLocaleString('pt-BR', {
+                                        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                    })
+                            ) : 'Definir data'}
                         </span>
                     </div>
                 </div>

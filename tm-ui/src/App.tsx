@@ -336,6 +336,9 @@ function App() {
         onSuccess={(action, id) => handleSuccess(action, id)}
         onError={(msg) => addToast('error', msg)}
         taskToEdit={taskToEdit}
+        onTaskUpdated={(updated) => {
+          updateTaskStateLocal((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+        }}
       />
       {/* Footer - Minimalist & Discreet */}
       <footer className="w-full py-4 px-4 md:px-8 bg-white/10 dark:bg-slate-900/10 backdrop-blur-sm border-t border-slate-200/30 dark:border-white/5 mt-auto transition-all">
