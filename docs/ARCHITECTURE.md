@@ -1,34 +1,40 @@
-# Technical Architecture & System Specification
+# Technical Architecture Specification
 
-This document provides a detailed technical overview of the "To Do GP" system, covering its architectural patterns, data models, and operational infrastructure.
+<div align="center">
 
-## 🏛️ System Components
+**[English version](../README.md)** | **[Versão em Português](ARCHITECTURE.pt-BR.md)**
 
-The application follows a decoupled distributed architecture, separating the stateful backend from the reactive, stateless frontend.
+</div>
+
+---
+
+## 🏛️ System Topology
+
+The system is architected as a **Distributed Monolith**, emphasizing component boundary isolation between the presentation layer and the domain core. Synchronization is established via a RESTful strictly-typed interface.
 
 ```mermaid
 graph LR
-    subgraph "Frontend Layer (React)"
-        Store["useKanbanTasks Hook"]
-        UI["Kanban Board / Components"]
-        DND["@dnd-kit Orchestrator"]
+    subgraph "Presentation Layer (React)"
+        Store["State Hooks"]
+        UI["React Elements"]
+        DND["Physics-Engine (DnD)"]
     end
 
-    subgraph "Backend Layer (Spring Boot)"
-        Controller["REST Controller"]
-        Service["TaskService / Domain Logic"]
-        Repo["JPA Repositories"]
-        EventBus["Application Event Bus"]
-        Audit["TaskAuditListener"]
+    subgraph "Application Layer (Spring Boot)"
+        Controller["REST Adapters"]
+        Service["Domain Services"]
+        Repo["Persistence Ports"]
+        EventBus["Internal Event Bus"]
+        Audit["Async Listener"]
     end
 
-    subgraph "Persistence Layer"
+    subgraph "Infrastructure"
         DB[("H2 Database")]
     end
 
     UI <--> Store
     Store <--> DND
-    Store -- "JSON DTO" --> Controller
+    Store -- "DTO" --> Controller
     Controller <--> Service
     Service <--> Repo
     Service -- "Event" --> EventBus
@@ -37,91 +43,68 @@ graph LR
     Repo <--> DB
 ```
 
-## 🧬 Data Model (ER Diagram)
+---
 
-The persistence layer uses Hibernate/JPA to manage relations between the core `Task` entity and its associated telemetry (Subtasks and Activities).
+## 🧬 Data Schema & Cardinality
+
+Persistence is orchestrated via JPA/Hibernate, implementing one-to-many cardinality for telemetry aggregates (Tasks to Subtasks/Activities).
 
 ```mermaid
 erDiagram
-    TASK ||--o{ SUBTASK : contains
-    TASK ||--o{ ACTIVITY : logs
+    TASK ||--o{ SUBTASK : "aggregates"
+    TASK ||--o{ ACTIVITY : "audits"
     
     TASK {
-        UUID id PK
-        string title
-        string description
-        enum status
-        enum priority
-        datetime due_date
-        datetime completed_at
-        datetime created_at
-        datetime updated_at
-        boolean deleted
-        boolean important
+        UUID id PK "Invariant ID"
+        string title "Primary Label"
+        enum status "State Cluster"
+        datetime due_date "Temporal Boundary"
+        datetime created_at "System Initialization"
+        boolean deleted "Soft-Delete Flag"
     }
     
     SUBTASK {
         UUID id PK
-        string title
-        boolean completed
-        UUID task_id FK
+        string title "Checklist Text"
+        boolean completed "State Flag"
+        UUID task_id FK "Owner Reference"
     }
     
     ACTIVITY {
         UUID id PK
-        string message
-        datetime timestamp
-        UUID task_id FK
+        string message "Differential Log"
+        datetime timestamp "Event Horizon"
+        UUID task_id FK "Context Pointer"
     }
 ```
 
-## ⚙️ Core Technical Patterns
+---
 
-### 1. Asynchronous Event-Driven Auditing
-The system handles auditing requirements without blocking primary business transactions through an asynchronous event pattern.
+## ⚙️ Core Engineering Patterns
 
-- **Implementation**:
-  1. `TaskService` publishes a `TaskAuditEvent` upon successful state changes.
-  2. The transaction completes and returns the response immediately.
-  3. A `TaskAuditListener` (executing via `@Async`) calculates the field differential (diff).
-  4. Modifications are persisted as `Activity` records in a separate execution thread.
+### 1. Asynchronous Auditing (Non-Blocking)
+To decouple business throughput from side-effect latency, we implement an asynchronous event-driven audit trail.
+1. **Emit**: `TaskService` publishes a `TaskAuditEvent` upon successful state changes.
+2. **Handle**: A background thread calculates the field-level differential (diff).
+3. **Commit**: The audit log is persisted in a separate database transaction, ensuring the user response is delivered immediately.
 
-### 2. Logical Deletion (Soft-Delete)
-Data integrity and history retention are ensured via logical deletion flags.
-- **Application**: `@SQLDelete` handles the transformation of `DELETE` commands into `UPDATE` operations.
-- **Selection**: `@SQLRestriction` automatically filters deleted records in standard queries.
-- **Recovery**: Native SQL bypasses allow for restoration of records when necessary.
+### 2. Resilience Design (Rate Limiting)
+Protecting the API topology via a custom **RateLimitInterceptor**.
+- **Mechanism**: Fixed-Window Counter calculated per Client IP address.
+- **Fail-fast**: Automated `429 Too Many Requests` responses when limits are exceeded, safeguarding backend resources.
 
-### 3. Frontend State Orchestration
-The UI implements **Optimistic Updates** to provide a zero-latency experience:
-- **Interaction**: Local state updates immediately upon user action.
-- **Synchronization**: Asynchronous requests synchronize the backend state.
-- **Reconciliation**: State is rolled back automatically if the synchronization fails.
-
-## 🛡️ Resilience & Observability
-
-### 1. API Rate Limiting
-A custom interceptor implements a frequency-based request counter to protect backend resources.
-- **Mechanism**: Fixed-window counter per Client IP.
-- **Threshold**: 60 requests per minute.
-- **Outcome**: Returns `429 Too Many Requests` when limits are exceeded.
-
-### 2. Business KPI Monitoring (Micrometer)
-The application exposes business-centric metrics via the `/actuator/metrics` endpoint:
-- `tasks.created`: Total workload generation count.
-- `tasks.completed`: Throughput of finalized tasks.
-- `tasks.deleted`: Tracking of system record attrition.
-
-### 3. Environment Health Checks
-Custom `HealthIndicator` implementations verify not just connectivity, but data-centric business health (e.g., monitoring the ratio of overdue tasks).
-
-## 🐳 Production Infrastructure
-
-The Containerized environment is configured for stability and automated health verification.
-
-- **Dependency Management**: The UI container strictly waits for the API container to report a `healthy` status before initializing.
-- **Persistence**: H2 database remains file-based and mounted via volumes for data durability.
-- **Orchestration**: `docker-compose.yml` integrates with Spring Actuator for automated container lifecycle management.
+### 3. Observability & SLI Monitoring
+Integration with **Micrometer** for exposing Service Level Indicators.
+- **KPI Metrics**: Real-time tracking of `tasks.created` and `tasks.completed`.
+- **Health Telemetry**: Specialized health probes monitoring business-critical data ratios (e.g., overdue tasks).
 
 ---
-Technical documentation maintained by Wilque Messias.
+
+## 🐳 Infrastructure Orchestration
+
+The deployment lifecycle is managed via **Docker Compose**, utilizing health-check dependencies to ensure stable service ignition.
+- **Performance**: The UI is served via an optimized Nginx alpine container.
+- **Stability**: Condition-based startup ensures the UI only initializes after the API reporting a `healthy` status.
+
+---
+Technical Architecture by Wilque Messias © 2026.
