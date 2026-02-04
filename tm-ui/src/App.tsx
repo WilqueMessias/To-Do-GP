@@ -20,11 +20,13 @@ function App() {
     toasts,
     removeToast,
     updateTaskStateLocal,
+    removeTaskLocal,
     handleSuccess,
     handleUpdateTask,
     addToast,
     sortConfig,
-    setSortConfig
+    setSortConfig,
+    refresh: loadTasks
   } = useKanbanTasks();
 
   const { theme, toggleTheme } = useTheme();
@@ -265,7 +267,9 @@ function App() {
           <KanbanBoard
             onEditTask={handleOpenModal}
             onTasksChange={updateTaskStateLocal}
+            onRemoveTasks={removeTaskLocal}
             onUpdateTask={handleUpdateTask}
+            onRefresh={loadTasks}
             tasks={tasks}
           />
         ) : (

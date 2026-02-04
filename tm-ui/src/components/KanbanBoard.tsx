@@ -30,10 +30,19 @@ interface KanbanBoardProps {
     onEditTask: (task: Task) => void;
     onUpdateTask?: (id: string, updates: Partial<Task>) => void;
     onTasksChange?: (tasks: Task[]) => void;
+    onRemoveTasks?: (ids: string[]) => void;
+    onRefresh?: () => void;
     tasks?: Task[];
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTask, onTasksChange, tasks = [] }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+    onEditTask,
+    onUpdateTask,
+    onTasksChange,
+    onRemoveTasks,
+    onRefresh,
+    tasks = []
+}) => {
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -81,10 +90,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
         const completedTasks = internalTasks.filter(t => t.status === 'DONE');
         if (completedTasks.length === 0) return;
 
-        // Optimistic update
+        // Optimistic update (Local)
         const remainingTasks = internalTasks.filter(t => t.status !== 'DONE');
         setInternalTasks(remainingTasks);
-        if (onTasksChange) onTasksChange(remainingTasks);
+
+        // Optimistic update (Parent) - Prevents flicker
+        if (onRemoveTasks) {
+            onRemoveTasks(completedTasks.map(t => t.id));
+        } else if (onTasksChange) {
+            // Fallback (might fail due to merge logic, but better than nothing)
+            onTasksChange(remainingTasks);
+        }
 
         // API Delete 
         for (const task of completedTasks) {
@@ -94,6 +110,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
                 console.error(`Failed to delete task ${task.id}`, error);
             }
         }
+
+        // Final Sync
+        if (onRefresh) onRefresh();
+
         // Refresh history after deletion
         fetchHistory();
     };
@@ -114,10 +134,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             // Add back to board
             const newTasks = [...internalTasks, restored];
             setInternalTasks(newTasks);
-            if (onTasksChange) onTasksChange(newTasks);
+
+            // Sync with parent for full reload
+            if (onRefresh) onRefresh();
 
             // Refresh history from server
-            fetchHistory();
+            await fetchHistory();
 
         } catch (error) {
             console.error("Failed to restore task", error);
@@ -134,8 +156,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onEditTask, onUpdateTa
             await taskService.hardDelete(taskToDelete.id);
             // Update local state
             setHistory(prev => prev.filter(t => t.id !== taskToDelete.id));
+
+            // Sync parent (in case it was somehow visible)
+            if (onRefresh) onRefresh();
+
             // Refresh history from server
-            fetchHistory();
+            await fetchHistory();
         } catch (error) {
             console.error("Failed to delete task permanently", error);
             alert("Erro ao excluir tarefa permanentemente.");

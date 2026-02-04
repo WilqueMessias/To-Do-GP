@@ -86,6 +86,10 @@ export const useKanbanTasks = () => {
         }
     }, []);
 
+    const removeTaskLocal = useCallback((ids: string[]) => {
+        setTasks(prev => prev.filter(t => !ids.includes(t.id)));
+    }, []);
+
     const handleUpdateTask = useCallback(async (id: string, updates: Partial<Task>) => {
         try {
             // Optimistic UI update
@@ -139,6 +143,7 @@ export const useKanbanTasks = () => {
         removeToast,
         addToast,
         updateTaskStateLocal,
+        removeTaskLocal,
         handleSuccess,
         handleUpdateTask,
         sortConfig,
