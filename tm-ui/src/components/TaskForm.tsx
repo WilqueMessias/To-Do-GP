@@ -430,7 +430,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             <div ref={modalRef} className="glass-panel w-full max-w-md overflow-hidden animate-enter rounded-3xl" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/50">
                     <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-                        {taskToEdit ? 'Editar Tarefa' : 'Nova Demanda'}
+                        {taskToEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
                     </h2>
                     <div className="flex items-center gap-2">
                         <button
@@ -499,7 +499,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         onChange={(e) => setTitle(e.target.value)}
                                         onDoubleClick={handleSelectAllOnDoubleClick}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 shadow-sm cursor-default"
-                                        placeholder="Ex: Refatorar API amanhã"
+                                        placeholder="Ex: Comprar café"
                                     />
                                     {title && (
                                         <button
@@ -517,7 +517,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
 
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
-                                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Descrição Técnica</label>
+                                    <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Descrição</label>
                                     {description && (
                                         <div />
                                     )}
@@ -528,7 +528,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         onChange={(e) => setDescription(e.target.value)}
                                         onDoubleClick={handleSelectAllOnDoubleClick}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[100px] text-sm text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none shadow-sm cursor-default"
-                                        placeholder="Descreva os detalhes da implementação..."
+                                        placeholder="Adicione detalhes sobre a tarefa..."
                                     />
                                     {description && (
                                         <button
