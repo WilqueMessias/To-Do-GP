@@ -24,12 +24,65 @@ IF "%choice%"=="4" EXIT
 
 :DOCKER
 echo.
+echo [0/3] Preflight: Docker Desktop & WSL2 checks...
+REM Check Docker CLI availability
+where docker >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker CLI not found. Install Docker Desktop:
+    echo         https://www.docker.com/products/docker-desktop
+    goto DOCKER_FAIL
+)
+
+REM Check Docker daemon status
+docker info >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker daemon not reachable. Please start Docker Desktop and retry.
+    goto DOCKER_FAIL
+)
+
+REM Detect Windows edition (to guide WSL requirement)
+for /f "tokens=2* delims=:" %%A in ('systeminfo ^| findstr /I "OS Name"') do set "OSNAME=%%B"
+echo %OSNAME% | findstr /I "Home" >nul && set "IS_HOME=1"
+echo [INFO] Detected OS:%OSNAME%
+if defined IS_HOME (
+    echo        Edition: Home (WSL2 required)
+) else (
+    echo        Edition: Pro/Enterprise (WSL2 recommended; Hyper-V optional)
+)
+
+REM Check WSL presence (recommended; required on Windows Home)
+wsl --version >nul 2>&1
+if errorlevel 1 (
+    if defined IS_HOME (
+        echo [NOTICE] Windows Home detected and WSL2 not found.
+        echo         Enable WSL2 before using Docker Desktop:
+        echo         - Command: wsl --install
+        echo         - Docs: https://learn.microsoft.com/windows/wsl/install
+        goto DOCKER_FAIL
+    ) else (
+        echo [WARNING] WSL2 not found. On Pro/Enterprise, Hyper-V engine is acceptable; WSL2 recommended.
+    )
+)
+
+REM Resolve Docker Compose command (v1 vs v2)
+set "DCMD=docker-compose"
+docker-compose version >nul 2>&1
+if errorlevel 1 (
+    docker compose version >nul 2>&1
+    if not errorlevel 1 (
+        set "DCMD=docker compose"
+    ) else (
+        echo [ERROR] Docker Compose not found. Update Docker Desktop (Compose v2).
+        goto DOCKER_FAIL
+    )
+)
+
 echo [1/3] Deployment: Synchronizing containers...
-docker-compose up -d --build
+%DCMD% up -d --build
 
 echo [2/3] Stability: Waiting for API health (this may take 30-60s)...
 :WAIT_HEALTH
-for /f "delims=" %%i in ('docker-compose ps -q tm-api') do set "TM_API_CID=%%i"
+for /f "delims=" %%i in ('%DCMD% ps -q tm-api') do set "TM_API_CID=%%i"
 if not defined TM_API_CID goto WAIT_HEALTH
 powershell -Command "$status = docker inspect --format='{{.State.Health.Status}}' %TM_API_CID%; if($status -ne 'healthy') { exit 1 } else { exit 0 }" >nul 2>&1
 if %errorlevel% neq 0 (
@@ -48,6 +101,20 @@ echo   DOCKER DEPLOYMENT SUCCESSFUL
 echo   Interface: http://localhost
 echo   API Docs:  http://localhost:8080/swagger-ui.html
 echo ===================================================
+pause
+GOTO MENU
+
+:DOCKER_FAIL
+echo.
+echo ===================================================
+echo   DOCKER PRECHECK FAILED
+echo   Please resolve the issue above and retry.
+echo   Tips:
+echo     - Start Docker Desktop
+echo     - Enable WSL2 (Windows Home)
+echo     - Update to Docker Compose v2
+echo ===================================================
+echo.
 pause
 GOTO MENU
 

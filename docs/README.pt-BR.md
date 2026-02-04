@@ -58,7 +58,56 @@ O sistema utiliza uma topologia **Monolito Distribuído**, estabelecendo um limi
 - **Java 17** (JDK)
 - **Maven** (para desenvolvimento local)
 - **Node 18**
-- **Docker + Docker Compose** (para execução em produção)
+ - **Docker + Docker Compose** (para execução em produção)
+ - **Windows**: Docker Desktop
+	 - **Home**: requer backend **WSL2**
+	 - **Pro/Enterprise**: **WSL2** recomendado; **Hyper‑V** opcional
+
+---
+
+## Configuração WSL2 no Windows (para Docker)
+
+O Docker Desktop no Windows utiliza o backend WSL2. Garanta que o WSL2 esteja habilitado antes de executar os containers.
+
+**Habilitar WSL2 (Windows 10/11):**
+```powershell
+wsl --install
+wsl --version
+```
+Se `wsl --install` não estiver disponível, siga o guia oficial da Microsoft: https://learn.microsoft.com/windows/wsl/install
+
+**Configuração no Docker Desktop:**
+- Instale o Docker Desktop e habilite "Use the WSL 2 based engine".
+- Instale uma distribuição Linux (ex.: Ubuntu) pela Microsoft Store.
+- No Docker Desktop: Settings → Resources → WSL Integration → habilite sua distro.
+
+Alternativa (Pro/Enterprise): você pode usar o engine baseado em **Hyper‑V** em vez do WSL2 (Settings → General → desmarque WSL 2 engine). O Compose v2 funciona em ambos os backends.
+
+Após configurar o WSL2 e o Docker Desktop, siga para a seção Execução.
+
+---
+
+## Clonar o Repositório
+
+Use o Git para baixar o projeto localmente.
+
+**HTTPS:**
+```bash
+git clone https://github.com/WilqueMessias/To-Do-GP.git
+cd To-Do-GP
+```
+
+**SSH:**
+```bash
+git clone git@github.com:WilqueMessias/To-Do-GP.git
+cd To-Do-GP
+```
+- Se você já possui uma cópia local, atualize com:
+```bash
+git pull
+```
+
+Próximos passos: veja a seção Execução abaixo para rodar via Docker ou ambiente local.
 
 ---
 

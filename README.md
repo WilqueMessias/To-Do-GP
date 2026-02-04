@@ -58,7 +58,56 @@ The system adopts a **Distributed Monolith** pattern, establishing a rigid bound
 - **Java 17** (JDK)
 - **Maven** (for local development)
 - **Node 18**
-- **Docker + Docker Compose** (for production run)
+ - **Docker + Docker Compose** (for production run)
+ - **Windows**: Docker Desktop
+	 - **Home**: requires **WSL2** backend
+	 - **Pro/Enterprise**: **WSL2** recommended; **Hyper‑V** engine optional
+
+---
+
+## Windows WSL2 Setup (for Docker)
+
+Docker Desktop on Windows uses the WSL2 backend. Ensure WSL2 is enabled before running containers.
+
+**Enable WSL2 (Windows 10/11):**
+```powershell
+wsl --install
+wsl --version
+```
+If `wsl --install` isn’t available, follow Microsoft’s guide: https://learn.microsoft.com/windows/wsl/install
+
+**Docker Desktop configuration:**
+- Install Docker Desktop and enable "Use the WSL 2 based engine".
+- Install a Linux distro (e.g., Ubuntu) via Microsoft Store.
+- In Docker Desktop: Settings → Resources → WSL Integration → enable your distro.
+
+Alternative (Pro/Enterprise): you may use the Hyper‑V based engine instead of WSL2 (Settings → General → uncheck WSL 2 engine). Compose v2 works with either backend.
+
+After WSL2 and Docker Desktop are set, proceed to the Execution section.
+
+---
+
+## Clone the Repository
+
+Use Git to download the project locally.
+
+**HTTPS:**
+```bash
+git clone https://github.com/WilqueMessias/To-Do-GP.git
+cd To-Do-GP
+```
+
+**SSH:**
+```bash
+git clone git@github.com:WilqueMessias/To-Do-GP.git
+cd To-Do-GP
+```
+- If you already have a local copy, update it with:
+```bash
+git pull
+```
+
+Next steps: see Execution below for running via Docker or local dev.
 
 ---
 
