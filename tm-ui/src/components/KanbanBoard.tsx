@@ -59,6 +59,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const [internalTasks, setInternalTasks] = useState<Task[]>(tasks);
     const isDraggingRef = React.useRef(false);
     const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
+    const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
 
     // History & Modal State
     const [history, setHistory] = useState<Task[]>([]);
@@ -106,34 +107,35 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             );
             if (isTypingField) return;
             if (!hoveredTaskId) return;
+            if (taskToConfirmDelete) return;
 
             const taskToDelete = internalTasks.find(t => t.id === hoveredTaskId);
             if (!taskToDelete) return;
 
-            const confirmed = confirm(`Excluir a tarefa "${taskToDelete.title}"?`);
-            if (!confirmed) return;
-
-            try {
-                await taskService.delete(taskToDelete.id);
-
-                setInternalTasks(prev => prev.filter(t => t.id !== taskToDelete.id));
-                if (onRemoveTasks) {
-                    onRemoveTasks([taskToDelete.id]);
-                } else if (onTasksChange) {
-                    onTasksChange(internalTasks.filter(t => t.id !== taskToDelete.id));
-                }
-
-                if (onRefresh) onRefresh();
-                await fetchHistory();
-                setHoveredTaskId(null);
-            } catch (error) {
-                console.error("Failed to delete task", error);
-            }
+            setTaskToConfirmDelete(taskToDelete);
         };
 
         window.addEventListener('keydown', handleDeleteKey);
         return () => window.removeEventListener('keydown', handleDeleteKey);
-    }, [hoveredTaskId, internalTasks, onRemoveTasks, onTasksChange, onRefresh]);
+    }, [hoveredTaskId, internalTasks, onRemoveTasks, onTasksChange, onRefresh, taskToConfirmDelete]);
+
+    // Handle shortcuts for deletion confirmation modal
+    React.useEffect(() => {
+        const handleModalKeys = (event: KeyboardEvent) => {
+            if (!taskToConfirmDelete) return;
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                confirmDeleteTask();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                setTaskToConfirmDelete(null);
+            }
+        };
+
+        window.addEventListener('keydown', handleModalKeys);
+        return () => window.removeEventListener('keydown', handleModalKeys);
+    }, [taskToConfirmDelete]);
 
     // Refresh history when modal opens
     React.useEffect(() => {
@@ -255,6 +257,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         } catch (error) {
             console.error("Failed to clear history", error);
             alert("Erro ao limpar histórico.");
+        }
+    };
+
+    const confirmDeleteTask = async () => {
+        if (!taskToConfirmDelete) return;
+
+        try {
+            await taskService.delete(taskToConfirmDelete.id);
+
+            setInternalTasks(prev => prev.filter(t => t.id !== taskToConfirmDelete.id));
+            if (onRemoveTasks) {
+                onRemoveTasks([taskToConfirmDelete.id]);
+            } else if (onTasksChange) {
+                onTasksChange(internalTasks.filter(t => t.id !== taskToConfirmDelete.id));
+            }
+
+            if (onRefresh) onRefresh();
+            await fetchHistory();
+            setHoveredTaskId(null);
+        } catch (error) {
+            console.error("Failed to delete task", error);
+        } finally {
+            setTaskToConfirmDelete(null);
         }
     };
 
@@ -440,6 +465,35 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 onClearHistory={handleClearHistory}
                 onRestoreAll={handleRestoreAllHistory}
             />
+
+            {taskToConfirmDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm m-4 border border-slate-200 dark:border-white/10">
+                        <div className="p-5 border-b border-slate-100 dark:border-white/10">
+                            <h3 className="text-sm font-black text-slate-800 dark:text-white">Confirmar exclusão</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                                Excluir a tarefa "{taskToConfirmDelete.title}"?
+                            </p>
+                        </div>
+                        <div className="p-4 flex gap-2 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setTaskToConfirmDelete(null)}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmDeleteTask}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors"
+                            >
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
