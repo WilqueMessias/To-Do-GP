@@ -78,6 +78,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [pickerDate, setPickerDate] = useState('');
     const [pickerTime, setPickerTime] = useState('');
     const [activeTimeColumn, setActiveTimeColumn] = useState<'hour' | 'minute'>('hour');
+    const [timeTabStarted, setTimeTabStarted] = useState(false);
     const [typeBuffer, setTypeBuffer] = useState('');
     const typeTimerRef = React.useRef<number | null>(null);
 
@@ -154,6 +155,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         setPickerDate(datePart);
         setPickerTime(timePart ? timePart.substring(0, 5) : '');
         setTypeBuffer('');
+        setActiveTimeColumn('hour');
+        setTimeTabStarted(false);
         if (typeTimerRef.current) {
             window.clearTimeout(typeTimerRef.current);
             typeTimerRef.current = null;
@@ -241,10 +244,16 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         if (e.key === 'Tab' && hasTime) {
             e.preventDefault();
             e.stopPropagation();
+            if (!timeTabStarted) {
+                setTimeTabStarted(true);
+                setActiveTimeColumn('hour');
+                const [h = '00'] = pickerTime.split(':');
+                const btn = hourListRef.current?.querySelector<HTMLButtonElement>(`[data-hour="${h}"]`);
+                btn?.scrollIntoView({ block: 'nearest' });
+                return;
+            }
             setActiveTimeColumn((prev) => {
-                const next = e.shiftKey
-                    ? (prev === 'hour' ? 'minute' : 'hour')
-                    : (prev === 'hour' ? 'minute' : 'hour');
+                const next = e.shiftKey ? (prev === 'hour' ? 'minute' : 'hour') : (prev === 'hour' ? 'minute' : 'hour');
                 const [h = '00', m = '00'] = pickerTime.split(':');
                 if (next === 'hour') {
                     const btn = hourListRef.current?.querySelector<HTMLButtonElement>(`[data-hour="${h}"]`);
