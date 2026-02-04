@@ -8,7 +8,7 @@
 
 ---
 
-## 🏛️ System Topology
+## System Topology
 
 The system is architected as a **Distributed Monolith**, emphasizing component boundary isolation between the presentation layer and the domain core. Synchronization is established via a RESTful strictly-typed interface.
 
@@ -45,7 +45,7 @@ graph LR
 
 ---
 
-## 🧬 Data Schema & Cardinality
+## Data Schema & Cardinality
 
 Persistence is orchestrated via JPA/Hibernate, implementing one-to-many cardinality for telemetry aggregates (Tasks to Subtasks/Activities).
 
@@ -80,7 +80,7 @@ erDiagram
 
 ---
 
-## ⚙️ Core Engineering Patterns
+## Core Engineering Patterns
 
 ### 1. Asynchronous Auditing (Non-Blocking)
 To decouple business throughput from side-effect latency, we implement an asynchronous event-driven audit trail.
@@ -100,7 +100,7 @@ Integration with **Micrometer** for exposing Service Level Indicators.
 
 ---
 
-## 🐳 Infrastructure Orchestration
+## Infrastructure Orchestration
 
 The deployment lifecycle is managed via **Docker Compose**, utilizing health-check dependencies to ensure stable service ignition.
 - **Performance**: The UI is served via an optimized Nginx alpine container.
@@ -108,7 +108,7 @@ The deployment lifecycle is managed via **Docker Compose**, utilizing health-che
 
 ---
 
-## ✅ Prerequisites & Execution
+## Prerequisites & Execution
 
 - **Java 17** (Spring Boot)
 - **Node 18** (Frontend)
@@ -123,7 +123,7 @@ docker-compose up -d --build
 
 ---
 
-## ⚖️ Decisions & Trade-offs
+## Decisions & Trade-offs
 
 - **Distributed Monolith**: reduces coupling between layers without microservices overhead.
 - **Asynchronous auditing**: improves perceived latency with eventual consistency in the log.
@@ -131,14 +131,14 @@ docker-compose up -d --build
 
 ---
 
-## 🚧 Known Limitations
+## Known Limitations
 
 - **In-memory H2**: suitable for development, not recommended for production.
 - **IP-based rate limit**: not precise under NAT/Proxy scenarios.
 
 ---
 
-## 🧭 Next Steps
+## Next Steps
 
 - External persistence (PostgreSQL) with migrations (Flyway).
 - Distributed tracing (OpenTelemetry) and advanced metrics.

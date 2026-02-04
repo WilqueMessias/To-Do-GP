@@ -17,6 +17,11 @@ Frontend Single Page Application (SPA) for the To Do GP system, built with React
 - Node.js 18+
 - npm
 
+### Environment Variables (Optional)
+
+- `VITE_API_BASE_URL` (default: `http://localhost:8080`)
+	- Example: copy `.env.example` to `.env` and update as needed.
+
 ### Installation
 ```bash
 npm install
@@ -27,6 +32,18 @@ npm install
 npm run dev
 ```
 Serves the application at `http://localhost:5173`.
+
+### Lint
+```bash
+npm run lint
+```
+
+### Build and Preview
+```bash
+npm run build
+npm run preview
+```
+Preview serves the production build at `http://localhost:4173`.
 
 ## Production Deployment
 

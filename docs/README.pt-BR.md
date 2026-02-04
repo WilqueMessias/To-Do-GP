@@ -17,13 +17,13 @@
 
 ---
 
-## 🌐 Visão Geral
+## Visão Geral
 
 O **To Do GP** é um ecossistema de gerenciamento de tarefas desacoplado de classe empresarial, projetado com **Java 17 (Spring Boot 3.4)** e **TypeScript (React 18)**. A arquitetura prioriza propagação de eventos assíncronos, fluxos de auditoria não-bloqueantes e encapsulamento rigoroso orientado ao domínio para garantir a integridade do sistema e alta disponibilidade.
 
 ---
 
-## 🏗️ Core Arquitetônico
+## Core Arquitetônico
 
 O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso entre o gerenciamento de estado transacional e a interface de usuário reativa.
 
@@ -32,7 +32,7 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 
 ---
 
-## 💎 Destaques de Engenharia
+## Destaques de Engenharia
 
 - **Auditoria Orientada a Eventos**: Rastreamento de atividades assíncrono baseado em diferenciais (diff) via eventos Spring e isolamento de thread-pool (`@Async`).
 - **Resiliência de API**: Implementação de um **RateLimitInterceptor** customizado (Contador de Janela Fixa) para proteger os recursos do sistema contra exaustão.
@@ -41,7 +41,7 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 
 ---
 
-## 🛠️ Pilha Tecnológica
+## Pilha Tecnológica
 
 | Componente | Tecnologia | Justificativa |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 
 ---
 
-## ✅ Pré-requisitos
+## Pré-requisitos
 
 - **Java 17** (JDK)
 - **Maven** (para desenvolvimento local)
@@ -62,7 +62,7 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 
 ---
 
-## 🔧 Variáveis de Ambiente (Opcional)
+## Variáveis de Ambiente (Opcional)
 
 **Backend (Spring Boot):**
 - `SERVER_PORT` (padrão: `8080`)
@@ -74,7 +74,7 @@ O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso e
 - `VITE_API_BASE_URL` (padrão: `http://localhost:8080`)
 	- Exemplo: copie [tm-ui/.env.example](../tm-ui/.env.example) para `tm-ui/.env`
 
-## 🚀 Execução
+## Execução
 
 ### 1) Produção (Docker Compose)
 **Inicialização rápida (scripts):**
@@ -113,7 +113,7 @@ npm run dev
 
 ---
 
-## 🌐 Portas
+## Portas
 
 - **Frontend (dev)**: `5173`
 - **Frontend (prod)**: `80`
@@ -121,7 +121,7 @@ npm run dev
 
 ---
 
-## 🧪 Testes
+## Testes
 
 **Backend:**
 ```bash
@@ -137,7 +137,7 @@ npm run lint
 
 ---
 
-## 🛟 Solução de Problemas
+## Solução de Problemas
 
 - **Conflito de portas**: finalize processos em `8080` ou `5173` e tente novamente.
 - **Build Docker lento**: execute `docker system prune` e reconstrua.
@@ -145,7 +145,7 @@ npm run lint
 
 ---
 
-## 🧬 Análises & SLIs
+## Análises & SLIs
 
 - **Velocidade do Kanban**: Cálculo de vazão (throughput) de tarefas finalizadas em uma janela de 168 horas.
 - **Tempo de Ciclo (Cycle Time)**: Análise estatística do tempo de liderança desde a inicialização do registro até o estado terminal.

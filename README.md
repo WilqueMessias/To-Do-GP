@@ -17,13 +17,13 @@
 
 ---
 
-## 🌐 System Specification
+## System Specification
 
 **To Do GP** is a decoupled task management architecture implemented using **Java 17 (Spring Boot 3.4)** and **TypeScript (React 18)**. The design focuses on asynchronous state synchronization, non-blocking auditing pipelines, and strict domain-driven encapsulation to maintain data integrity and system availability.
 
 ---
 
-## 🏛️ Project Topology
+## Project Topology
 
 The system adopts a **Separated Core** pattern, establishing a rigid boundary between transactional state management and the reactive presentation layer.
 
@@ -32,7 +32,7 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 
 ---
 
-## 💎 Implementation Patterns
+## Implementation Patterns
 
 - **Event-Driven Audit Pipeline**: Asynchronous field-level differential tracking utilizing Spring `ApplicationEvent` propagation and dedicated thread-pool isolation via `@Async`.
 - **Traffic Resilience**: Protective **RateLimitInterceptor** (Fixed-Window Counter) safeguarding computational resources and API throughput.
@@ -41,7 +41,7 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 
 - **Java 17** (JDK)
 - **Maven** (for local development)
@@ -62,7 +62,7 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 
 ---
 
-## 🔧 Environment Variables (Optional)
+## Environment Variables (Optional)
 
 **Backend (Spring Boot):**
 - `SERVER_PORT` (default: `8080`)
@@ -74,7 +74,7 @@ The system adopts a **Separated Core** pattern, establishing a rigid boundary be
 - `VITE_API_BASE_URL` (default: `http://localhost:8080`)
 	- Example: copy [tm-ui/.env.example](tm-ui/.env.example) to `tm-ui/.env`
 
-## 🚀 Execution
+## Execution
 
 ### 1) Production (Docker Compose)
 **Quick start (scripts):**
@@ -113,7 +113,7 @@ npm run dev
 
 ---
 
-## 🌐 Ports
+## Ports
 
 - **Frontend (dev)**: `5173`
 - **Frontend (prod)**: `80`
@@ -121,7 +121,7 @@ npm run dev
 
 ---
 
-## 🧪 Tests
+## Tests
 
 **Backend:**
 ```bash
@@ -137,7 +137,7 @@ npm run lint
 
 ---
 
-## 🛟 Troubleshooting
+## Troubleshooting
 
 - **Port conflicts**: stop processes on `8080` or `5173` and retry.
 - **Docker build slow**: run `docker system prune` and rebuild.
@@ -145,7 +145,7 @@ npm run lint
 
 ---
 
-## 🧬 Analytics & SLIs
+## Analytics & SLIs
 
 - **Kanban Velocity**: Moving-window calculation of task throughput within a 168-hour horizon.
 - **Cycle Time**: Statistical analysis of lead time from record initialization to terminal state.

@@ -11,6 +11,31 @@ Backend service for the To Do GP system, built with Spring Boot.
 - **Auditing**: Asynchronous Event-Driven logging using Spring Events
 - **Documentation**: OpenAPI 3.0 / Swagger UI
 
+## Prerequisites
+
+- Java 17 (JDK)
+- Maven 3.9+
+
+## Environment Variables (Optional)
+
+- `SERVER_PORT` (default: `8080`)
+- `SPRING_DATASOURCE_URL` (default: `jdbc:h2:file:./data/tmdb`)
+- `SPRING_DATASOURCE_USERNAME` (default: `sa`)
+- `SPRING_DATASOURCE_PASSWORD` (default: empty)
+
+## Local Execution
+
+```bash
+mvn clean spring-boot:run
+```
+
+## Docker Execution
+
+Run from the repository root:
+```bash
+docker-compose up -d --build
+```
+
 ## API Access
 
 When running locally or via Docker:

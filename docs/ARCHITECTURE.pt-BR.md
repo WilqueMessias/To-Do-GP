@@ -8,7 +8,7 @@
 
 ---
 
-## 🏛️ Topologia do Sistema
+## Topologia do Sistema
 
 O sistema é arquitetado como um **Monolito Distribuído**, enfatizando o isolamento de limites de componentes entre a camada de apresentação e o núcleo do domínio. A sincronização é estabelecida via uma interface RESTful estritamente tipada.
 
@@ -45,7 +45,7 @@ graph LR
 
 ---
 
-## 🧬 Esquema de Dados & Cardinalidade
+## Esquema de Dados & Cardinalidade
 
 A persistência é gerenciada via JPA/Hibernate, utilizando cardinalidade um-para-muitos para telemetria de sub-entidades (Tarefas para Subtarefas/Atividades).
 
@@ -80,7 +80,7 @@ erDiagram
 
 ---
 
-## ⚙️ Padrões de Engenharia Core
+## Padrões de Engenharia Core
 
 ### 1. Auditoria Assíncrona (Não-Bloqueante)
 Para desacoplar a vazão de negócios da latência de efeitos colaterais, implementamos uma trilha de auditoria assíncrona orientada a eventos.
@@ -100,7 +100,7 @@ Integração com **Micrometer** para exposição de Indicadores de Nível de Ser
 
 ---
 
-## 🐳 Orquestração de Infraestrutura
+## Orquestração de Infraestrutura
 
 O ciclo de vida de implantação é gerenciado via **Docker Compose**, utilizando dependências de verificação de saúde para garantir a inicialização estável dos serviços.
 - **Performance**: A UI é servida através de um container Nginx alpine otimizado.
@@ -108,7 +108,7 @@ O ciclo de vida de implantação é gerenciado via **Docker Compose**, utilizand
 
 ---
 
-## ✅ Pré-requisitos & Execução
+## Pré-requisitos & Execução
 
 - **Java 17** (Spring Boot)
 - **Node 18** (Frontend)
@@ -123,7 +123,7 @@ docker-compose up -d --build
 
 ---
 
-## ⚖️ Decisões & Trade-offs
+## Decisões & Trade-offs
 
 - **Monolito Distribuído**: reduz acoplamento entre camadas sem incorrer em overhead de microserviços.
 - **Auditoria assíncrona**: melhora latência percebida, com custo de eventual consistência no log.
@@ -131,14 +131,14 @@ docker-compose up -d --build
 
 ---
 
-## 🚧 Limitações Conhecidas
+## Limitações Conhecidas
 
 - **H2 em memória**: adequado para desenvolvimento, não recomendado para produção.
 - **Rate limit por IP**: não cobre cenários de NAT/Proxy com precisão fina.
 
 ---
 
-## 🧭 Próximos Passos
+## Próximos Passos
 
 - Persistência externa (PostgreSQL) com migrações (Flyway).
 - Tracing distribuído (OpenTelemetry) e métricas avançadas.
