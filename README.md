@@ -1,109 +1,65 @@
-# 🚀 GP: Task Management Ecosystem
+# To Do GP
 
-<div align="center">
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Java: 17](https://img.shields.io/badge/Java-17-blue.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+[![React: 18](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
+[![Spring Boot: 3](https://img.shields.io/badge/Spring_Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
 
-![Project Status](https://img.shields.io/badge/Status-Master--Grade-brightgreen?style=for-the-badge)
-![Tech Stack](https://img.shields.io/badge/Stack-Java%2017%20%7C%20Spring%20%7C%20React-blue?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
-![Authored By](https://img.shields.io/badge/Authored%20By-Wilque%20Messias-6e5494?style=for-the-badge&logo=github)
+A professional task orchestration system with a focus on real-time feedback, deep audit trails, and cognitive ergonomics. **To Do GP** delivers a high-fidelity Kanban experience backed by a robust, transactional Java ecosystem.
 
-**A high-performance, enterprise-ready Kanban system engineered for precision and scalability.**
-
-[Explore Technical Dossier](./DOCUMENTAÇÃO_TÉCNICA.md) • [View Architecture](./DOCUMENTAÇÃO_TÉCNICA.md#1-arquitetura-do-sistema) • [Report Issue](https://github.com/WilqueMessias/To-Do-GP/issues)
-
-</div>
+[Technical Documentation](./TECHNICAL_DOCUMENTATION.md) | [Architecture](./TECHNICAL_DOCUMENTATION.md#architecture--design)
 
 ---
 
-## 💎 Project DNA
+## Technical Highlights
 
-The **GP Ecosystem** is not just another task manager; it's a testament to professional software engineering. Designed with a **Domain-Driven** mindset and **Aesthetic-First** principles, it provides a seamless bridge between complex backend logic and a fluid, high-fidelity user interface.
+**To Do GP** is engineered to handle complex workflows with features that go beyond a simple checklist:
 
-### Why GP?
-- **Cognitive Efficiency**: Minimalist yet powerful UI reduces mental load.
-- **Data Integrity**: Transactional consistency and robust audit logs.
-- **Professional Scalability**: Ready for microservices/containerized deployment.
-- **Enterprise Grade**: Built-in Soft Delete, Restoration History, and Subtask Progress tracking.
+*   **Audit Trail**: Every mutation (status change, priority shift, deadline renegotiation) is durably logged, providing a transparent history of the task's lifecycle.
+*   **Intelligent History**: A resilient "Soft Delete" mechanism ensures data is never lost by accident. Tasks move to a managed history for review or immediate restoration.
+*   **Checklist Progress**: Real-time progress aggregation where subtask completion status is reflected in the main task's visual indicators.
+*   **Timezone-Aware Precision**: Specifically tuned for consistent date/time handling across different client locales, ensuring deadlines are absolute.
+*   **Built-in Analytics**: Instant insights into Delivery Rate, Cycle Time (Creation to Completion), and Team Velocity.
 
----
+## Stack Overview
 
-## ⚡ Key Capabilities
+### Backend (Robustness & Integrity)
+- **Spring Boot 3 / Java 17**: Modern reactive base for the service layer.
+- **Spring Data JPA**: Efficient ORM with transactional safety.
+- **Swagger / OpenAPI**: Fully documented API surface for seamless integration.
+- **H2 Database**: High-performance in-memory persistence (ready for Production DB migration).
 
-| Feature | Description | Engineering Insight |
-| :--- | :--- | :--- |
-| **Advanced Kanban** | Dynamic drag-and-drop orchestration. | Optimized via `@dnd-kit` with zero-lag collision detection. |
-| **Activity Audit** | Perpetual log of every state change. | Event-driven architecture for traceability. |
-| **Subtask Engine** | Hierarchical task decomposition. | Real-time progress calculation on the service layer. |
-| **Resilient History** | Soft-delete mechanism with full recovery. | Safety-first data management avoiding destructive operations. |
-| **Analytics Suite** | Real-time productivity indicators. | Aggregated data views for executive decision-making. |
-
----
-
-## 🛠️ Technology Stack (The Senior Choice)
-
-### 🏗️ Backend Perfection
-- **Core Engine**: Java 17 paired with **Spring Boot 3**.
-- **Persistence**: Spring Data JPA with **H2/PostgreSQL** readiness.
-- **API Contract**: Full **Swagger/OpenAPI** integration for developer self-service.
-- **Quality**: Lombok for readability and Global Exception Handling for resilience.
-
-### 🎨 Frontend Excellence
-- **Runtime**: React 18 / TypeScript (Strict Mode).
-- **Styling**: **Tailwind CSS v4** (Utility-first, performance-obsessed).
-- **Interactions**: Lucide Icons & smooth micro-animations.
-- **State**: Reactive UI with decoupled service consumption.
+### Frontend (Fluidity & UX)
+- **Vite / React 18 / TypeScript**: Strict typing for runtime reliability.
+- **dnd-kit Sortable**: Highly optimized drag-and-drop engine with adaptive sensors.
+- **Tailwind CSS v4**: Advanced styling system for a premium, fast interface.
+- **Lucide Icons**: Crisp, professional iconography.
 
 ---
 
-## 🚀 Deployment & Fast-Track
+## Quick Start
 
-Experience the power of **GP** in seconds through our automated pipeline.
+### 📦 Prerequisites
+- **Docker** (Recommended) or **JDK 17+**, **Maven**, and **Node.js 18+**.
 
-```bash
-# Clone the repository
-git clone https://github.com/WilqueMessias/To-Do-GP.git
+### 🚀 Automation Scripts
+The easiest way to launch the ecosystem is using the included orchestrators:
 
-# Launch the orchestrator
-./start.bat  # Windows
-sh start.sh  # Linux/Unix
-```
+- **Windows**: Run `start.bat`
+- **Linux/POSIX**: Run `sh start.sh`
 
-> [!TIP]
-> **Docker Desktop** is the recommended environment for zero-config execution.
+Navigate to `http://localhost:5173` for the UI and `http://localhost:8080/swagger-ui/index.html` for API exploration.
 
 ---
 
-## 📐 Architectural Overview
+## Author & Contact
 
-```mermaid
-graph LR
-    User([User]) --> UI[tm-ui React/Vite]
-    UI --> API[tm-api REST Gateway]
-    API --> Services[Domain Services]
-    Services --> DB[(Transactional DB)]
-    Services --> Logs[Audit Logs]
-```
+**Wilque Messias de Lima**  
+*Software & Infrastructure Engineer*
+
+- **GitHub**: [github.com/WilqueMessias/To-Do-GP](https://github.com/WilqueMessias/To-Do-GP)
+- **LinkedIn**: [wilquemessias](https://br.linkedin.com/in/wilquemessias)
+- **Email**: [wilquemessias@gmail.com](mailto:wilquemessias@gmail.com)
 
 ---
-
-## 👨‍💻 Engineering & Authorship
-
-This ecosystem was architected and developed by **Wilque Messias de Lima**, reflecting a commitment to code quality, architectural integrity, and user-centric design.
-
-<div align="left">
-
-- **Developer**: [Wilque Messias de Lima](https://github.com/WilqueMessias)
-- **Portfolio**: [github.com/WilqueMessias](https://github.com/WilqueMessias)
-- **Contact**: [wilquemessias@gmail.com](mailto:wilquemessias@gmail.com)
-- **LinkedIn**: [Wilque Messias](https://br.linkedin.com/in/wilquemessias)
-
-</div>
-
----
-
-## 📄 License
-
-Distributed under the **MIT License**. See `LICENSE` for more information.
-
----
-**Developed with ❤️ and Engineering Passion by Wilque Messias.**
+Developed by **Wilque Messias de Lima** © 2024. Project licensed under **MIT**.
