@@ -139,6 +139,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isPickerOpen]);
 
+    useEffect(() => {
+        if (!isPickerOpen) return;
+        const handlePickerKeys = (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
+                applyPicker();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                closePicker();
+            }
+        };
+        window.addEventListener('keydown', handlePickerKeys, true);
+        return () => window.removeEventListener('keydown', handlePickerKeys, true);
+    }, [isPickerOpen, applyPicker, closePicker]);
+
     const handleTypeSelect = (nextBuffer: string) => {
         const target = activeTimeColumn;
         const value = target === 'hour'
@@ -167,6 +184,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             e.preventDefault();
             e.stopPropagation();
             closePicker();
+            return;
+        }
+        if (e.key === 'Tab' && hasTime) {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTimeColumn((prev) => {
+                const next = e.shiftKey
+                    ? (prev === 'hour' ? 'minute' : 'hour')
+                    : (prev === 'hour' ? 'minute' : 'hour');
+                const [h = '00', m = '00'] = pickerTime.split(':');
+                if (next === 'hour') {
+                    const btn = hourListRef.current?.querySelector<HTMLButtonElement>(`[data-hour="${h}"]`);
+                    btn?.scrollIntoView({ block: 'nearest' });
+                } else {
+                    const btn = minuteListRef.current?.querySelector<HTMLButtonElement>(`[data-minute="${m}"]`);
+                    btn?.scrollIntoView({ block: 'nearest' });
+                }
+                return next;
+            });
             return;
         }
         if (!/\d/.test(e.key)) return;
@@ -390,6 +426,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                     onSubmit={handleSubmit}
                     className="overflow-y-auto max-h-[80vh] custom-scrollbar"
                     onKeyDown={(e) => {
+                        if (isPickerOpen && (e.key === 'Enter' || e.key === 'Escape')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
                         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                             e.preventDefault();
                             e.currentTarget.requestSubmit();
@@ -622,8 +663,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                             <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Hora</label>
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 <div onMouseEnter={() => setActiveTimeColumn('hour')}>
-                                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hora</div>
-                                                                    <div ref={hourListRef} className="max-h-28 overflow-y-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800">
+                                                                    <div className={`text-[9px] font-bold uppercase tracking-widest mb-1 ${activeTimeColumn === 'hour' ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400'}`}>
+                                                                        Hora
+                                                                    </div>
+                                                                    <div ref={hourListRef} className={`max-h-28 overflow-y-auto rounded-lg border bg-white dark:bg-slate-800 ${activeTimeColumn === 'hour' ? 'border-blue-300 ring-2 ring-blue-100 dark:border-blue-700/60 dark:ring-blue-900/30' : 'border-slate-200 dark:border-white/10'}`}>
                                                                         {Array.from({ length: 24 }, (_, i) => pad2(i)).map((h) => (
                                                                             <button
                                                                                 key={h}
@@ -642,8 +685,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                                     </div>
                                                                 </div>
                                                                 <div onMouseEnter={() => setActiveTimeColumn('minute')}>
-                                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Minuto</div>
-                                                                    <div ref={minuteListRef} className="max-h-28 overflow-y-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800">
+                                                                    <div className={`text-[9px] font-bold uppercase tracking-widest mb-1 ${activeTimeColumn === 'minute' ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400'}`}>
+                                                                        Minuto
+                                                                    </div>
+                                                                    <div ref={minuteListRef} className={`max-h-28 overflow-y-auto rounded-lg border bg-white dark:bg-slate-800 ${activeTimeColumn === 'minute' ? 'border-blue-300 ring-2 ring-blue-100 dark:border-blue-700/60 dark:ring-blue-900/30' : 'border-slate-200 dark:border-white/10'}`}>
                                                                         {Array.from({ length: 60 }, (_, i) => pad2(i)).map((m) => (
                                                                             <button
                                                                                 key={m}

@@ -132,6 +132,28 @@ function App() {
     setTaskToEdit(undefined);
   }, []);
 
+  useEffect(() => {
+    const handleGlobalNewTask = (event: KeyboardEvent) => {
+      if (isModalOpen) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      const isTypingField = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      );
+      if (isTypingField) return;
+      if (event.key.toLowerCase() === 'n') {
+        event.preventDefault();
+        handleOpenModal();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalNewTask);
+    return () => window.removeEventListener('keydown', handleGlobalNewTask);
+  }, [handleOpenModal, isModalOpen]);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
