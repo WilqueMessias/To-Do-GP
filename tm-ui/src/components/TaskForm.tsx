@@ -17,7 +17,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
-    const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
+    const getNowForInput = () => {
+        const d = new Date();
+        const offset = d.getTimezoneOffset();
+        const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+        return localDate.toISOString().substring(0, 16);
+    };
+
+    const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : getNowForInput());
     const [important, setImportant] = useState(taskToEdit?.important || false);
     const [reminderEnabled, setReminderEnabled] = useState(taskToEdit?.reminderEnabled || false);
     const [reminderTime, setReminderTime] = useState(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
@@ -43,7 +50,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             setTitle(taskToEdit?.title || '');
             setDescription(taskToEdit?.description || '');
             setPriority(taskToEdit?.priority || 'MEDIUM');
-            setDueDate(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : '');
+            setDueDate(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : getNowForInput());
             setImportant(taskToEdit?.important || false);
             setReminderEnabled(taskToEdit?.reminderEnabled || false);
             setReminderTime(taskToEdit?.reminderTime ? taskToEdit.reminderTime.substring(0, 16) : '');
