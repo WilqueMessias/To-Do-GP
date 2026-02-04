@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Task, Subtask } from '../services/api';
 import { taskService } from '../services/api';
-import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles, Star } from 'lucide-react';
+import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles, Star, Calendar } from 'lucide-react';
 
 
 
@@ -172,8 +172,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                 status,
                 dueDate: finalDueDate,
                 important,
-                reminderEnabled: hasTime ? reminderEnabled : false,
-                reminderTime: (hasTime && reminderEnabled && reminderTime) ? new Date(reminderTime).toISOString() : undefined,
+                reminderEnabled: false,
+                reminderTime: undefined,
                 subtasks
             };
 
@@ -389,110 +389,53 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 </div>
                             </div>
 
-                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
                                 <div>
                                     <div className="flex justify-between items-center mb-1.5">
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prazo de Entrega</label>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const newHasTime = !hasTime;
-                                                setHasTime(newHasTime);
-                                                if (!newHasTime) {
-                                                    setReminderEnabled(false);
-                                                }
-                                            }}
-                                            className={`text-[9px] font-black px-3 py-1 rounded-lg transition-all border ${hasTime ? 'bg-slate-900 border-slate-900 text-white shadow-sm dark:bg-blue-600 dark:border-blue-600' : 'bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:border-white/10 dark:text-slate-400'}`}
-                                        >
-                                            {hasTime ? 'COM HORÁRIO' : 'SÓ DATA'}
-                                        </button>
-                                    </div>
-                                    <input
-                                        type={hasTime ? "datetime-local" : "date"}
-                                        value={hasTime ? dueDate : dueDate.split('T')[0]}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (hasTime) {
-                                                setDueDate(val);
-                                            } else {
-                                                setDueDate(val ? val + 'T00:00' : '');
-                                            }
-
-                                            if (!val) {
-                                                setReminderEnabled(false);
-                                                setReminderTime('');
-                                            }
-                                        }}
-                                        onClick={(e) => e.currentTarget.showPicker()}
-                                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400 cursor-pointer"
-                                    />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between items-center mb-1.5">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aviso Sonoro / Alerta</label>
-                                        <button
-                                            type="button"
-                                            disabled={!dueDate || !hasTime}
-                                            onClick={() => {
-                                                const newState = !reminderEnabled;
-                                                setReminderEnabled(newState);
-                                                if (newState && dueDate) {
-                                                    const date = new Date(dueDate);
-                                                    date.setMinutes(date.getMinutes() - 15);
-
-                                                    // Only set if in the future
-                                                    if (date.getTime() > new Date().getTime()) {
-                                                        setReminderTime(date.toISOString().substring(0, 16));
-                                                    } else {
-                                                        setReminderTime(new Date().toISOString().substring(0, 16));
-                                                    }
-                                                }
-                                            }}
-                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${(!dueDate || !hasTime) ? 'opacity-10 cursor-not-allowed bg-slate-100 text-slate-300' : reminderEnabled ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                                        >
-                                            {reminderEnabled ? 'ON' : 'OFF'}
-                                        </button>
-                                    </div>
-                                    <div className={`space-y-2 transition-all ${!hasTime ? 'opacity-20 pointer-events-none grayscale' : ''}`}>
-                                        {!hasTime && (
-                                            <p className="text-[10px] text-slate-400 font-medium italic mt-1">
-                                                Ative o horário para configurar alertas.
-                                            </p>
-                                        )}
-                                        <div className="grid grid-cols-4 gap-1">
-                                            {[15, 30, 60, 120].map((mins) => (
-                                                <button
-                                                    key={mins}
-                                                    type="button"
-                                                    disabled={!reminderEnabled || !dueDate || !hasTime}
-                                                    onClick={() => {
-                                                        const date = new Date(dueDate);
-                                                        date.setMinutes(date.getMinutes() - mins);
-
-                                                        const now = new Date().getTime();
-                                                        if (date.getTime() <= now) {
-                                                            onError(`O tempo "${mins < 60 ? `${mins}m` : `${mins / 60}h`} antes" já passou!`);
-                                                            return;
-                                                        }
-
-                                                        setReminderTime(date.toISOString().substring(0, 16));
-                                                    }}
-                                                    className={`py-1 text-[9px] font-black rounded-lg transition-all border ${reminderEnabled && reminderTime && Math.abs((new Date(dueDate).getTime() - new Date(reminderTime).getTime()) / 60000 - mins) < 1
-                                                        ? 'bg-blue-600 border-blue-600 text-white'
-                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-400 hover:text-blue-500'
-                                                        } disabled:opacity-20`}
-                                                >
-                                                    {mins < 60 ? `${mins}m` : `${mins / 60}h`}
-                                                </button>
-                                            ))}
+                                        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-white/10">
+                                            <button
+                                                type="button"
+                                                onClick={() => setHasTime(false)}
+                                                className={`px-2 py-0.5 text-[9px] font-bold rounded-md transition-all ${!hasTime ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                            >
+                                                SÓ DATA
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setHasTime(true)}
+                                                className={`px-2 py-0.5 text-[9px] font-bold rounded-md transition-all ${hasTime ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                            >
+                                                DATA E HORÁRIO
+                                            </button>
                                         </div>
+                                    </div>
+                                    <div className="relative group/date">
                                         <input
-                                            type="datetime-local"
-                                            disabled={!reminderEnabled}
-                                            value={reminderTime}
-                                            onChange={(e) => setReminderTime(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-30 caret-blue-600 dark:caret-blue-400"
+                                            type={hasTime ? "datetime-local" : "date"}
+                                            value={hasTime ? dueDate : dueDate.split('T')[0]}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (hasTime) {
+                                                    setDueDate(val);
+                                                } else {
+                                                    setDueDate(val ? val + 'T00:00' : '');
+                                                }
+                                            }}
+                                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-sans caret-blue-600 dark:caret-blue-400 [&::-webkit-calendar-picker-indicator]:hidden"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                // Trigger the native picker on the input sibling
+                                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                                input.showPicker();
+                                            }}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-all"
+                                            title={hasTime ? "Selecionar data e hora" : "Selecionar data"}
+                                        >
+                                            <Calendar size={18} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
