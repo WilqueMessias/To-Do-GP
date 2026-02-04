@@ -1,65 +1,129 @@
-# Technical Architecture: To Do GP
+# Technical Documentation: To Do GP Implementation Details
 
-![Architecture Blueprint](file:///C:/Users/wilqu/.gemini/antigravity/brain/cfec4e5d-11ea-4269-bcdd-3dbca1b54ab8/architecture_diagram_concept_1770181768891.png)
+![Architecture Abstract](./docs/assets/architecture.png)
 
-## 🏛️ Systematic Overview
+## 🏛️ Component Architecture
 
-**To Do GP** leverages a "Separated Core" architecture, ensuring that business logic is strictly decoupled from presentation. This design promotes infinite scalability and ease of auditability.
+The system operates as a distributed architecture with a clear separation between the stateful backend and the stateless (optimistic) frontend.
 
-### High-Level Data Flow
 ```mermaid
-graph TD
-    UI[React TypeScript SPA] -- "HTTPS / JSON DTO" --> API[Spring Boot REST]
-    API -- "Inversion of Control" --> Service[Service Layer]
-    Service -- "Transactional Context" --> JPA[Spring Data JPA]
-    JPA <--> DB[(H2 Persistent Memory)]
-    Service -- "Sync" --> Audit[Audit Trail Generator]
-    Audit --> ActivityLog[(Immutable Activity Log)]
+graph LR
+    subgraph "Frontend Layer (React)"
+        Store[useKanbanTasks Hook]
+        UI[Kanban Board / Components]
+        DND[@dnd-kit Orchestrator]
+    end
+
+    subgraph "Backend Layer (Spring Boot)"
+        Controller[REST Controller]
+        Service[TaskService / Audit Logic]
+        Repo[JPA Repositories / Native SQL]
+    end
+
+    subgraph "Persistence Layer"
+        DB[(H2 Database)]
+    end
+
+    UI <--> Store
+    Store <--> DND
+    Store -- "JSON DTO" --> Controller
+    Controller <--> Service
+    Service <--> Repo
+    Repo <--> DB
 ```
 
 ---
 
-## 🧬 Core Engineering Specs
+## 🧬 Data Model (ER Diagram)
 
-### 1. Differential Audit Engine
-Unlike standard CRUD applications, our `TaskService` performs a **Value-Level Diff** on every update. 
-- It captures the transition of statuses, priority levels, and even subtask completion states.
-- Each change generates a human-readable `Activity` record.
-- **Benefit**: 100% accountability and system state reconstruction capabilities.
+The persistence layer is managed by Hibernate/JPA, implementing a one-to-many relationship from the main `Task` entity to both `Subtask` and `Activity` logs.
 
-### 2. Resilient Data Lifecycle (Soft-Delete)
-The system implements a multi-tier deletion strategy governed by Hibernate `@SQLDelete` and `@SQLRestriction` annotations.
-- **Logical Deletion**: Tasks are flagged, not purged, allowing for instantaneous recovery.
-- **Native Hard Purge**: A dedicated administrative bypass exists for permanent data destruction when required.
-
-### 3. Smart Analytics Pipeline
-All productivity metrics (Velocity, Cycle Time) are calculated using high-precision date arithmetic. 
-- **Cycle Time**: `Sum(completedAt - createdAt) / Count(DoneTasks)`
-- **Throughput**: Sliding window analysis of the last 168 hours (7 days).
+```mermaid
+erDiagram
+    TASK ||--o{ SUBTASK : contains
+    TASK ||--o{ ACTIVITY : logs
+    
+    TASK {
+        UUID id PK
+        string title
+        string description
+        enum status
+        enum priority
+        datetime due_date
+        datetime completed_at
+        datetime created_at
+        datetime updated_at
+        boolean deleted
+        boolean important
+    }
+    
+    SUBTASK {
+        UUID id PK
+        string title
+        boolean completed
+        UUID task_id FK
+    }
+    
+    ACTIVITY {
+        UUID id PK
+        string message
+        datetime timestamp
+        UUID task_id FK
+    }
+```
 
 ---
 
-## 📡 REST API Topology
+## ⚙️ Core Operational Flows
 
-The API is strictly versioned and documented via OpenAPI 3.0.
+### 1. Differential Audit Pattern
+The system implements a manual "diffing" mechanism during entity updates to maintain an immutable audit trail.
 
-| Vector | Endpoint | Methodology | Complexity |
+```mermaid
+sequenceDiagram
+    participant UI as Frontend SPA
+    participant SVC as TaskService
+    participant DB as Persistence Layer
+
+    UI->>SVC: PUT /tasks/{id} (TaskDTO)
+    SVC->>DB: Fetch Current State (Task Entity)
+    SVC->>SVC: Compare Field Values (title, status, priority, etc.)
+    Note over SVC: If field changed, create new Activity Entity
+    SVC->>DB: Save Activity Logs
+    SVC->>DB: Save Updated Task Entity
+    SVC->>UI: Return Updated TaskDTO
+```
+
+### 2. Logical Deletion (Soft-Delete)
+Persistence is managed via a logical flag to ensure history retention and instant restoration.
+- **Logic**: `@SQLDelete(sql = "UPDATE tasks SET deleted = true WHERE id=?")`
+- **Retention**: Filtered via `@SQLRestriction("deleted = false")` in normal operations.
+- **Recovery**: Native SQL Bypass: `UPDATE tasks SET deleted = false WHERE id = :id`.
+
+---
+
+## 📡 API Topology (Operational)
+
+### Endpoint Specification
+| Method | Endpoint | Logic Complexity | Side Effects |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/tasks` | Paginated Retrieval | O(1) with Indexing |
-| `POST` | `/tasks` | Entity Induction | O(1) |
-| `PUT` | `/tasks/{id}` | Partial Patch / Diff | O(N) where N = Changed Fields |
-| `DELETE` | `/tasks/{id}` | Logical Deletion | O(1) |
-| `POST` | `/tasks/{id}/restore` | State Reinstatement | O(1) |
+| `GET` | `/tasks` | O(1) | None |
+| `POST` | `/tasks` | O(N) | Activity creation |
+| `PUT` | `/tasks/{id}` | O(Diff * N) | Multiple Activity insertions |
+| `DELETE` | `/tasks/{id}` | O(1) | Flag Toggle |
+| `POST` | `/tasks/{id}/restore` | O(1) | Flag Toggle + Activity Log |
 
 ---
 
-## 🚀 Performance Optimizations
+## 🖥️ Frontend State Orchestration
 
-- **Optimistic UI**: The frontend uses `useMemo` and `useCallback` to ensure the Kanban board responds in < 16ms, regardless of server latency.
-- **Lazy Hydration**: Subtasks and Activity Logs are only processed when the specific task context is requested.
-- **Zero-Latency Audio**: Alarm sounds are generated on-the-fly via the Web Audio API (Oscillators) to avoid heavy asset loading.
+The UI utilizes **Optimistic Updates** to provide zero-latency interactions:
+1. **Trigger**: User interacts with UI (e.g., drag card).
+2. **Local State**: The `useKanbanTasks` hook updates the local task list immediately.
+3. **Synchronization**: An asynchronous `PATCH/PUT` request is dispatched to the backend.
+4. **Reconciliation**: On failure, the local state is rolled back; on success, it remains identical.
 
 ---
-
-### 🎓 Lead Architect
-**Wilque Messias de Lima**  
+<div align="center">
+Documented for Technical Review by Desenvolvedor.
+</div>
