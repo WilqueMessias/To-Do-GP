@@ -197,15 +197,29 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
                     }}
                 >
                     <Calendar size={12} className={overdue ? 'text-rose-400' : ''} />
-                    <input
-                        type="datetime-local"
-                        value={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ''}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => {
-                            if (onUpdate) onUpdate(task.id, { dueDate: new Date(e.target.value).toISOString() });
-                        }}
-                        className="bg-transparent border-none p-0 text-[11px] font-semibold text-inherit focus:ring-0 cursor-pointer w-[110px]"
-                    />
+                    <div className="relative group/date-input">
+                        <input
+                            type="datetime-local"
+                            value={task.dueDate ? (() => {
+                                const date = new Date(task.dueDate);
+                                const offset = date.getTimezoneOffset() * 60000;
+                                return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+                            })() : ''}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.currentTarget.showPicker();
+                            }}
+                            onChange={(e) => {
+                                if (onUpdate) onUpdate(task.id, { dueDate: new Date(e.target.value).toISOString() });
+                            }}
+                            className="bg-transparent border-none p-0 text-[11px] font-semibold text-inherit focus:ring-0 cursor-pointer min-w-[130px] outline-none opacity-0 absolute inset-0 w-full h-full z-10"
+                        />
+                        <span className="text-[11px] font-semibold relative z-0 group-hover/date-input:text-blue-500 transition-colors">
+                            {task.dueDate ? new Date(task.dueDate).toLocaleString('pt-BR', {
+                                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                            }) : 'Definir data'}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Quick Actions */}
