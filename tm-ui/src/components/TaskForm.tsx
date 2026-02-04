@@ -136,6 +136,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        if (!dueDate) {
+            onError("Por favor, defina um prazo de entrega.");
+            setLoading(false);
+            return;
+        }
+
         if (reminderEnabled) {
             if (!reminderTime) {
                 onError("Por favor, defina o horário do alerta.");
