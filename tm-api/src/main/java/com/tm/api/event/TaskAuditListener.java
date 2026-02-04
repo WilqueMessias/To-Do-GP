@@ -71,6 +71,7 @@ public class TaskAuditListener {
             return switch (field) {
                 case "status" -> String.format("Status atualizado: %s → %s", oldValStr, newValStr);
                 case "título" -> String.format("Título alterado de '%s' para '%s'", oldValStr, newValStr);
+                case "descrição" -> String.format("Descrição alterada: '%s' → '%s'", shorten(oldValStr), shorten(newValStr));
                 case "prioridade" -> String.format("Prioridade alterada de %s para %s", oldValStr, newValStr);
                 case "deleted" ->
                     (Boolean) newValue ? "Tarefa movida para a lixeira" : "Tarefa restaurada do histórico";
@@ -91,5 +92,12 @@ public class TaskAuditListener {
             return ldt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         }
         return value.toString();
+    }
+
+    private String shorten(String value) {
+        if (value == null) return "";
+        String clean = value.trim();
+        if (clean.length() <= 80) return clean;
+        return clean.substring(0, 77) + "...";
     }
 }

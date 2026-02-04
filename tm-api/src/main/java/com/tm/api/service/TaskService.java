@@ -57,7 +57,7 @@ public class TaskService {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .status(dto.getStatus())
-                .priority(dto.getPriority())
+                .priority(dto.getPriority() != null ? dto.getPriority() : com.tm.api.model.Priority.LOW)
                 .dueDate(dto.getDueDate())
                 .important(dto.getImportant() != null ? dto.getImportant() : false)
                 .reminderEnabled(dto.getReminderEnabled() != null ? dto.getReminderEnabled() : false)
@@ -109,7 +109,7 @@ public class TaskService {
                 && (task.getDescription() == null || !task.getDescription().equals(dto.getDescription()))) {
             oldValues.put("descrição", task.getDescription());
             task.setDescription(dto.getDescription());
-            newValues.put("descrição", "Atualizada");
+            newValues.put("descrição", task.getDescription());
         }
 
         if (dto.getPriority() != null && task.getPriority() != dto.getPriority()) {
@@ -152,8 +152,12 @@ public class TaskService {
 
             // Find Added
             for (var subDTO : newSubtasksDTO) {
-                if (subDTO.getId() == null
-                        || currentSubtasks.stream().noneMatch(s -> s.getId().equals(subDTO.getId()))) {
+                boolean existsById = subDTO.getId() != null && currentSubtasks.stream()
+                        .anyMatch(s -> s.getId() != null && s.getId().equals(subDTO.getId()));
+                boolean existsByTitle = subDTO.getId() == null && currentSubtasks.stream()
+                        .anyMatch(s -> s.getTitle() != null && s.getTitle().equals(subDTO.getTitle()));
+
+                if (!existsById && !existsByTitle) {
                     newValues.put("subtask_added_" + subDTO.getTitle(), subDTO.getTitle());
                     oldValues.put("subtask_added_" + subDTO.getTitle(), null);
                 }
@@ -162,8 +166,15 @@ public class TaskService {
             // Find Removed and Changed
             for (Subtask sOld : currentSubtasks) {
                 var matchingNew = newSubtasksDTO.stream()
-                        .filter(n -> n.getId() != null && n.getId().equals(sOld.getId()))
+                        .filter(n -> n.getId() != null && sOld.getId() != null && n.getId().equals(sOld.getId()))
                         .findFirst();
+
+                if (matchingNew.isEmpty()) {
+                    matchingNew = newSubtasksDTO.stream()
+                            .filter(n -> n.getId() == null && sOld.getTitle() != null
+                                    && sOld.getTitle().equals(n.getTitle()))
+                            .findFirst();
+                }
 
                 if (matchingNew.isEmpty()) {
                     newValues.put("subtask_removed_" + sOld.getTitle(), null);

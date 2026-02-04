@@ -63,6 +63,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const [history, setHistory] = useState<Task[]>([]);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
+    const buildTaskPayload = (task: Task, updates: Partial<Task> = {}) => ({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        important: task.important,
+        reminderEnabled: task.reminderEnabled,
+        reminderTime: task.reminderTime,
+        subtasks: task.subtasks ?? [],
+        ...updates
+    });
+
     // Initial load
     React.useEffect(() => {
         // Prevent flashing by only fetching if modal is open or on initial mount if needed
@@ -125,7 +138,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             let restored = response.data;
 
             // 2. Force move to DONE as requested
-            const updateResponse = await taskService.update(restored.id, { status: 'DONE' });
+            const updateResponse = await taskService.update(restored.id, buildTaskPayload(restored, { status: 'DONE' }));
             restored = updateResponse.data;
 
             // Update local state (Optimistic)
@@ -179,6 +192,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
             // Sync with parent for full reload
             if (onRefresh) onRefresh();
+            await fetchHistory();
 
         } catch (error) {
             console.error("Failed to restore all history", error);
@@ -194,6 +208,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         try {
             await taskService.clearHistory();
             setHistory([]);
+            await fetchHistory();
         } catch (error) {
             console.error("Failed to clear history", error);
             alert("Erro ao limpar histórico.");
@@ -279,7 +294,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         if (!task) return;
 
         try {
-            await taskService.update(task.id, { status: task.status });
+            await taskService.update(task.id, buildTaskPayload(task, { status: task.status }));
         } catch (error) {
             console.error('Failed to persist task movement:', error);
             // Revert on error if needed, or rely on parent reload

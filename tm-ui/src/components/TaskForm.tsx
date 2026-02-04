@@ -19,7 +19,7 @@ interface TaskFormProps {
 export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, onError, taskToEdit, onTaskUpdated }) => {
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
-    const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
+    const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'LOW');
 
     const getNowForInput = () => format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
@@ -103,7 +103,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         if (isOpen) {
             setTitle(taskToEdit?.title || '');
             setDescription(taskToEdit?.description || '');
-            setPriority(taskToEdit?.priority || 'MEDIUM');
+            setPriority(taskToEdit?.priority || 'LOW');
             setDueDate(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : getNowForInput());
             setImportant(taskToEdit?.important || false);
             setReminderEnabled(taskToEdit?.reminderEnabled || false);
