@@ -17,12 +17,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [title, setTitle] = useState(taskToEdit?.title || '');
     const [description, setDescription] = useState(taskToEdit?.description || '');
     const [priority, setPriority] = useState<Task['priority']>(taskToEdit?.priority || 'MEDIUM');
-    const getNowForInput = () => {
-        const d = new Date();
-        const offset = d.getTimezoneOffset();
-        const localDate = new Date(d.getTime() - (offset * 60 * 1000));
-        return localDate.toISOString().substring(0, 16);
+    const pad2 = (value: number) => String(value).padStart(2, '0');
+    const formatLocalForInput = (date: Date) => {
+        return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     };
+    const getNowForInput = () => formatLocalForInput(new Date());
 
     const [dueDate, setDueDate] = useState(taskToEdit?.dueDate ? taskToEdit.dueDate.substring(0, 16) : getNowForInput());
     const [important, setImportant] = useState(taskToEdit?.important || false);
@@ -113,7 +112,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         }
 
         if (found) {
-            const formatted = targetDate.toISOString().substring(0, 16);
+            const formatted = formatLocalForInput(targetDate);
             if (formatted !== dueDate) {
                 setSuggestion({ date: formatted, label });
             } else {
@@ -168,12 +167,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
             let finalDueDate = null;
             if (dueDate) {
                 if (hasTime) {
-                    finalDueDate = new Date(dueDate).toISOString();
+                    finalDueDate = dueDate.length === 16 ? `${dueDate}:00` : dueDate;
                 } else {
                     // Force end of day for date-only tasks to ensure they are at the top of the day range
                     const datePart = dueDate.includes('T') ? dueDate.split('T')[0] : dueDate;
                     if (datePart) {
-                        finalDueDate = new Date(`${datePart}T23:59:59.000Z`).toISOString();
+                        finalDueDate = `${datePart}T23:59:59`;
                     }
                 }
             }
