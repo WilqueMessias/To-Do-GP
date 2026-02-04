@@ -309,7 +309,7 @@ function App() {
               className="group flex items-center gap-2 bg-slate-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-slate-200 dark:shadow-blue-900/20 active:scale-95 text-sm"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-              <span>Nova Demanda</span>
+              <span>Nova Tarefa</span>
             </button>
           </div>
 
@@ -427,7 +427,7 @@ function App() {
                 <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Navegação & Geral</h4>
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Nova demanda inteligente</span>
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Nova tarefa inteligente</span>
                     <kbd className="group-hover:scale-110 transition-transform">N</kbd>
                   </div>
                   <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
@@ -437,6 +437,21 @@ function App() {
                   <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Abrir painel de ajuda</span>
                     <kbd className="group-hover:scale-110 transition-transform">?</kbd>
+                  </div>
+                </div>
+              </section>
+
+              {/* Categoria: Exclusão Rápida */}
+              <section className="space-y-4">
+                <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">Exclusão Rápida</h4>
+                <div className="grid gap-3">
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-rose-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Excluir (ao passar o mouse)</span>
+                    <kbd className="group-hover:scale-110 transition-transform text-[10px]">Delete</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-rose-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Confirmar exclusão (no modal)</span>
+                    <kbd className="group-hover:scale-110 transition-transform text-[10px]">Enter</kbd>
                   </div>
                 </div>
               </section>

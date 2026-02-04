@@ -4,6 +4,7 @@ import { taskService } from '../services/api';
 import { X, Plus, Trash2, CheckSquare, Square, History, Sparkles, Star, Calendar } from 'lucide-react';
 import { format, parseISO, isValid, addDays, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ConfirmationModal } from './ConfirmationModal';
 
 
 
@@ -54,6 +55,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     const [subtasks, setSubtasks] = useState<Subtask[]>(taskToEdit?.subtasks || []);
     const [newSubtask, setNewSubtask] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [suggestion, setSuggestion] = useState<{ date: string, label: string } | null>(null);
     const modalRef = React.useRef<HTMLDivElement>(null);
     const pickerRef = React.useRef<HTMLDivElement>(null);
@@ -384,10 +386,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                 onSuccess('create');
             }
             onClose();
-        } catch (error) {
-            onError('Falha ao salvar tarefa. Verifique a conexão com o servidor.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteTask = async () => {
+        if (!taskToEdit) return;
+        setLoading(true);
+        try {
+            await taskService.delete(taskToEdit.id);
+            onSuccess('delete', taskToEdit.id);
+            onClose();
+        } catch (e) {
+            onError('Falha ao excluir tarefa');
+        } finally {
+            setLoading(false);
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -815,7 +830,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                 </div>
                                 <div className="space-y-4 max-h-[160px] overflow-y-auto pr-3 custom-scrollbar">
                                     <div className="flex flex-col gap-4">
-                                        {taskToEdit.activities?.slice().reverse().map((activity: any) => (
+                                        {taskToEdit.activities?.map((activity: any) => (
                                             <div key={activity.id} className="relative pl-6 pb-2 border-l-2 border-slate-100 dark:border-white/5 last:border-0 group/log">
                                                 <div className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-white/20 shadow-sm group-hover/log:scale-125 transition-transform" />
                                                 <p className="text-xs font-bold text-slate-600 dark:text-slate-200 leading-relaxed">
@@ -855,21 +870,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                         {taskToEdit && (
                             <button
                                 type="button"
-                                onClick={async () => {
-                                    if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
-                                        setLoading(true);
-                                        try {
-                                            await taskService.delete(taskToEdit.id);
-                                            onSuccess('delete', taskToEdit.id);
-                                            onClose();
-                                        } catch (e) {
-                                            onError('Falha ao excluir tarefa');
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }
-                                }}
-                                className="w-full py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                onClick={() => setIsDeleteModalOpen(true)}
+                                className="w-full py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             >
                                 Excluir Tarefa
                             </button>
@@ -877,6 +879,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                     </div>
                 </form>
             </div>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                title="Excluir Tarefa"
+                message={`Tem certeza que deseja excluir "${taskToEdit?.title}"?`}
+                confirmLabel="Excluir"
+                onConfirm={handleDeleteTask}
+                onClose={() => setIsDeleteModalOpen(false)}
+            />
         </div>
     );
 };
