@@ -163,10 +163,10 @@ export const TaskCardContent: React.FC<TaskCardContentProps> = ({
                 </div>
             </div>
 
-            <h3 className="text-[var(--text-main)] font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-4">
+            <h3 className="text-[var(--text-main)] font-bold text-sm leading-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pr-4 cursor-default">
                 {task.title}
             </h3>
-            <p className="text-[var(--text-muted)] text-xs leading-relaxed line-clamp-2 mb-4">
+            <p className="text-[var(--text-muted)] text-xs leading-relaxed line-clamp-2 mb-4 cursor-default">
                 {task.description}
             </p>
 

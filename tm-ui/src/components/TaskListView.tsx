@@ -81,11 +81,11 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask, o
 
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className={`text-sm font-bold ${task.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                <span className={`text-sm font-bold cursor-default ${task.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
                                                     {task.title}
                                                 </span>
                                                 {task.description && (
-                                                    <span className="text-[11px] text-slate-400 line-clamp-1">{task.description}</span>
+                                                    <span className="text-[11px] text-slate-400 line-clamp-1 cursor-default">{task.description}</span>
                                                 )}
                                             </div>
                                         </td>
@@ -151,7 +151,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask, o
                                             {task.status === 'DONE' ? 'CONCLUÍDO' :
                                                 task.status === 'DOING' ? 'EM CURSO' : 'PENDENTE'}
                                         </div>
-                                        <span className={`text-sm font-bold ${task.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                                        <span className={`text-sm font-bold cursor-default ${task.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
                                             {task.title}
                                         </span>
                                     </div>
@@ -169,7 +169,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks, onEditTask, o
                                 </div>
 
                                 {task.description && (
-                                    <span className="text-xs text-slate-400 line-clamp-2">{task.description}</span>
+                                    <span className="text-xs text-slate-400 line-clamp-2 cursor-default">{task.description}</span>
                                 )}
 
                                 <div className="flex justify-between items-center mt-1">
