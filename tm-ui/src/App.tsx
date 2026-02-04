@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram, HelpCircle, X, Sparkles } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
 
@@ -34,6 +34,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // Audio Alarm Logic (Web Audio API for zero dependencies)
   const playAlarmSound = () => {
@@ -133,9 +134,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const handleGlobalNewTask = (event: KeyboardEvent) => {
-      if (isModalOpen) return;
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const handleGlobalShortcuts = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       const isTypingField = target && (
         target.tagName === 'INPUT' ||
@@ -143,16 +142,38 @@ function App() {
         target.tagName === 'SELECT' ||
         target.isContentEditable
       );
+
+      // Modal management shortcuts
+      if (event.key === 'Escape') {
+        if (isHelpOpen) {
+          setIsHelpOpen(false);
+          return;
+        }
+        if (isModalOpen) {
+          handleCloseModal();
+          return;
+        }
+      }
+
       if (isTypingField) return;
+
+      // Global shortcuts (when not typing)
       if (event.key.toLowerCase() === 'n') {
         event.preventDefault();
         handleOpenModal();
+      } else if (event.key === '?' || (event.shiftKey && event.key === '/')) {
+        event.preventDefault();
+        setIsHelpOpen(prev => !prev);
+      } else if (event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Pesquisar tarefas..."]') as HTMLInputElement;
+        searchInput?.focus();
       }
     };
 
-    window.addEventListener('keydown', handleGlobalNewTask);
-    return () => window.removeEventListener('keydown', handleGlobalNewTask);
-  }, [handleOpenModal, isModalOpen]);
+    window.addEventListener('keydown', handleGlobalShortcuts);
+    return () => window.removeEventListener('keydown', handleGlobalShortcuts);
+  }, [handleOpenModal, isModalOpen, isHelpOpen, handleCloseModal]);
 
 
   return (
@@ -192,10 +213,11 @@ function App() {
                 {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
               </button>
               <button
-                onClick={() => handleOpenModal()}
-                className="bg-slate-900 dark:bg-blue-600 text-white p-2 rounded-xl shadow-lg active:scale-95"
+                title="Ajuda e atalhos"
+                onClick={() => setIsHelpOpen(true)}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95"
               >
-                <Plus size={18} />
+                <HelpCircle size={18} />
               </button>
             </div>
           </div>
@@ -213,6 +235,15 @@ function App() {
 
           <div className="hidden md:flex items-center gap-6">
             <SystemClock />
+
+            <button
+              type="button"
+              onClick={() => setIsHelpOpen(true)}
+              title="Atalhos e Ajuda (?)"
+              className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+            >
+              <HelpCircle size={18} />
+            </button>
 
             <button
               onClick={toggleTheme}
@@ -362,6 +393,86 @@ function App() {
           updateTaskStateLocal((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
         }}
       />
+      {isHelpOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4"
+          onClick={() => setIsHelpOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 shadow-2xl animate-modal-pop backdrop-blur-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-slate-800/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-blue-600/10 text-blue-600">
+                  <HelpCircle size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Centro de Ajuda</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Atalhos de produtividade</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHelpOpen(false)}
+                className="p-2.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8 custom-scrollbar max-h-[70vh] overflow-y-auto">
+              {/* Categoria: Navegação Global */}
+              <section className="space-y-4">
+                <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Navegação & Geral</h4>
+                <div className="grid gap-3">
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Nova demanda inteligente</span>
+                    <kbd className="group-hover:scale-110 transition-transform">N</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Focar na pesquisa global</span>
+                    <kbd className="group-hover:scale-110 transition-transform">S</kbd>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-blue-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Abrir painel de ajuda</span>
+                    <kbd className="group-hover:scale-110 transition-transform">?</kbd>
+                  </div>
+                </div>
+              </section>
+
+              {/* Categoria: No Formulário */}
+              <section className="space-y-4">
+                <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">Dentro do Formulário</h4>
+                <div className="grid gap-3">
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-amber-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Salvar alterações instantaneamente</span>
+                    <div className="flex gap-1">
+                      <kbd className="group-hover:scale-110 transition-transform text-[10px]">Ctrl</kbd>
+                      <span className="text-slate-400">+</span>
+                      <kbd className="group-hover:scale-110 transition-transform text-[10px]">Enter</kbd>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-amber-500/30 transition-all">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Fechar qualquer janela</span>
+                    <kbd className="group-hover:scale-110 transition-transform text-[10px]">Esc</kbd>
+                  </div>
+                </div>
+              </section>
+
+              {/* Dica Extra */}
+              <div className="p-4 rounded-2xl bg-blue-600 text-white flex items-center gap-4 shadow-lg shadow-blue-500/20">
+                <div className="p-2 rounded-xl bg-white/20">
+                  <Sparkles size={18} />
+                </div>
+                <p className="text-xs font-semibold leading-relaxed">
+                  Dica: No título da tarefa, digite "hoje" ou "amanhã" para definir prazos automaticamente!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Footer - Minimalist & Discreet */}
       <footer className="w-full py-4 px-4 md:px-8 bg-white/10 dark:bg-slate-900/10 backdrop-blur-sm border-t border-slate-200/30 dark:border-white/5 mt-auto transition-all">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 opacity-60 hover:opacity-100 transition-opacity duration-500">
