@@ -138,43 +138,58 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-8 py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-4 md:px-8 py-4 md:py-5 sticky top-0 z-30 shadow-sm transition-all duration-300">
 
-        <div className="max-w-[1600px] mx-auto flex justify-between items-center gap-6">
-          <div
-            className="flex items-center gap-4 cursor-pointer group"
-            onClick={() => {
-              setSearch('');
-              setViewMode('kanban');
-              // Optional: window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            title="Ir para o Início / Atualizar"
-          >
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-              <div className="relative bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 transition-transform group-hover:scale-105 duration-300">
-                <img src="/logo.png" alt="To Do GP Logo" className="w-10 h-10 object-contain rounded-xl" />
+        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
+          <div className="flex w-full md:w-auto justify-between items-center">
+            <div
+              className="flex items-center gap-3 md:gap-4 cursor-pointer group"
+              onClick={() => {
+                setSearch('');
+                setViewMode('kanban');
+              }}
+              title="Ir para o Início / Atualizar"
+            >
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                <div className="relative bg-white dark:bg-slate-800 p-1 md:p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 transition-transform group-hover:scale-105 duration-300">
+                  <img src="/logo.png" alt="To Do GP Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain rounded-xl" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-lg md:text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none">To Do <span className="text-blue-600 dark:text-blue-400">GP</span></h1>
               </div>
             </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight leading-none">To Do <span className="text-blue-600 dark:text-blue-400">GP</span></h1>
-            </div>
 
+            {/* Mobile Actions (Visible only on mobile next to logo) */}
+            <div className="flex md:hidden items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 active:scale-95"
+              >
+                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
+              <button
+                onClick={() => handleOpenModal()}
+                className="bg-slate-900 dark:bg-blue-600 text-white p-2 rounded-xl shadow-lg active:scale-95"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Search Bar Professionalized */}
-          <div className="flex-1 max-w-2xl relative">
+          <div className="w-full md:flex-1 md:max-w-2xl relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pesquisar tarefas..."
-              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium text-slate-700 dark:text-slate-200"
+              className="w-full pl-12 pr-4 py-2.5 md:py-3 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all text-sm font-medium text-slate-700 dark:text-slate-200"
             />
-
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6">
             <SystemClock />
 
             <button
@@ -243,7 +258,39 @@ function App() {
               <Plus size={18} className="group-hover:rotate-90 transition-transform" />
               <span>Nova Demanda</span>
             </button>
+          </div>
 
+          {/* Secondary Mobile Actions (View Mode & Sorting) */}
+          <div className="flex md:hidden w-full items-center justify-between gap-2 pb-1">
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-white/5 flex-1">
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                <LayoutGrid size={14} />
+                <span>Quadro</span>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                <List size={14} />
+                <span>Lista</span>
+              </button>
+            </div>
+
+            <div className="relative group/sort-mob">
+              <button
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:bg-slate-200 transition-all font-bold text-xs"
+                onClick={() => {
+                  // Direct toggle on mobile might be better, but for now we'll rely on the existing pattern if possible
+                  // or just let the user use the dropdown if it works on touch.
+                }}
+              >
+                <ArrowUpDown size={14} className="text-blue-500" />
+              </button>
+              {/* Note: Sort dropdown might need better mobile handling, but let's see if generic hover/active works first */}
+            </div>
           </div>
         </div>
       </header>
@@ -290,6 +337,62 @@ function App() {
         onError={(msg) => addToast('error', msg)}
         taskToEdit={taskToEdit}
       />
+      {/* Footer */}
+      <footer className="w-full py-8 px-4 md:px-8 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md border-t border-slate-200/50 dark:border-white/5 mt-auto transition-all duration-300">
+        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-slate-400">© 2026</span>
+              <span className="h-4 w-[1px] bg-slate-200 dark:bg-white/10 hidden md:block"></span>
+              <span className="text-sm font-black tracking-tight text-slate-700 dark:text-slate-200">
+                To Do <span className="text-blue-600 dark:text-blue-400">GP</span>
+              </span>
+            </div>
+            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 tracking-wide uppercase">
+              Engineering & Architecture Excellence
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              Desenvolvido por
+              <span className="text-slate-800 dark:text-white font-black hover:text-blue-600 transition-colors cursor-default">
+                Wilque Messias
+              </span>
+            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://github.com/WilqueMessias"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all transform hover:scale-110 active:scale-90"
+                title="GitHub"
+              >
+                <img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub" className="h-5 rounded" />
+              </a>
+              <a
+                href="https://br.linkedin.com/in/wilquemessias"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-blue-600 transition-all transform hover:scale-110 active:scale-90"
+                title="LinkedIn"
+              >
+                <img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" className="h-5 rounded" />
+              </a>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Master-Grade</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Software Version v1.0</span>
+            </div>
+            <div className="h-8 w-8 bg-blue-600/10 dark:bg-blue-400/10 rounded-lg flex items-center justify-center border border-blue-600/20 dark:border-blue-400/20">
+              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

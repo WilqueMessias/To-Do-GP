@@ -303,7 +303,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     };
 
     return (
-        <div className="flex gap-8 p-8 justify-center overflow-x-auto min-h-[calc(100vh-80px)]">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 p-4 md:p-8 justify-center items-center md:items-start overflow-x-auto min-h-[calc(100vh-140px)] md:min-h-[calc(100vh-80px)]">
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
@@ -330,32 +330,33 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 }}
             >
                 {columns.map((col) => (
-                    <KanbanColumn
-                        key={col.id}
-                        id={col.id}
-                        title={col.title}
-                        tasks={internalTasks.filter((t) => t.status === col.id)}
-                        onTaskClick={onEditTask}
-                        onUpdateTask={onUpdateTask}
-                        headerAction={col.id === 'DONE' ? (
-                            <div className="flex gap-1">
-                                <button
-                                    onClick={() => setIsHistoryModalOpen(true)}
-                                    className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                                    title="Histórico de Limpeza"
-                                >
-                                    <History size={16} />
-                                </button>
-                                <button
-                                    onClick={handleClearCompleted}
-                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                    title="Limpar Concluídos"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        ) : undefined}
-                    />
+                    <div key={col.id} className="w-full md:w-auto flex-shrink-0">
+                        <KanbanColumn
+                            id={col.id}
+                            title={col.title}
+                            tasks={internalTasks.filter((t) => t.status === col.id)}
+                            onTaskClick={onEditTask}
+                            onUpdateTask={onUpdateTask}
+                            headerAction={col.id === 'DONE' ? (
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => setIsHistoryModalOpen(true)}
+                                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                        title="Histórico de Limpeza"
+                                    >
+                                        <History size={16} />
+                                    </button>
+                                    <button
+                                        onClick={handleClearCompleted}
+                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                        title="Limpar Concluídos"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            ) : undefined}
+                        />
+                    </div>
                 ))}
 
                 <DragOverlay dropAnimation={dropAnimation}>
