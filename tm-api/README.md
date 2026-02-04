@@ -5,7 +5,7 @@ Backend service for the To Do GP system, built with Spring Boot.
 ## Technical Specifications
 
 - **Runtime**: Java 17
-- **Framework**: Spring Boot 3.4.1
+- **Framework**: Spring Boot 3.2.2
 - **Security**: Request-level Rate Limiting (Interceptor pattern)
 - **Monitoring**: Spring Boot Actuator with custom Health Indicators
 - **Auditing**: Asynchronous Event-Driven logging using Spring Events
@@ -45,8 +45,8 @@ When running locally or via Docker:
 
 ## Automated Testing
 
-Execute tests via Maven Wrapper:
+Execute tests via Maven:
 ```bash
-./mvnw test
+mvn test
 ```
 Includes Unit Tests for service layer and Integration Tests for API endpoints.

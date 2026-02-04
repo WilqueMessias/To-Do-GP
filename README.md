@@ -19,13 +19,13 @@
 
 ## System Specification
 
-**To Do GP** is a decoupled task management architecture implemented using **Java 17 (Spring Boot 3.4)** and **TypeScript (React 18)**. The design focuses on asynchronous state synchronization, non-blocking auditing pipelines, and strict domain-driven encapsulation to maintain data integrity and system availability.
+**To Do GP** is a decoupled task management architecture implemented using **Java 17 (Spring Boot 3.2.2)** and **TypeScript (React 19)**. The design focuses on asynchronous state synchronization, non-blocking auditing pipelines, and strict domain-driven encapsulation to maintain data integrity and system availability.
 
 ---
 
 ## Project Topology
 
-The system adopts a **Separated Core** pattern, establishing a rigid boundary between transactional state management and the reactive presentation layer.
+The system adopts a **Distributed Monolith** pattern, establishing a rigid boundary between transactional state management and the reactive presentation layer.
 
 - **Backend Protocol**: Orchestrates domain invariants, immutable event logging, and ACID-compliant state transitions.
 - **Presentation Layer**: Implements optimistic state reconciliation, physics-based interaction models, and persistent analytical normalization.

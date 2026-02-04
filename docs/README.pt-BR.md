@@ -19,13 +19,13 @@
 
 ## Visão Geral
 
-O **To Do GP** é um ecossistema de gerenciamento de tarefas desacoplado de classe empresarial, projetado com **Java 17 (Spring Boot 3.4)** e **TypeScript (React 18)**. A arquitetura prioriza propagação de eventos assíncronos, fluxos de auditoria não-bloqueantes e encapsulamento rigoroso orientado ao domínio para garantir a integridade do sistema e alta disponibilidade.
+O **To Do GP** é um ecossistema de gerenciamento de tarefas desacoplado de classe empresarial, projetado com **Java 17 (Spring Boot 3.2.2)** e **TypeScript (React 19)**. A arquitetura prioriza propagação de eventos assíncronos, fluxos de auditoria não-bloqueantes e encapsulamento rigoroso orientado ao domínio para garantir a integridade do sistema e alta disponibilidade.
 
 ---
 
 ## Core Arquitetônico
 
-O sistema utiliza uma topologia **Separated Core**, impondo um limite rigoroso entre o gerenciamento de estado transacional e a interface de usuário reativa.
+O sistema utiliza uma topologia **Monolito Distribuído**, impondo um limite rigoroso entre o gerenciamento de estado transacional e a interface de usuário reativa.
 
 - **Serviço Backend**: Orquestra invariantes de domínio, logs de atividade imutáveis e persistência em conformidade com ACID.
 - **SPA Frontend**: Gerencia reconciliação otimista, interações baseadas em física e agregação analítica em tempo real.

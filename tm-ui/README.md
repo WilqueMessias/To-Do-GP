@@ -4,7 +4,7 @@ Frontend Single Page Application (SPA) for the To Do GP system, built with React
 
 ## Technical Specifications
 
-- **Framework**: React 18
+- **Framework**: React 19
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS v4 (Utility-first)
 - **State Management**: React Hooks with Optimistic Updates implementation
