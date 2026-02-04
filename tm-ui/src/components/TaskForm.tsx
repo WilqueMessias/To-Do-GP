@@ -23,6 +23,30 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
         return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     };
     const getNowForInput = () => formatLocalForInput(new Date());
+    const normalizeYear = (year: string) => {
+        const digits = year.replace(/\D/g, '');
+        if (digits.length >= 4) return digits.slice(-4);
+        if (digits.length === 3) {
+            const millennium = Math.floor(new Date().getFullYear() / 1000);
+            return `${millennium}${digits}`;
+        }
+        if (digits.length === 2) {
+            const century = Math.floor(new Date().getFullYear() / 100);
+            return `${century}${digits}`;
+        }
+        return digits.padStart(4, '0');
+    };
+    const formatDisplayDate = (value: string, withTime: boolean) => {
+        if (!value) return '';
+        const [datePart, timePart] = value.split('T');
+        if (!datePart) return '';
+        const [yyyy, mm, dd] = datePart.split('-');
+        if (!yyyy || !mm || !dd) return '';
+        const dateStr = `${dd}/${mm}/${normalizeYear(yyyy)}`;
+        if (!withTime) return dateStr;
+        const timeStr = timePart ? timePart.substring(0, 5) : '00:00';
+        return `${dateStr} ${timeStr}`;
+    };
     const isDateOnlyValue = (value?: string) => {
         if (!value) return true;
         if (!value.includes('T')) return true;
@@ -174,6 +198,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
     };
 
     const onPickerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+            return;
+        }
         if (e.key === 'Enter') {
             e.preventDefault();
             e.stopPropagation();
@@ -597,7 +625,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         <input
                                             type="text"
                                             readOnly
-                                            value={hasTime ? dueDate.replace('T', ' ') : (dueDate ? dueDate.split('T')[0] : '')}
+                                            value={formatDisplayDate(dueDate, hasTime)}
                                             placeholder={hasTime ? 'dd/mm/aaaa hh:mm' : 'dd/mm/aaaa'}
                                             onClick={openPicker}
                                             onFocus={openPicker}
@@ -653,14 +681,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                                             type="date"
                                                             value={pickerDate}
                                                             onChange={(e) => setPickerDate(e.target.value)}
-                                                            onKeyDown={(e) => onPickerKeyDown(e as React.KeyboardEvent<HTMLDivElement>)}
                                                             onDoubleClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                                                             className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200"
                                                         />
                                                     </div>
                                                     {hasTime && (
                                                         <div>
-                                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Hora</label>
+                                                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Horário</label>
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 <div onMouseEnter={() => setActiveTimeColumn('hour')}>
                                                                     <div className={`text-[9px] font-bold uppercase tracking-widest mb-1 ${activeTimeColumn === 'hour' ? 'text-blue-600 dark:text-blue-300' : 'text-slate-400'}`}>
