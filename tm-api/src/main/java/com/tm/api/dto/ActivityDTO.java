@@ -23,4 +23,13 @@ public class ActivityDTO {
 
     @Schema(description = "Precise timestamp of the activity", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime timestamp;
+
+    @Schema(description = "Technical field name changed")
+    private String fieldName;
+
+    @Schema(description = "Previous value")
+    private String oldVal;
+
+    @Schema(description = "New value")
+    private String newVal;
 }

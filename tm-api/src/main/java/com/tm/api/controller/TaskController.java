@@ -117,4 +117,13 @@ public class TaskController {
         taskService.hardDelete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Reorder tasks bulkadamente", description = "Updates positions of multiple tasks at once. Useful for drag-and-drop persistence.")
+    @ApiResponse(responseCode = "204", description = "Tasks reordered successfully")
+    @PostMapping("/reorder")
+    public ResponseEntity<Void> reorder(@RequestBody java.util.List<java.util.Map<String, Object>> taskPositions) {
+        log.info("Request to bulk reorder tasks");
+        taskService.updatePositions(taskPositions);
+        return ResponseEntity.noContent().build();
+    }
 }

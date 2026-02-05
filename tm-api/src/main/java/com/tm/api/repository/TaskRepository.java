@@ -11,7 +11,15 @@ import java.util.UUID;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-    Page<Task> findByStatus(TaskStatus status, Pageable pageable);
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM Task t WHERE t.status = :status ORDER BY t.position ASC, t.createdAt DESC")
+    Page<Task> findByStatus(@org.springframework.data.repository.query.Param("status") TaskStatus status,
+            Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM Task t ORDER BY t.position ASC, t.createdAt DESC")
+    Page<Task> findAll(Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(MAX(t.position), -1) FROM Task t WHERE t.status = :status")
+    int findMaxPositionByStatus(@org.springframework.data.repository.query.Param("status") TaskStatus status);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM tasks WHERE id = :id", nativeQuery = true)
     java.util.Optional<Task> findByIdIncludeDeleted(@org.springframework.data.repository.query.Param("id") UUID id);

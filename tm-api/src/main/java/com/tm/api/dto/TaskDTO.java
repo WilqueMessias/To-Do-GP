@@ -26,6 +26,9 @@ public class TaskDTO {
     @NotBlank(message = "Title is required")
     private String title;
 
+    @Schema(description = "Visual position in the column")
+    private Integer position;
+
     @Schema(description = "Detailed description", example = "Connect the frontend with the Spring Boot backend")
     private String description;
 
@@ -58,6 +61,9 @@ public class TaskDTO {
 
     @Schema(description = "Completion timestamp (if status is DONE)", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime completedAt;
+
+    @Schema(description = "Soft deletion timestamp", accessMode = Schema.AccessMode.READ_ONLY)
+    private LocalDateTime deletedAt;
 
     @Schema(description = "Whether the task is overdue", accessMode = Schema.AccessMode.READ_ONLY)
     private boolean overdue;

@@ -24,4 +24,10 @@ public class SubtaskDTO {
 
     @Schema(description = "Subtask completion status", example = "false")
     private boolean completed;
+
+    @Schema(description = "Creation timestamp", accessMode = Schema.AccessMode.READ_ONLY)
+    private java.time.LocalDateTime createdAt;
+
+    @Schema(description = "Completion timestamp", accessMode = Schema.AccessMode.READ_ONLY)
+    private java.time.LocalDateTime completedAt;
 }

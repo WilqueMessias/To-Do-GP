@@ -8,12 +8,17 @@ export interface Activity {
     id: string;
     message: string;
     timestamp: string;
+    fieldName?: string;
+    oldVal?: string;
+    newVal?: string;
 }
 
 export interface Subtask {
     id?: string;
     title: string;
     completed: boolean;
+    createdAt?: string;
+    completedAt?: string;
 }
 
 export interface Task {
@@ -32,6 +37,7 @@ export interface Task {
 
 
     completedAt?: string;
+    deletedAt?: string;
     subtasks?: Subtask[];
     activities?: Activity[];
 }
@@ -56,4 +62,5 @@ export const taskService = {
     clearHistory: () => api.delete('/tasks/history'),
     restoreAllHistory: () => api.post('/tasks/history/restore'),
     getHistory: () => api.get<Task[]>('/tasks/history'),
+    reorder: (taskPositions: { id: string, position: number }[]) => api.post('/tasks/reorder', taskPositions),
 };

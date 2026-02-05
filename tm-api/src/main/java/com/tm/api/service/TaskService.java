@@ -53,8 +53,12 @@ public class TaskService {
 
     @Transactional
     public TaskDTO create(TaskDTO dto) {
+        int nextPosition = dto.getPosition() != null ? dto.getPosition()
+                : taskRepository.findMaxPositionByStatus(dto.getStatus()) + 1;
+
         Task task = Task.builder()
                 .title(dto.getTitle())
+                .position(nextPosition)
                 .description(dto.getDescription())
                 .status(dto.getStatus())
                 .priority(dto.getPriority() != null ? dto.getPriority() : com.tm.api.model.Priority.LOW)
@@ -195,16 +199,36 @@ public class TaskService {
                 }
             }
 
-            // Sync database state
+            // Sync database state in-place to preserve metadata
+            List<Subtask> existingSubtasks = task.getSubtasks();
+            List<Subtask> finalizedSubtasks = new java.util.ArrayList<>();
+
+            for (var sDTO : newSubtasksDTO) {
+                Subtask subtask;
+                if (sDTO.getId() != null) {
+                    subtask = existingSubtasks.stream()
+                            .filter(s -> s.getId().equals(sDTO.getId()))
+                            .findFirst()
+                            .orElseGet(() -> Subtask.builder().task(task).build());
+                } else {
+                    subtask = Subtask.builder().task(task).build();
+                }
+
+                subtask.setTitle(sDTO.getTitle());
+
+                // Set completedAt logic
+                if (sDTO.isCompleted() && !subtask.isCompleted()) {
+                    subtask.setCompletedAt(LocalDateTime.now());
+                } else if (!sDTO.isCompleted()) {
+                    subtask.setCompletedAt(null);
+                }
+
+                subtask.setCompleted(sDTO.isCompleted());
+                finalizedSubtasks.add(subtask);
+            }
+
             task.getSubtasks().clear();
-            task.getSubtasks().addAll(newSubtasksDTO.stream()
-                    .map(s -> Subtask.builder()
-                            .id(s.getId())
-                            .title(s.getTitle())
-                            .completed(s.isCompleted())
-                            .task(task)
-                            .build())
-                    .collect(Collectors.toList()));
+            task.getSubtasks().addAll(finalizedSubtasks);
         }
 
         Task savedTask = taskRepository.save(task);
@@ -223,10 +247,15 @@ public class TaskService {
     @Transactional
     public void delete(UUID id) {
         log.info("Deleting task id: {}", id);
-        if (!taskRepository.existsById(id)) {
-            throw new TaskNotFoundException("Task not found with id: " + id);
-        }
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
+
         taskRepository.deleteById(id);
+
+        // Publish event for activity log
+        eventPublisher.publishEvent(new TaskAuditEvent(this, task,
+                Map.of("deleted", false), Map.of("deleted", true)));
+
         meterRegistry.counter("tasks.deleted").increment();
     }
 
@@ -273,6 +302,23 @@ public class TaskService {
         } catch (Exception e) {
             log.error("Failed to hard delete task {}", id, e);
             throw e;
+        }
+    }
+
+    @Transactional
+    public void updatePositions(List<Map<String, Object>> taskPositions) {
+        log.info("Updating bulk task positions");
+        for (Map<String, Object> update : taskPositions) {
+            try {
+                UUID id = UUID.fromString(update.get("id").toString());
+                int position = (int) update.get("position");
+                taskRepository.findById(id).ifPresent(t -> {
+                    t.setPosition(position);
+                    taskRepository.save(t);
+                });
+            } catch (Exception e) {
+                log.error("Failed to update position for task", e);
+            }
         }
     }
 

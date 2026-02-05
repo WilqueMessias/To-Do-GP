@@ -355,10 +355,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         if (!task) return;
 
         try {
+            // 1. Persist the status change (Standard update)
             await taskService.update(task.id, buildTaskPayload(task, { status: task.status }));
+
+            // 2. Persist the entire column order (Bulk Position update)
+            // We find all tasks in the column the task landed in, and update their positions based on current array order
+            const columnTasks = internalTasks
+                .filter(t => t.status === task.status);
+
+            const reorderPayload = columnTasks.map((t, index) => ({
+                id: t.id,
+                position: index
+            }));
+
+            if (reorderPayload.length > 0) {
+                await taskService.reorder(reorderPayload);
+            }
+
         } catch (error) {
-            console.error('Failed to persist task movement:', error);
-            // Revert on error if needed, or rely on parent reload
+            console.error('Failed to persist task movement or reordering:', error);
         }
     };
 

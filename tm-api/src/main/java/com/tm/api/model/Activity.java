@@ -23,6 +23,15 @@ public class Activity {
     @Column(nullable = false)
     private String message;
 
+    @Column
+    private String fieldName;
+
+    @Column(columnDefinition = "TEXT")
+    private String oldVal;
+
+    @Column(columnDefinition = "TEXT")
+    private String newVal;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime timestamp;

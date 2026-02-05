@@ -26,8 +26,8 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
     if (!isOpen) return null;
 
     const sortedHistory = [...history].sort((a, b) => {
-        const dateA = new Date(a.completedAt || 0).getTime();
-        const dateB = new Date(b.completedAt || 0).getTime();
+        const dateA = new Date(a.deletedAt || a.completedAt || 0).getTime();
+        const dateB = new Date(b.deletedAt || b.completedAt || 0).getTime();
         return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
@@ -79,8 +79,9 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                                             {task.title}
                                         </h3>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Concluída em: {new Date(task.completedAt || Date.now()).toLocaleDateString()}
-                                            {' '}às {new Date(task.completedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {task.deletedAt ? 'Excluída em: ' : 'Concluída em: '}
+                                            {new Date(task.deletedAt || task.completedAt || Date.now()).toLocaleDateString()}
+                                            {' '}às {new Date(task.deletedAt || task.completedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">

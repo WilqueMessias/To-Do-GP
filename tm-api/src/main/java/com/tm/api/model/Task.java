@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE tasks SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id=?")
 @SQLRestriction("deleted = false")
 
 public class Task {
@@ -32,6 +32,10 @@ public class Task {
 
     @Column(nullable = false)
     private String title;
+
+    @Column
+    @Builder.Default
+    private Integer position = 0;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -70,6 +74,9 @@ public class Task {
 
     @Builder.Default
     private Boolean deleted = false;
+
+    @Column
+    private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

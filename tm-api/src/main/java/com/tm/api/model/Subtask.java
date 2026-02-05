@@ -24,6 +24,13 @@ public class Subtask {
     @Builder.Default
     private boolean completed = false;
 
+    @org.hibernate.annotations.CreationTimestamp
+    @Column(updatable = false)
+    private java.time.LocalDateTime createdAt;
+
+    @Column
+    private java.time.LocalDateTime completedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private Task task;
