@@ -22,7 +22,7 @@ case $choice in
     docker-compose up --build
     ;;
   2)
-    (cd tm-api && mvn spring-boot:run) & (cd tm-ui && npm run dev)
+    (cd tm-api && ./mvnw spring-boot:run) & (cd tm-ui && npm run dev)
     ;;
   3)
     cd tm-ui && npm install

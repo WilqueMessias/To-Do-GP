@@ -157,13 +157,12 @@ for /f "tokens=5" %%a in ('netstat -aon ^| find ":8080" ^| find "LISTENING"') do
 for /f "tokens=5" %%a in ('netstat -aon ^| find ":5173" ^| find "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
 
 echo [PHASE 2/5] Infrastructure: Environment Context Configuration...
-set "JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
-set "MAVEN_HOME=%~dp0maven\apache-maven-3.9.6"
-set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
+REM Environment variables for Java and Maven are now derived dynamically.
+REM Ensure JAVA_HOME is set in your system environment for native development.
 
 echo [PHASE 3/5] Lifecycle: Backend Compilation ^& Runtime Boot...
 
-start "TM Backend" cmd /k "cd tm-api && mvn clean spring-boot:run"
+start "TM Backend" cmd /k "cd tm-api && .\mvnw.cmd clean spring-boot:run"
 
 echo [PHASE 4/5] Propagation: Service Health Verification...
 powershell -ExecutionPolicy Bypass -File "%~dp0verify_api.ps1"
