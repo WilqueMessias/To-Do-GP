@@ -471,15 +471,7 @@ function App() {
                 </div>
               </section>
 
-              {/* Dica Extra */}
-              <div className="p-4 rounded-2xl bg-blue-600 text-white flex items-center gap-4 shadow-lg shadow-blue-500/20">
-                <div className="p-2 rounded-xl bg-white/20">
-                  <Sparkles size={18} />
-                </div>
-                <p className="text-xs font-semibold leading-relaxed">
-                  Dica: No título da tarefa, digite "hoje" ou "amanhã" para definir prazos automaticamente!
-                </p>
-              </div>
+
             </div>
           </div>
         </div>
