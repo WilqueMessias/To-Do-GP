@@ -129,7 +129,12 @@ public class TaskController {
 
     @PostMapping("/bulk-status")
     public ResponseEntity<Void> bulkStatus(@RequestBody java.util.Map<String, Object> payload) {
-        java.util.List<String> ids = (java.util.List<String>) payload.get("ids");
+        Object idsObj = payload.get("ids");
+        if (!(idsObj instanceof java.util.List)) {
+            return ResponseEntity.badRequest().build();
+        }
+        @SuppressWarnings("unchecked")
+        java.util.List<String> ids = (java.util.List<String>) idsObj;
         String status = (String) payload.get("status");
         taskService.bulkUpdateStatus(ids.stream().map(UUID::fromString).collect(java.util.stream.Collectors.toList()),
                 com.tm.api.model.TaskStatus.valueOf(status));
