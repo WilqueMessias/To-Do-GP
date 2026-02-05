@@ -4,9 +4,6 @@ target/
 *.jar
 *.war
 *.ear
-.mvn/
-mvnw
-mvnw.cmd
 .idea/
 *.iml
 .vscode/
@@ -20,6 +17,7 @@ dist/
 # Databases
 data/
 *.db
+*.mv.db
 
 # Logs
 backend_final.log

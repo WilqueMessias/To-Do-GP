@@ -1,0 +1,55 @@
+#!/bin/sh
+# Maven Wrapper bootstrap script
+
+MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-$(pwd)}"
+
+find_maven_basedir() {
+  if [ -z "$1" ]; then
+    return 1
+  fi
+  if [ -f "$1/.mvn/wrapper/maven-wrapper.properties" ]; then
+    echo "$1"
+    return 0
+  fi
+  local parent
+  parent=$(dirname "$1")
+  if [ "$parent" = "$1" ]; then
+    return 1
+  fi
+  find_maven_basedir "$parent"
+}
+
+MAVEN_PROJECTBASEDIR=$(find_maven_basedir "$MAVEN_PROJECTBASEDIR")
+if [ -z "$MAVEN_PROJECTBASEDIR" ]; then
+  echo "Cannot find .mvn/wrapper/maven-wrapper.properties" >&2
+  exit 1
+fi
+
+WRAPPER_PROPERTIES="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.properties"
+WRAPPER_JAR="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar"
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+  WRAPPER_URL=$(grep -E '^wrapperUrl=' "$WRAPPER_PROPERTIES" | cut -d= -f2-)
+  if [ -z "$WRAPPER_URL" ]; then
+    WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
+  fi
+  echo "Downloading Maven Wrapper from $WRAPPER_URL" >&2
+  mkdir -p "$MAVEN_PROJECTBASEDIR/.mvn/wrapper"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$WRAPPER_JAR" "$WRAPPER_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "$WRAPPER_JAR" "$WRAPPER_URL"
+  else
+    echo "curl or wget is required to download the Maven Wrapper" >&2
+    exit 1
+  fi
+fi
+
+MAVEN_WRAPPER_CLASS=org.apache.maven.wrapper.MavenWrapperMain
+
+JAVA_CMD="${JAVA_HOME:+$JAVA_HOME/bin/}java"
+if [ ! -x "$JAVA_CMD" ]; then
+  JAVA_CMD=java
+fi
+
+exec "$JAVA_CMD" -classpath "$WRAPPER_JAR" -Dmaven.multiModuleProjectDirectory="$MAVEN_PROJECTBASEDIR" $MAVEN_WRAPPER_CLASS "$@"
