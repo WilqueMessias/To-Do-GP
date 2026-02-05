@@ -2,17 +2,23 @@ import type { Task } from './api';
 
 export const exportToCSV = (tasks: Task[]) => {
 
-    const rows = tasks.map(t => [
-        t.id,
-        `"${t.title.replace(/"/g, '""')}"`,
-        t.status,
-        t.priority,
-        `"${t.dueDate ? new Date(t.dueDate).toLocaleString('pt-BR') : ''}"`,
-        `"${t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : ''}"`,
-        t.important ? 'Sim' : 'Não'
-    ]);
+    const rows = tasks.map(t => {
+        const subtasksStr = t.subtasks?.map(s => `${s.title} [${s.completed ? 'X' : ' '}]`).join(' | ') || '';
 
-    const finalHeaders = ['ID', 'Título', 'Status', 'Prioridade', 'Data de Entrega', 'Criada em', 'Importante'];
+        return [
+            t.id,
+            `"${t.title.replace(/"/g, '""')}"`,
+            `"${(t.description || '').replace(/"/g, '""')}"`,
+            t.status,
+            t.priority,
+            `"${t.dueDate ? new Date(t.dueDate).toLocaleString('pt-BR') : ''}"`,
+            `"${t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : ''}"`,
+            `"${subtasksStr.replace(/"/g, '""')}"`,
+            t.important ? 'Sim' : 'Não'
+        ];
+    });
+
+    const finalHeaders = ['ID', 'Título', 'Descrição', 'Status', 'Prioridade', 'Data de Entrega', 'Criada em', 'Passos', 'Importante'];
     const csvContent = [finalHeaders.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
