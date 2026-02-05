@@ -449,10 +449,6 @@ function App() {
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Excluir (ao passar o mouse)</span>
                     <kbd className="group-hover:scale-110 transition-transform text-[10px]">Delete</kbd>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-white/5 group hover:border-rose-500/30 transition-all">
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Confirmar exclusão (no modal)</span>
-                    <kbd className="group-hover:scale-110 transition-transform text-[10px]">Enter</kbd>
-                  </div>
                 </div>
               </section>
 
