@@ -343,4 +343,23 @@ public class TaskService {
             throw e;
         }
     }
+
+    @Transactional
+    public void bulkUpdateStatus(List<UUID> ids, TaskStatus status) {
+        log.info("Bulk updating status for {} tasks to {}", ids.size(), status);
+        for (UUID id : ids) {
+            taskRepository.findById(id).ifPresent(task -> {
+                TaskStatus oldStatus = task.getStatus();
+                if (oldStatus != status) {
+                    task.transitionTo(status);
+                    taskRepository.save(task);
+                    eventPublisher.publishEvent(new TaskAuditEvent(this, task,
+                            Map.of("status", oldStatus), Map.of("status", status)));
+                    if (status == TaskStatus.DONE) {
+                        meterRegistry.counter("tasks.completed").increment();
+                    }
+                }
+            });
+        }
+    }
 }

@@ -3,9 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram, HelpCircle, X } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram, HelpCircle, X, FileText } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
+import { exportTasks } from './services/Exporter';
 
 
 import { useKanbanTasks } from './hooks/useKanbanTasks';
@@ -303,6 +304,14 @@ function App() {
                 ))}
               </div>
             </div>
+
+            <button
+              onClick={() => exportTasks(tasks)}
+              title="Exportar Relatório (CSV)"
+              className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all active:scale-95"
+            >
+              <FileText size={18} />
+            </button>
 
             <button
               onClick={() => handleOpenModal()}

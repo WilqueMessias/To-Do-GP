@@ -126,4 +126,13 @@ public class TaskController {
         taskService.updatePositions(taskPositions);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/bulk-status")
+    public ResponseEntity<Void> bulkStatus(@RequestBody java.util.Map<String, Object> payload) {
+        java.util.List<String> ids = (java.util.List<String>) payload.get("ids");
+        String status = (String) payload.get("status");
+        taskService.bulkUpdateStatus(ids.stream().map(UUID::fromString).collect(java.util.stream.Collectors.toList()),
+                com.tm.api.model.TaskStatus.valueOf(status));
+        return ResponseEntity.noContent().build();
+    }
 }

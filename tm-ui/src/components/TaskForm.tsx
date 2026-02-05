@@ -833,9 +833,19 @@ export const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onClose, onSuccess, 
                                         {taskToEdit.activities?.map((activity: any) => (
                                             <div key={activity.id} className="relative pl-6 pb-2 border-l-2 border-slate-100 dark:border-white/5 last:border-0 group/log">
                                                 <div className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-white/20 shadow-sm group-hover/log:scale-125 transition-transform" />
-                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-200 leading-relaxed">
-                                                    {activity.message}
-                                                </p>
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-200 leading-relaxed">
+                                                        {activity.message}
+                                                    </p>
+                                                    {activity.fieldName && activity.oldVal && activity.newVal && (
+                                                        <div className="flex items-center gap-2 text-[10px] bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-lg border border-slate-200/50 dark:border-white/5">
+                                                            <span className="font-black text-blue-500 uppercase tracking-tighter opacity-70">{activity.fieldName}:</span>
+                                                            <span className="text-slate-400 line-through truncate max-w-[80px]">{activity.oldVal}</span>
+                                                            <span className="text-slate-400">→</span>
+                                                            <span className="text-blue-600 dark:text-blue-400 font-bold truncate max-w-[100px]">{activity.newVal}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-0.5 block tracking-widest">
                                                     {new Date(activity.timestamp).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                                 </span>

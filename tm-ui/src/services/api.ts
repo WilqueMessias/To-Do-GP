@@ -63,4 +63,5 @@ export const taskService = {
     restoreAllHistory: () => api.post('/tasks/history/restore'),
     getHistory: () => api.get<Task[]>('/tasks/history'),
     reorder: (taskPositions: { id: string, position: number }[]) => api.post('/tasks/reorder', taskPositions),
+    bulkStatus: (ids: string[], status: 'TODO' | 'DOING' | 'DONE') => api.post('/tasks/bulk-status', { ids, status }),
 };
