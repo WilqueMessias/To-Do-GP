@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { KanbanBoard } from './components/KanbanBoard';
 import { TaskForm } from './components/TaskForm';
 import { ToastContainer } from './components/Toast';
-import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram, HelpCircle, X, Sparkles } from 'lucide-react';
+import { Plus, Search, Moon, Sun, LayoutGrid, List, ArrowUpDown, Github, Linkedin, Instagram, HelpCircle, X } from 'lucide-react';
 import { SystemClock } from './components/SystemClock';
 import { TaskListView } from './components/TaskListView';
 
