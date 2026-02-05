@@ -138,6 +138,8 @@ Próximos passos: veja a seção Execução abaixo para rodar via Docker ou ambi
 
 ---
 
+---
+
 ## Uso do start.bat (Windows)
 
 Execute o launcher na raiz do repositório:
@@ -146,13 +148,9 @@ Execute o launcher na raiz do repositório:
 start.bat
 ```
 
-Opções do menu:
-- **[1] Containerizado**: faz build e inicia o Docker Compose. UI em http://localhost e API em http://localhost:8080.
-- **[2] Desenvolvimento nativo**: inicia backend (Spring Boot) e frontend (Vite). UI em http://localhost:5173 e API em http://localhost:8080.
-- **[3] Inicializar**: instala as dependências do frontend (`npm install`).
-- **[4] Sair**: fecha o launcher.
+O launcher irá verificar sua instalação do Docker e perguntar se deseja iniciar os serviços. Basta digitar `y` para confirmar.
 
-Se a opção **[1]** falhar, verifique o Docker Desktop e o WSL2 (Windows Home exige WSL2).
+Se a inicialização falhar, verifique se o Docker Desktop está rodando e se o backend WSL2 está habilitado.
 
 ---
 
@@ -170,35 +168,39 @@ Se a opção **[1]** falhar, verifique o Docker Desktop e o WSL2 (Windows Home e
 
 ## Execução
 
-### 1) Produção (Docker Compose)
-**Inicialização rápida (scripts):**
-- Windows: `start.bat`
-- Linux/Mac: `start.sh`
+### Produção (Docker Compose) - Recomendado
+Para rodar o sistema completo com zero dependências locais (sem necessidade de Java ou Node), use os launchers:
+
+- **Windows**: `start.bat`
+- **Linux/Mac**: `start.sh`
+
+O launcher verificará seu ambiente e subirá os serviços automaticamente.
 
 **Execução manual:**
 ```bash
 docker-compose up -d --build
 ```
+
 - **Interface**: [http://localhost](http://localhost)
 - **Especificação API**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- **Saúde (Health)**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
-### 2) Desenvolvimento (Local)
-**Instalar dependências do frontend:**
+---
+
+## Desenvolvimento Local (Avançado)
+
+Se preferir rodar os serviços individualmente para desenvolvimento:
+
+**Backend:**
+```bash
+cd tm-api
+./mvnw clean spring-boot:run
+```
+
+**Frontend:**
 ```bash
 cd tm-ui
 npm install
-```
-
-**Subir backend:**
-```bash
-cd tm-api
-mvn clean spring-boot:run
-```
-
-**Subir frontend:**
-```bash
-cd tm-ui
 npm run dev
 ```
 

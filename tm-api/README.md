@@ -26,7 +26,7 @@ Backend service for the To Do GP system, built with Spring Boot.
 ## Local Execution
 
 ```bash
-mvn clean spring-boot:run
+./mvnw clean spring-boot:run
 ```
 
 ## Docker Execution
@@ -45,8 +45,8 @@ When running locally or via Docker:
 
 ## Automated Testing
 
-Execute tests via Maven:
+Execute tests via Maven Wrapper:
 ```bash
-mvn test
+./mvnw test
 ```
 Includes Unit Tests for service layer and Integration Tests for API endpoints.

@@ -170,35 +170,39 @@ If option **[1]** fails, check Docker Desktop and WSL2 status (Windows Home requ
 
 ## Execution
 
-### 1) Production (Docker Compose)
-**Quick start (scripts):**
-- Windows: `start.bat`
-- Linux/Mac: `start.sh`
+### Production (Docker Compose) - Recommended
+To run the complete system with zero local dependencies (no Java or Node required), use the provided launcher:
+
+- **Windows**: `start.bat`
+- **Linux/Mac**: `start.sh`
+
+The launcher will verify your Docker installation and start both services.
 
 **Manual run:**
 ```bash
 docker-compose up -d --build
 ```
+
 - **Interface**: [http://localhost](http://localhost)
 - **API Spec**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
-### 2) Development (Local)
-**Install frontend deps:**
+---
+
+## Local Development (Advanced)
+
+If you prefer to run services individually for development:
+
+**Backend:**
+```bash
+cd tm-api
+./mvnw clean spring-boot:run
+```
+
+**Frontend:**
 ```bash
 cd tm-ui
 npm install
-```
-
-**Run backend:**
-```bash
-cd tm-api
-mvn clean spring-boot:run
-```
-
-**Run frontend:**
-```bash
-cd tm-ui
 npm run dev
 ```
 

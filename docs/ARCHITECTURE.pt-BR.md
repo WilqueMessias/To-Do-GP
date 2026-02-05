@@ -160,9 +160,15 @@ O ciclo de vida de implantação é gerenciado via **Docker Compose**, utilizand
 - **Node 18** (Frontend)
 - **Docker + Docker Compose** (execução recomendada)
 
-**Execução rápida (Docker Compose):**
+**Execução rápida (Launchers Automatizados):**
+- **Windows**: `start.bat`
+- **Linux/Mac**: `start.sh`
+
+Os launchers verificam automaticamente o ambiente Docker e orquestram o build.
+
+**Execução manual:**
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 - **Interface**: [http://localhost](http://localhost)
 - **Swagger**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)

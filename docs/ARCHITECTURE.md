@@ -160,9 +160,15 @@ The deployment lifecycle is managed via **Docker Compose**, utilizing health-che
 - **Node 18** (Frontend)
 - **Docker + Docker Compose** (recommended execution)
 
-**Quick run (Docker Compose):**
+**Quick run (Automated Launchers):**
+- **Windows**: `start.bat`
+- **Linux/Mac**: `start.sh`
+
+The launchers automatically verify the Docker environment and orchestrate the build.
+
+**Manual execution:**
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 - **Interface**: [http://localhost](http://localhost)
 - **Swagger**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
